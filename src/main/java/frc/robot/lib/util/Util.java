@@ -232,6 +232,10 @@ public class Util {
 				&& MathUtils.epsilonEquals(speed1.omegaRadiansPerSecond, other.omegaRadiansPerSecond, epsilon);
 	}
 
+	public static double chassisSpeedsMagnitude(ChassisSpeeds other) {
+		return Math.sqrt(other.vxMetersPerSecond * other.vxMetersPerSecond
+			+ other.vyMetersPerSecond * other.vyMetersPerSecond);
+	}
 
 	public static Translation2d translateBy(Translation2d a, Translation2d b){
 		return new Translation2d(a.getX()+b.getX(),a.getY()+b.getY());

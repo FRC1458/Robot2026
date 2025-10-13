@@ -5,19 +5,17 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-// import frc.robot.RobotState;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.control.PIDVController;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.trajectory.RedTrajectory;
+import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 
 /**
@@ -37,13 +35,9 @@ public class TrajectoryCommand extends Command {
     private final RedTrajectory trajectory;
     private Pose2d currentPose;
     private ChassisSpeeds currentSpeeds;
+    private RedTrajectory.State targetState = new RedTrajectory.State();
 
     private Timer timer = null;
-
-    static Field2d field = new Field2d();
-    static {
-		SmartDashboard.putData("debug", field);
-    }
 
     public TrajectoryCommand(RedTrajectory trajectory) {
         this(
@@ -71,6 +65,10 @@ public class TrajectoryCommand extends Command {
 
         timer = new Timer();
         addRequirements(drive);
+        TelemetryManager.getInstance()
+            .addStructPublisher("Debug/TrajectoryCommand", 
+                Pose3d.struct, () -> new Pose3d(
+                    targetState.pose));
         setName("Trajectory " + trajectory.name);
     }
 
@@ -98,7 +96,7 @@ public class TrajectoryCommand extends Command {
             return new ChassisSpeeds();
         }
 
-        RedTrajectory.State targetState = trajectory.advanceTo(timer.get());
+        targetState = trajectory.advanceTo(timer.get());
 
         double vxFF = targetState.speeds.vxMetersPerSecond;
         double vyFF = targetState.speeds.vyMetersPerSecond;
@@ -135,9 +133,6 @@ public class TrajectoryCommand extends Command {
                 currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond));
 
         double rotation = thetaController.getOutput();
-
-        field.setRobotPose(targetState.pose);
-		SmartDashboard.putData("debug", field);
 
         return new ChassisSpeeds(
             vx + xAccelFF * accelConstant,

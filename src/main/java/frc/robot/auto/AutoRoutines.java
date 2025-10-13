@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public final class AutoRoutines {
 	public static Command testPidToPose() {
-		return new PIDToPoseCommand(new Pose2d(3, 0.5, Rotation2d.fromDegrees(50)));
+		return new PIDToPoseCommand(new Pose2d(3, 3, Rotation2d.fromDegrees(50)));
 	}
 
 	public static Command testTrajectoryAuto() {
 		RedTrajectory traj = TrajectoryLoader.loadAutoTrajectory(TrajectoryType.PATHPLANNER, 
-			"zisen").get();
+			"testPath").get();
 		return new TrajectoryCommand(traj);
 	}
 }

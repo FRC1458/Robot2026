@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
+import frc.robot.lib.util.Util;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.subsystems.drive.Drive;
 
@@ -18,8 +19,7 @@ public class PIDToPoseCommand extends Command {
     private final SwerveRequest.ApplyFieldSpeeds request = 
         new SwerveRequest.ApplyFieldSpeeds();
 
-    private final ProfiledPIDVController xController;
-    private final ProfiledPIDVController yController;
+    private final ProfiledPIDVController translationController;
     private final ProfiledPIDVController thetaController;
 
     private final Pose2d target;
@@ -37,8 +37,7 @@ public class PIDToPoseCommand extends Command {
     public PIDToPoseCommand(Drive drive, Pose2d target, ProfiledPIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
-        xController = new ProfiledPIDVController(translationConstants);
-        yController = new ProfiledPIDVController(translationConstants);
+        translationController = new ProfiledPIDVController(translationConstants);
         thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -68,15 +67,19 @@ public class PIDToPoseCommand extends Command {
         if (target == null || currentPose == null || currentSpeeds == null) {
             return new ChassisSpeeds();
         }
+
+        var delta = target.relativeTo(currentPose);
         
-        xController.setTarget(target.getX());
-        yController.setTarget(target.getY());
+        translationController.setTarget(delta.getTranslation().getNorm());
 
-        xController.setInput(new Pair<Double, Double>(currentPose.getX(), currentSpeeds.vxMetersPerSecond));
-        yController.setInput(new Pair<Double, Double>(currentPose.getY(), currentSpeeds.vyMetersPerSecond));
+        translationController.setInput(new Pair<Double, Double>(
+            0.0,
+            Util.chassisSpeedsMagnitude(
+                currentSpeeds)));
+        
+        double vMagnitude = translationController.getOutput();
 
-        double vx = xController.getOutput();
-        double vy = yController.getOutput();
+        var deltaRotation = delta.getTranslation().getAngle();
 
         thetaController.setTarget(target.getRotation().getRadians());
         thetaController.setInput(
@@ -85,21 +88,16 @@ public class PIDToPoseCommand extends Command {
 
         double rotation = thetaController.getOutput();
 
-        return ChassisSpeeds.fromFieldRelativeSpeeds(
-            vx,
-            vy,
-            rotation,
-            currentPose.getRotation());
+        return new ChassisSpeeds(
+            vMagnitude * deltaRotation.getCos(),
+            vMagnitude * deltaRotation.getSin(),
+            rotation);
     }
 
     @Override
     public boolean isFinished() {
-        if (Math.hypot(xController.error, yController.error) < 0.03 
-            && MathUtil.isNear(thetaController.error / Math.PI * 180, 0, 3.0)) 
-        {
-            return true;
-        }
-        return false;
+        return translationController.error < 0.03 
+            && MathUtil.isNear(thetaController.error / Math.PI * 180, 0, 3.0);
     }
 
     @Override
