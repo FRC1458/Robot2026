@@ -44,7 +44,9 @@ public class Robot extends TimedRobot {
 		// RobotState.resetKalman();
 
 		Drive.getInstance();
-		VisionDeviceManager.getInstance();
+		if (Robot.isReal()) {
+			VisionDeviceManager.getInstance();
+		}
 		TelemetryManager.getInstance();
 
 		autoChooser = new AutoSelector();
