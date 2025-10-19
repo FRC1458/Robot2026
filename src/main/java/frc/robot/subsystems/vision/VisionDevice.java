@@ -40,7 +40,7 @@ public class VisionDevice {
 		SmartDashboard.putData("VisionDevice/" + constants.tableName, robotField);
 
 		mCamera = new PhotonCamera(constants.tableName);
-		mPoseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
+		mPoseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.CLOSEST_TO_LAST_POSE, constants.robotToCamera);
 
 		mConstants = constants;
 
