@@ -5,7 +5,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
@@ -68,9 +70,9 @@ public class PIDToPoseCommand extends Command {
             return new ChassisSpeeds();
         }
 
-        var delta = target.relativeTo(currentPose);
+        var delta = target.getTranslation().minus(currentPose.getTranslation());
         
-        translationController.setTarget(delta.getTranslation().getNorm());
+        translationController.setTarget(delta.getNorm());
 
         translationController.setInput(new Pair<Double, Double>(
             0.0,
@@ -78,8 +80,8 @@ public class PIDToPoseCommand extends Command {
                 currentSpeeds)));
         
         double vMagnitude = translationController.getOutput();
-
-        var deltaRotation = delta.getTranslation().getAngle();
+        SmartDashboard.putNumber("Debug/PIDToPoseCommand/vmag", vMagnitude);
+        var deltaRotation = delta.getAngle();
 
         thetaController.setTarget(target.getRotation().getRadians());
         thetaController.setInput(
@@ -102,7 +104,7 @@ public class PIDToPoseCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        drive.setSwerveRequest(new SwerveRequest.FieldCentric());
+        drive.setSwerveRequest(new SwerveRequest.ApplyRobotSpeeds());
     }
 
     public Pose2d getTarget() {

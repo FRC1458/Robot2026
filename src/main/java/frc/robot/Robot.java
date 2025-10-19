@@ -1,6 +1,11 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.commands.PathfindingCommand;
+
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -48,6 +53,8 @@ public class Robot extends TimedRobot {
 			VisionDeviceManager.getInstance();
 		}
 		TelemetryManager.getInstance();
+
+		FollowPathCommand.warmupCommand().schedule();;
 
 		autoChooser = new AutoSelector();
 	}
