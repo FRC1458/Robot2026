@@ -11,7 +11,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public final class AutoRoutines {
 	public static Command testPidToPose() {
-		return new PIDToPoseCommand(new Pose2d(1.5, 1, Rotation2d.fromDegrees(90)));
+		return new PIDToPoseCommand(
+			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120)));
 	}
 
 	public static Command testTrajectoryAuto() {
