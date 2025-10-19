@@ -2,7 +2,6 @@ package frc.robot.subsystems.led;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -95,6 +94,7 @@ public class Led extends SubsystemBase {
         led.start();
         timer.start();
         colorer = new Colorer();
+        ledNotifier.startPeriodic(0.125);
     }
 
     private void update() {
@@ -111,7 +111,7 @@ public class Led extends SubsystemBase {
     }
 
     public Command setRainbowCommand() {
-        return Commands.run(() -> colorer.setTimedPattern(
+        return Commands.runOnce(() -> colorer.setTimedPattern(
             (Integer index, Double time) -> Color.fromHSV(index + time.intValue() * 10, 255, 255)
         )).withName("Rainbow");
     }
