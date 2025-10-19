@@ -114,9 +114,9 @@ public class Drive extends SubsystemBase {
             teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
             setSwerveRequest(teleopRequest);
         }).andThen(run(() -> {
-            double xDesiredRaw = Robot.controller.getLeftY();
-            double yDesiredRaw = Robot.controller.getLeftX();
-            double rotDesiredRaw = Robot.controller.getRightX();
+            double xDesiredRaw = -Robot.controller.getLeftY();
+            double yDesiredRaw = -Robot.controller.getLeftX();
+            double rotDesiredRaw = -Robot.controller.getRightX();
             double xFancy = Util.applyJoystickDeadband(xDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double yFancy = Util.applyJoystickDeadband(yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
