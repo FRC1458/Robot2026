@@ -25,7 +25,7 @@ public class ControlsMapping {
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 
 		controller.leftBumper().whileTrue(new Reverse(shooter));
-		controller.rightBumper().whileTrue(new SpinFast(shooter));
+		controller.rightBumper().whileTrue(new Spin(shooter));
 	}
 
 	public static void mapSysId() {
