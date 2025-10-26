@@ -212,14 +212,14 @@ public final class Constants {
 				"frontr",
 				new edu.wpi.first.math.geometry.Transform3d(
 					new Translation3d(0.2822, 0.1087, 0.1984),
-					new Rotation3d(0.5 * TAU, TAU/24.0, 7.0/72.0 * TAU)),
+					new Rotation3d(0.5 * TAU, -TAU/24.0, 7.0/72.0 * TAU)),
 				1, 1280, 800),
 			
 			FL_CONSTANTS (
 				"frontl",
 				new edu.wpi.first.math.geometry.Transform3d(
 					new Translation3d(0.2822, -0.1087, 0.1984),
-					new Rotation3d(0.5 * TAU, -TAU/24.0, 7.0/72.0 * TAU)),
+					new Rotation3d(0.5 * TAU, TAU/24.0, 7.0/72.0 * TAU)),
 				2, 1280, 800);
 
 			public final String tableName;
