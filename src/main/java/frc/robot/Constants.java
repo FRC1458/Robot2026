@@ -53,9 +53,6 @@ public final class Constants {
 				Math.pow(0.02, 1));
 	}
 
-	public static final class Mover {
-		public static final int driverId = 1234;
-	}
 
 	public static final class Drive {
 		public static final COTSTalonFXSwerveConstants SWERVE_MODULE_TYPE =
@@ -155,20 +152,20 @@ public final class Constants {
 
 	public static final class Auto {
 		public static final PIDFConstants TRANSLATION_CONSTANTS = 
-			new PIDFConstants(3.5, 0.0, 0.0, 1.0);
+			new PIDFConstants(3.5, 0.0, 0.1, 1.0);
 
-		public static final ProfiledPIDFConstants TRANSLATION_CONSTANTS2 = 
-			new ProfiledPIDFConstants(3.5, 0.0, 0.0, 1.0, 
+		public static final ProfiledPIDFConstants PROFILED_TRANSLATION_CONSTANTS = 
+			new ProfiledPIDFConstants(3.5, 0.0, 0.1, 1.0, 
 				new TrapezoidProfile.Constraints(
-					Drive.MAX_SPEED, 
-					Drive.MAX_ACCEL));
+					Drive.MAX_SPEED * 0.7, 
+					Drive.MAX_ACCEL * 0.7));
 
 		public static final ProfiledPIDFConstants ROTATION_CONSTANTS = 
 			new ProfiledPIDFConstants(4.0, 0.0, 0.0, 1.0, 
 				new TrapezoidProfile.Constraints(
 					Drive.MAX_ROTATION_SPEED, 
 					Drive.MAX_ROTATION_ACCEL));
-		public static final double ACCELERATION_CONSTANT = 0;
+		public static final double ACCELERATION_CONSTANT = 0.1;
 	}
 
 	public static final class Limelight { //TODO: this must be tuned to specific robot
@@ -201,12 +198,12 @@ public final class Constants {
 			// 		Rotation2d.fromDegrees(180)),
 			// 	0, 1600, 1200);
 
-			R_CONSTANTS (
-				"right",  
-				new edu.wpi.first.math.geometry.Transform3d(
-					new Translation3d(0.267, 0.0312, 0.2791),
-					new Rotation3d(TAU/4, -TAU/4, 0)),
-				0, 1280, 800),
+			// R_CONSTANTS (
+			// 	"right",  
+			// 	new edu.wpi.first.math.geometry.Transform3d(
+			// 		new Translation3d(0.267, 0.0312, 0.2791),
+			//		new Rotation3d(TAU/4, -TAU/4, 0)),
+			//	0, 1280, 800),
 			
 			FR_CONSTANTS (
 				"frontr",
