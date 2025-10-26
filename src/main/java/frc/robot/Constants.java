@@ -283,4 +283,9 @@ public final class Constants {
 								Drive.MAX_ROTATION_ACCEL * 0.85);
 		public static final double GENERATION_WAIT_TIME = 5;
 	}
+
+	public static final class Shooter {
+		public static final int kShooterLeftMotorID = 12;
+		public static final int kShooterRightMotorID = 13;
+	}
 }

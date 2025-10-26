@@ -7,14 +7,25 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 //import frc.robot.subsystems.drive.commands.TeleopCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.Shooter.ShooterCommands.SpinFast;
+import frc.robot.subsystems.Shooter.ShooterCommands.Spin;
+import frc.robot.subsystems.Shooter.ShooterCommands.Reverse;
 
 public class ControlsMapping {
+
+	private static final ShooterSubsystem shooter = new ShooterSubsystem();
+
 	public static void mapTeleopCommand() {
+
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+
+		controller.leftBumper().whileTrue(new Reverse(shooter));
+		controller.rightBumper().whileTrue(new SpinFast(shooter));
 	}
 
 	public static void mapSysId() {
