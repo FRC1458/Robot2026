@@ -74,10 +74,10 @@ public class PIDToPoseCommand extends Command {
         
         translationController.setTarget(delta.getNorm());
 
-        translationController.setInput(new Pair<Double, Double>(
+        translationController.setInput(
             0.0,
             Util.chassisSpeedsMagnitude(
-                currentSpeeds)));
+                currentSpeeds));
         
         double vMagnitude = translationController.getOutput();
         SmartDashboard.putNumber("Debug/PIDToPoseCommand/vmag", vMagnitude);
@@ -85,8 +85,7 @@ public class PIDToPoseCommand extends Command {
 
         thetaController.setTarget(target.getRotation().getRadians());
         thetaController.setInput(
-            new Pair<Double, Double>(
-                currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond));
+            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
 
         double rotation = thetaController.getOutput();
 
