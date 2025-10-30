@@ -52,20 +52,20 @@ public class PIDController {
         isContinuousInputEnabled = false;
     }
 
-    public void setInput(Double input) {
+    public void setInput(double input) {
         this.measurement = input;
     }
 
-    public void setTarget(Double target) {
+    public void setTarget(double target) {
         this.target = target;
     }
 
     /** Sets the feedforward value. */
-    public void setFeedforward(Double feedforward) {
+    public void setFeedforward(double feedforward) {
         this.feedforward = feedforward;
     }
 
-    public Double getOutput() {
+    public double getOutput() {
         double dt = timer.get();
         timer.reset();
         if (dt <= 0.0) {

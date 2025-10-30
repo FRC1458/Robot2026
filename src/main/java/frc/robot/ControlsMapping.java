@@ -17,7 +17,9 @@ public class ControlsMapping {
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.x().whileTrue(new PIDToPoseCommand(
+		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		controller.b().whileTrue(new PIDToPoseCommand(
 			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
 	}
 

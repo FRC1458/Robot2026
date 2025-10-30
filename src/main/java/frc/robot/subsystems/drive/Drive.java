@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import java.util.Set;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -21,9 +23,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.lib.localization.FieldLayout;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
+import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 
@@ -130,6 +134,18 @@ public class Drive extends SubsystemBase {
                 .withVelocityY(yFancy * Constants.Drive.MAX_SPEED)
                 .withRotationalRate(rotFancy * Constants.Drive.MAX_ROTATION_SPEED);        
         }).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
+    }
+
+    public Command autoAlign(boolean left) {
+        return Commands.defer(() -> {
+            Pose2d pose;
+            if (left) {
+                pose = getPose().nearest(FieldLayout.ALIGN_POSES_LEFT);
+            } else {
+                pose = getPose().nearest(FieldLayout.ALIGN_POSES_RIGHT);
+            }
+            return new PIDToPoseCommand(pose).withName("Auto Align");
+        }, Set.of(this));
     }
 
 	public void addVisionUpdate(Pose2d pose, Time timestamp) {

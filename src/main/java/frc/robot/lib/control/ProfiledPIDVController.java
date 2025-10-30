@@ -19,7 +19,8 @@ public class ProfiledPIDVController {
     private TrapezoidProfile.State goal = new TrapezoidProfile.State();
     private TrapezoidProfile.State setpoint = new TrapezoidProfile.State();
 
-    private Pair<Double, Double> measurement = new Pair<>(0.0, 0.0);
+    private double positionMeasurement = 0.0;
+    private double velocityMeasurement = 0.0;
     private double feedforward = 0.0;
     private double integral = 0.0;
 
@@ -60,22 +61,23 @@ public class ProfiledPIDVController {
     }
 
     /** Sets the current position and velocity measurement. */
-    public void setInput(Pair<Double, Double> input) {
-        this.measurement = input;
+    public void setInput(double positionMeasurement, double velocityMeasurement) {
+        this.positionMeasurement = positionMeasurement;
+        this.velocityMeasurement = velocityMeasurement;
     }
 
     /** Sets the goal position for the profile (end velocity = 0). */
-    public void setTarget(Double target) {
+    public void setTarget(double target) {
         this.goal = new TrapezoidProfile.State(target, 0.0);
     }
 
     /** Sets the goal with both position and end velocity. */
-    public void setTarget(Double position, Double velocity) {
+    public void setTarget(double position, double velocity) {
         this.goal = new TrapezoidProfile.State(position, velocity);
     }
 
     /** Sets the feedforward value. */
-    public void setFeedforward(Double feedforward) {
+    public void setFeedforward(double feedforward) {
         this.feedforward = feedforward;
     }
 
@@ -83,7 +85,7 @@ public class ProfiledPIDVController {
      * Computes the controller output using the current profile and measurements.
      * @return Control output (PID + feedforward).
      */
-    public Double getOutput() {
+    public double getOutput() {
         double dt = timer.get();
         timer.reset();
         if (dt <= 0.0) {
@@ -92,19 +94,16 @@ public class ProfiledPIDVController {
 
         setpoint = profile.calculate(dt, goal, setpoint);
 
-        double position = measurement.getFirst();
-        double velocity = measurement.getSecond();
-
         double targetPosition = setpoint.position;
         double targetVelocity = setpoint.velocity;
 
         error = isContinuous
-            ? MathUtil.inputModulus(targetPosition - position, -(maxRange - minRange) / 2.0, (maxRange - minRange) / 2.0)
-            : targetPosition - position;
+            ? MathUtil.inputModulus(targetPosition - positionMeasurement, -(maxRange - minRange) / 2.0, (maxRange - minRange) / 2.0)
+            : targetPosition - positionMeasurement;
 
         integral += error * dt;
 
-        double derivative = targetVelocity - velocity;
+        double derivative = targetVelocity - velocityMeasurement;
 
         return constants.kP * error
             + constants.kI * integral
@@ -122,7 +121,7 @@ public class ProfiledPIDVController {
         integral = 0.0;
         feedforward = 0.0;
         error = 0.0;
-        setpoint = new TrapezoidProfile.State(measurement.getFirst(), measurement.getSecond());
+        setpoint = new TrapezoidProfile.State(positionMeasurement, velocityMeasurement);
         timer.reset();
         timer.start();
     }
