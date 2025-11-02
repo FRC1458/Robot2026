@@ -30,7 +30,7 @@ public class Led extends SubsystemBase {
         }
 
         private State state = State.SOLID;
-        private Color solidColor;
+        private Color solidColor = Color.kGreen;
         private Color[] pattern;
         private BiFunction<Integer, Double, Color> timedPatternSupplier;
         private Color[] colors;
