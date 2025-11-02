@@ -12,7 +12,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -29,7 +28,6 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
-// import frc.robot.lib.swerve.COTSTalonFXSwerveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 /**
@@ -211,14 +209,14 @@ public final class Constants {
 				"frontr",
 				new edu.wpi.first.math.geometry.Transform3d(
 					new Translation3d(0.2822, 0.1087, 0.1984),
-					new Rotation3d(0.5 * TAU, -TAU/24.0, 7.0/72.0 * TAU)),
+					new Rotation3d(0.5 * TAU, 14.0 * TAU / 360.0, -26.0 * TAU/360.0)),
 				1, 1280, 800),
 			
 			FL_CONSTANTS (
 				"frontl",
 				new edu.wpi.first.math.geometry.Transform3d(
 					new Translation3d(0.2822, -0.1087, 0.1984),
-					new Rotation3d(0.5 * TAU, TAU/24.0, 7.0/72.0 * TAU)),
+					new Rotation3d(0.5 * TAU, 14.0 * TAU / 360.0, 26.0 * TAU/360.0)),
 				2, 1280, 800);
 
 			public final String tableName;
