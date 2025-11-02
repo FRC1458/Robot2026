@@ -18,10 +18,10 @@ public class VisionDeviceManager extends SubsystemBase {
 		return visionDeviceManagerInstance;
 	}
 
-	private VisionDevice leftCamera;
+	// private VisionDevice leftCamera;
 	private VisionDevice rightCamera;
-	private VisionDevice frontCamera;
-	private VisionDevice backCamera;
+	private VisionDevice frontrCamera;
+	private VisionDevice frontlCamera;
 
 	private List<VisionDevice> cameras;
 
@@ -36,11 +36,11 @@ public class VisionDeviceManager extends SubsystemBase {
 
 	public VisionDeviceManager() {
 		// leftCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.L_CONSTANTS);
-		rightCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.R_CONSTANTS);
-		// frontCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.F_CONSTANTS);
-		// backCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.B_CONSTANTS);
-		// cameras = List.of(leftCamera, rightCamera, frontCamera, backCamera);
-		cameras = List.of(rightCamera);
+		// rightCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.R_CONSTANTS);
+		frontrCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.FR_CONSTANTS);
+		frontlCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.FL_CONSTANTS);
+		cameras = List.of(frontrCamera, frontlCamera);
+		// cameras = List.of(rightCamera);
 	}
 
 	@Override
@@ -60,30 +60,30 @@ public class VisionDeviceManager extends SubsystemBase {
 	}
 
 	public synchronized boolean isFullyConnected() {
-		return leftCamera.isConnected()
-			&& rightCamera.isConnected()
-			&& frontCamera.isConnected()
-			&& backCamera.isConnected();
+		return frontlCamera.isConnected()
+			&& frontrCamera.isConnected();
+			// && rightCamera.isConnected();
+			// && backCamera.isConnected();
 	}
 
 	public synchronized boolean inRange() {
-		return frontCamera.inSnapRange() && frontCamera.hasTarget();
+		return frontlCamera.inSnapRange() && frontrCamera.hasTarget();
 	}
 
-	public synchronized VisionDevice getLeftVision() {
-		return leftCamera;
+	// public synchronized VisionDevice getLeftVision() {
+	// 	return leftCamera;
+	// }
+
+	// public synchronized VisionDevice getRightVision() {
+	// 	return rightCamera;
+	// }
+
+	public synchronized VisionDevice getFrontRVision() {
+		return frontrCamera;
 	}
 
-	public synchronized VisionDevice getRightVision() {
-		return rightCamera;
-	}
-
-	public synchronized VisionDevice getFrontVision() {
-		return frontCamera;
-	}
-
-	public synchronized VisionDevice getBackVision() {
-		return backCamera;
+	public synchronized VisionDevice getFrontLVision() {
+		return frontlCamera;
 	}
 
 	public static double getTimestampOffset() {
