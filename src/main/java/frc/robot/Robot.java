@@ -19,6 +19,7 @@ import frc.robot.Constants.Controllers;
 import frc.robot.auto.*;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.led.Led;
 //import frc.robot.subsystems.drive.commands.TeleopCommand;
 import frc.robot.subsystems.vision.VisionDeviceManager;
@@ -51,6 +52,7 @@ public class Robot extends TimedRobot {
 
 		Drive.getInstance();
 		Led.getInstance();
+		Elevator.getInstance();
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
 		}

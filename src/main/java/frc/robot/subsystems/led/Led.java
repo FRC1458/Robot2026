@@ -33,8 +33,8 @@ public class Led extends SubsystemBase {
         private Color solidColor = Color.kGreen;
         private Color[] pattern;
         private BiFunction<Integer, Double, Color> timedPatternSupplier;
-        private Color[] colors;
-        private boolean hasUpdated = false;
+        private Color[] colors = new Color[LedConstants.ledLength];
+        private boolean hasUpdated = true;
         
         public void setSolidColor(Color color) {
             solidColor = color;

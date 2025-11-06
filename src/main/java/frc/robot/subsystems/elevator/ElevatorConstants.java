@@ -15,6 +15,7 @@ public class ElevatorConstants {
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
     public static final double GEAR_RATIO = 9;
     public static final double END_EFFECTOR_HEIGHT = 0.62; // Meters
+    public static final double MAX_SPEED = 0.5;
 
     public static enum Motors {
         LEFT(20),
@@ -48,7 +49,7 @@ public class ElevatorConstants {
                 .withKG(0.0))
             .withMotionMagic(new MotionMagicConfigs()
                 .withMotionMagicAcceleration(72.5)
-                .withMotionMagicCruiseVelocity(40.0)
+                .withMotionMagicCruiseVelocity(heightToRotations(MAX_SPEED))
                 .withMotionMagicJerk(1600.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(40.0)
