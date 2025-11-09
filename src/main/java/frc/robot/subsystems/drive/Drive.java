@@ -1,7 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import java.util.Set;
-
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -137,7 +135,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Command autoAlign(boolean left) {
-        return Commands.defer(() -> {
+        return defer(() -> {
             Pose2d pose;
             if (left) {
                 pose = getPose().nearest(FieldLayout.ALIGN_POSES_LEFT);
@@ -145,7 +143,7 @@ public class Drive extends SubsystemBase {
                 pose = getPose().nearest(FieldLayout.ALIGN_POSES_RIGHT);
             }
             return new PIDToPoseCommand(pose).withName("Auto Align to " + pose);
-        }, Set.of(this));
+        });
     }
 
 	public void addVisionUpdate(Pose2d pose, Time timestamp) {

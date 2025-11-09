@@ -1,9 +1,14 @@
 package frc.robot.subsystems.elevator;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicDutyCycle;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -25,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
@@ -50,12 +56,15 @@ public class Elevator extends SubsystemBase {
 	private MechanismLigament2d ligament;
 
 	private Elevator() {
+		super();
+		SmartDashboard.putNumber("Elevator Speed", 0);
 		leftMotor = new TalonFX(ElevatorConstants.Motors.LEFT.id);
 		rightMotor = new TalonFX(ElevatorConstants.Motors.RIGHT.id);
 		leftMotor.getConfigurator().apply(ElevatorConstants.getConfig());
 		rightMotor.getConfigurator().apply(ElevatorConstants.getConfig());
+		leftMotor.setNeutralMode(NeutralModeValue.Coast);
+		rightMotor.setNeutralMode(NeutralModeValue.Coast);
 		rightMotor.setControl(new Follower(leftMotor.getDeviceID(), true));
-		leftMotor.setNeutralMode(NeutralModeValue.Brake);
 
 		if (Robot.isSimulation()) {
 			motorSim = new DCMotorSim(
@@ -67,8 +76,7 @@ public class Elevator extends SubsystemBase {
 					motorSim.getGearbox(),
 					6.55,
 					ElevatorConstants.SPROCKET_RADIUS,
-					ElevatorConstants.GEAR_RATIO
-				),
+					ElevatorConstants.GEAR_RATIO),
 				motorSim.getGearbox(),
 				0.0,
 				2.0,
@@ -77,7 +85,7 @@ public class Elevator extends SubsystemBase {
 				0.01, 0.0);
 		}
 		mechanism = new Mechanism2d(1, 3);
-		MechanismRoot2d root = mechanism.getRoot("Elevator", 0, 0);
+		MechanismRoot2d root = mechanism.getRoot("Elevator", 0.5, 0);
 		ligament = new MechanismLigament2d("Elevator", 0, 90);
 		root.append(ligament);
 		SmartDashboard.putData("Mechanisms/Elevator", mechanism);
@@ -136,7 +144,32 @@ public class Elevator extends SubsystemBase {
 	}
 
 	public Command stop() {
-		return runOnce(() -> setRequest(new NeutralOut())).withName("Stopped");
+		return runOnce(() -> setRequest(new PositionDutyCycle(leftMotor.getPosition().getValue()))).withName("Stopped");
+	}
+
+	public Command sysId(boolean dynamic, SysIdRoutine.Direction direction) {
+		return defer(() -> {
+			VoltageOut request = new VoltageOut(0);
+			SysIdRoutine sysIdRoutine = new SysIdRoutine(
+				new SysIdRoutine.Config(
+					null, // Default ramp rate (1 V)
+					null, // Default step voltage (7 V)
+					null, // Use default timeout (10 s)
+					// Log state with SignalLogger class
+					state -> SignalLogger.writeString("SysIdElevator_State", state.toString())
+				),
+				new SysIdRoutine.Mechanism(
+					output -> request.withOutput(output),
+					null,
+					this
+				)
+			);
+			if (dynamic) {
+				return sysIdRoutine.dynamic(direction);
+			} else {
+				return sysIdRoutine.quasistatic(direction);
+			}
+		});
 	}
 
 	public boolean isNearTarget(double targetHeight) {

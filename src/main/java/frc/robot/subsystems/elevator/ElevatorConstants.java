@@ -28,10 +28,10 @@ public class ElevatorConstants {
 
     public static enum Heights {
         BASE(END_EFFECTOR_HEIGHT),
-        L1(Units.inchesToMeters(1 * 12 + 6)),
-        L2(Units.inchesToMeters(2 * 12 + 7 + 7 / 8.0)),
-        L3(Units.inchesToMeters(3 * 12 + 11 + 5 / 8.0)),
-        L4(Units.inchesToMeters(6 * 12));
+        L1(Units.inchesToMeters(1 * 12 + 6) + END_EFFECTOR_HEIGHT),
+        L2(Units.inchesToMeters(2 * 12 + 7 + 7 / 8.0) + END_EFFECTOR_HEIGHT),
+        L3(Units.inchesToMeters(3 * 12 + 11 + 5 / 8.0) + END_EFFECTOR_HEIGHT),
+        L4(Units.inchesToMeters(6 * 12) + END_EFFECTOR_HEIGHT);
         public final double height;
         private Heights(double height) {
             this.height = height;
@@ -48,12 +48,12 @@ public class ElevatorConstants {
                 .withKD(0.0)
                 .withKG(0.0))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(72.5)
-                .withMotionMagicCruiseVelocity(heightToRotations(MAX_SPEED))
-                .withMotionMagicJerk(1600.0))
+                .withMotionMagicAcceleration(16.0)
+                .withMotionMagicCruiseVelocity(heightToRotations(0.2))
+                .withMotionMagicJerk(300.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40.0)
-                .withSupplyCurrentLimit(40.0))
+                .withStatorCurrentLimit(30)
+                .withSupplyCurrentLimit(30))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));
