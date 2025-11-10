@@ -24,7 +24,7 @@ public class ControlsMapping {
 		controller.b().whileTrue(new PIDToPoseCommand(
 			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
 		controller.x().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.BASE));
-		controller.y().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L4));
+		controller.y().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L2));
 	}
 
 	public static void mapSysId() {
