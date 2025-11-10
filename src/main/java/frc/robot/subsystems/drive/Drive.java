@@ -47,8 +47,8 @@ public class Drive extends SubsystemBase {
 
     private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
 	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(Constants.Drive.MAX_SPEED);
-    // Citrus what are you doing
-	private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0);
+    @SuppressWarnings("unused") 
+    private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
 
 	private final Field2d elasticPose = new Field2d();
 
@@ -57,10 +57,6 @@ public class Drive extends SubsystemBase {
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
 		}));
-
-		if (!Robot.isReal()) {
-			// drivetrain.resetPose((new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90.0))));
-		}
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
         TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));

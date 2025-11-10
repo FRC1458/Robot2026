@@ -28,13 +28,13 @@ public class ControlsMapping {
 	}
 
 	public static void mapSysId() {
-		controller.a().onTrue(
+		controller.a().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward));
-		controller.b().onTrue(
+		controller.b().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse));
-		controller.x().onTrue(
+		controller.x().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward));
-		controller.y().onTrue(
+		controller.y().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse));
 	}
 }
