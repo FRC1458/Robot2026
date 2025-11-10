@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Led extends SubsystemBase {    
@@ -34,7 +33,7 @@ public class Led extends SubsystemBase {
         private Color solidColor = Color.kGreen;
         private Color[] pattern;
         private BiFunction<Integer, Double, Color> timedPatternSupplier;
-        private Color[] colors = new Color[LedConstants.ledLength];
+        private Color[] colors = new Color[LedConstants.LED_LENGTH];
         private boolean hasUpdated = true;
         
         public void setSolidColor(Color color) {
@@ -89,8 +88,8 @@ public class Led extends SubsystemBase {
     public Led() {
         ledNotifier = new Notifier(this::update);
         timer = new Timer();
-        led = new AddressableLED(3);
-        ledBuffer = new AddressableLEDBuffer(LedConstants.ledLength);
+        led = new AddressableLED(LedConstants.LED_PORT);
+        ledBuffer = new AddressableLEDBuffer(LedConstants.LED_LENGTH);
         led.setLength(ledBuffer.getLength());
         led.start();
         timer.start();
@@ -103,7 +102,7 @@ public class Led extends SubsystemBase {
     private void update() {
         if (colorer.state != Colorer.State.TIMED_PATTERN || colorer.hasUpdated) {
             var colors = colorer.get(timer.get());
-            for(int i = LedConstants.ledStart; i < LedConstants.ledLength; i++) {
+            for(int i = LedConstants.LED_START; i < LedConstants.LED_LENGTH; i++) {
                 ledBuffer.setLED(i, colors[i]);
             }
             led.setData(ledBuffer);
@@ -122,6 +121,18 @@ public class Led extends SubsystemBase {
         )).withName("Rainbow");
     }
 
+    public Command setRandomCommand() {
+        return defer(() -> {
+            Color[] colors = new Color[LedConstants.LED_LENGTH];
+            for (int i = 0; i < colors.length; i++) {
+                colors[i] = new Color(Math.random(), Math.random(), Math.random());
+            }
+            return runOnce(
+                () -> colorer.setPattern(
+                    colors));
+            }
+        ).withName("Random");
+    }
 
     @Override
     public void initSendable(SendableBuilder builder) {

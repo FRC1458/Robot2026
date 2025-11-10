@@ -12,15 +12,16 @@ import frc.robot.Constants;
 public class ElevatorConstants {
     public static final double EPSILON = 0.01; // Meters
 
-    public static final double SPROCKET_RADIUS = 2.225;
+    public static final double SPROCKET_RADIUS = 2.225; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double METERS_PER_ROTATION = 0.01552;
+    public static final double METERS_PER_ROTATION = 0.01552; // Approximated via measuring distance between chain centers
     public static final double END_EFFECTOR_HEIGHT = 0.58; // Meters
     public static final double CARRIAGE_WEIGHT = 6.55; // kg
 
-    public static final double MAX_SPEED = 0.5;
+    public static final double MAX_SPEED = 0.6; // m/s
 
+    /** Motor IDs */
     public static enum Motors {
         LEFT(20),
         RIGHT(21);
@@ -30,8 +31,9 @@ public class ElevatorConstants {
         }
     }
 
+    /** Heights for the end effector to score */
     public static enum Heights {
-        BASE(END_EFFECTOR_HEIGHT + 0.003),
+        BASE(END_EFFECTOR_HEIGHT + 0.003), // small offset to prevent stalling (allegedly)
         L1(END_EFFECTOR_HEIGHT + 0.003),
         L2(Units.inchesToMeters(2 * 12 + 7 + 7 / 8.0)),
         L3(Units.inchesToMeters(3 * 12 + 11 + 5 / 8.0)),
@@ -42,6 +44,7 @@ public class ElevatorConstants {
         }
     }
 
+    /** Elevator config factory */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
@@ -53,7 +56,7 @@ public class ElevatorConstants {
                 .withKG(0.3))
             .withMotionMagic(new MotionMagicConfigs()
                 .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m^2/s
-                .withMotionMagicCruiseVelocity(metersToRotations(0.6)) // 0.6 m/s
+                .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))
                 .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(30)
@@ -63,10 +66,12 @@ public class ElevatorConstants {
                 .withPeakReverseVoltage(-12.0));
     }
 
+    /** Conversion utility */
     public static double rotationsToMeters(double rotations) {
         return rotations * METERS_PER_ROTATION;
     }
     
+    /** Conversion utility */
     public static double metersToRotations(double meters) {
         return meters / METERS_PER_ROTATION;
     }
