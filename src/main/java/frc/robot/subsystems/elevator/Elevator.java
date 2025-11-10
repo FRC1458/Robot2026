@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.MotionMagicDutyCycle;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -48,7 +49,7 @@ public class Elevator extends SubsystemBase {
 	private final TalonFX rightMotor;
 
 	private double lastReadHeight;
-	private ControlRequest request;
+	private ControlRequest request = new NeutralOut();
 
 	private DCMotorSim motorSim;
 	private ElevatorSim elevatorSim;
@@ -57,13 +58,13 @@ public class Elevator extends SubsystemBase {
 
 	private Elevator() {
 		super();
-		SmartDashboard.putNumber("Elevator Speed", 0);
+		// SmartDashboard.putNumber("Elevator Speed", 0);
 		leftMotor = new TalonFX(ElevatorConstants.Motors.LEFT.id);
 		rightMotor = new TalonFX(ElevatorConstants.Motors.RIGHT.id);
 		leftMotor.getConfigurator().apply(ElevatorConstants.getConfig());
 		rightMotor.getConfigurator().apply(ElevatorConstants.getConfig());
-		leftMotor.setNeutralMode(NeutralModeValue.Coast);
-		rightMotor.setNeutralMode(NeutralModeValue.Coast);
+		leftMotor.setNeutralMode(NeutralModeValue.Brake);
+		rightMotor.setNeutralMode(NeutralModeValue.Brake);
 		rightMotor.setControl(new Follower(leftMotor.getDeviceID(), true));
 
 		if (Robot.isSimulation()) {
@@ -74,7 +75,7 @@ public class Elevator extends SubsystemBase {
 			elevatorSim = new ElevatorSim(
 				LinearSystemId.createElevatorSystem(
 					motorSim.getGearbox(),
-					6.55,
+					ElevatorConstants.CARRIAGE_WEIGHT,
 					ElevatorConstants.SPROCKET_RADIUS,
 					ElevatorConstants.GEAR_RATIO),
 				motorSim.getGearbox(),
@@ -95,7 +96,7 @@ public class Elevator extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		lastReadHeight = ElevatorConstants.rotationsToHeight(
+		lastReadHeight = ElevatorConstants.rotationsToMeters(
 			leftMotor.getPosition().getValueAsDouble()) 
 			+ ElevatorConstants.END_EFFECTOR_HEIGHT;
 		leftMotor.setControl(request);
@@ -113,8 +114,8 @@ public class Elevator extends SubsystemBase {
 		elevatorSim.setInput(motorVoltage);
 		elevatorSim.update(Constants.DT);
 
-		double mechanismPositionRot = ElevatorConstants.heightToRotations(elevatorSim.getPositionMeters());
-		double mechanismVelocityRotPerSec = ElevatorConstants.heightToRotations(elevatorSim.getVelocityMetersPerSecond());
+		double mechanismPositionRot = ElevatorConstants.metersToRotations(elevatorSim.getPositionMeters());
+		double mechanismVelocityRotPerSec = ElevatorConstants.metersToRotations(elevatorSim.getVelocityMetersPerSecond());
 
 		simState.setRawRotorPosition(mechanismPositionRot);
 		simState.setRotorVelocity(mechanismVelocityRotPerSec);
@@ -135,8 +136,8 @@ public class Elevator extends SubsystemBase {
 
 	public Command moveToTarget(double targetHeight) {
 		return runOnce(() -> setRequest(
-			new MotionMagicDutyCycle(
-				ElevatorConstants.heightToRotations(
+			new MotionMagicVoltage(
+				ElevatorConstants.metersToRotations(
 					targetHeight - ElevatorConstants.END_EFFECTOR_HEIGHT))))
 			.andThen(
 				Commands.waitUntil(() -> isNearTarget(targetHeight)))
@@ -144,7 +145,7 @@ public class Elevator extends SubsystemBase {
 	}
 
 	public Command stop() {
-		return runOnce(() -> setRequest(new PositionDutyCycle(leftMotor.getPosition().getValue()))).withName("Stopped");
+		return runOnce(() -> setRequest(new PositionVoltage(leftMotor.getPosition().getValue()))).withName("Stopped");
 	}
 
 	public Command sysId(boolean dynamic, SysIdRoutine.Direction direction) {

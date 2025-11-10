@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -95,24 +96,29 @@ public class Led extends SubsystemBase {
         timer.start();
         colorer = new Colorer();
         ledNotifier.startPeriodic(0.125);
+        setDefaultCommand(setRainbowCommand());
+        SmartDashboard.putData(this);
     }
 
     private void update() {
-        var colors = colorer.get(timer.get());
-        for(int i = LedConstants.ledStart; i < LedConstants.ledLength; i++) {
-            ledBuffer.setLED(i, colors[i]);
+        if (colorer.state != Colorer.State.TIMED_PATTERN || colorer.hasUpdated) {
+            var colors = colorer.get(timer.get());
+            for(int i = LedConstants.ledStart; i < LedConstants.ledLength; i++) {
+                ledBuffer.setLED(i, colors[i]);
+            }
+            led.setData(ledBuffer);
         }
-        led.setData(ledBuffer);
     }
 
     public Command setSolidColorCommand(Color color) {
-        return Commands.runOnce(() -> colorer.setSolidColor(color)).withName(
+        return runOnce(() -> colorer.setSolidColor(color)).withName(
             "Solid Color " + color.toString());
     }
 
     public Command setRainbowCommand() {
-        return Commands.runOnce(() -> colorer.setTimedPattern(
-            (Integer index, Double time) -> Color.fromHSV(index + time.intValue() * 10, 255, 255)
+        return runOnce(() -> colorer.setTimedPattern(
+            (Integer index, Double time) -> 
+                Color.fromHSV(index + (int) (time * 50), 255, 255)
         )).withName("Rainbow");
     }
 
