@@ -19,7 +19,6 @@ import frc.robot.Constants.Controllers;
 import frc.robot.auto.*;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
-//import frc.robot.subsystems.drive.commands.TeleopCommand;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -27,6 +26,7 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
+@SuppressWarnings("unused")
 public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	public AutoSelector autoChooser;
@@ -40,14 +40,6 @@ public class Robot extends TimedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		if (Robot.isSimulation()) {
-			// TODO: remove this
-			
-		}
-		
-		// RobotState.reset(Timer.getFPGATimestamp(), new Pose2d());
-		// RobotState.resetKalman();
-
 		Drive.getInstance();
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
