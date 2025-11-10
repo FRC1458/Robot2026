@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.control.PIDVController;
@@ -42,9 +42,9 @@ public class TrajectoryCommand extends Command {
         this(
             Drive.getInstance(), 
             trajectory, 
-            Constants.Auto.TRANSLATION_CONSTANTS, 
-            Constants.Auto.ROTATION_CONSTANTS, 
-            Constants.Auto.ACCELERATION_CONSTANT);
+            DriveConstants.TRANSLATION_CONSTANTS, 
+            DriveConstants.ROTATION_CONSTANTS, 
+            DriveConstants.ACCELERATION_CONSTANT);
     }
     
     /**
@@ -102,14 +102,14 @@ public class TrajectoryCommand extends Command {
 
         double xAccelFF = MathUtil.applyDeadband(
             targetState.accels.ax,    
-            Constants.Drive.MAX_ACCEL * 0.5);
+            DriveConstants.MAX_ACCEL * 0.5);
         double yAccelFF = MathUtil.applyDeadband(
             targetState.accels.ay,
-            Constants.Drive.MAX_ACCEL * 0.5);
+            DriveConstants.MAX_ACCEL * 0.5);
 
         double angularAccel = MathUtil.applyDeadband(
             targetState.accels.alpha,
-            Constants.Drive.MAX_ROTATION_ACCEL * 0.5);
+            DriveConstants.MAX_ROTATION_ACCEL * 0.5);
         xAccelFF += -angularAccel * targetState.pose.getRotation().getSin();
         yAccelFF += angularAccel * targetState.pose.getRotation().getCos();
 

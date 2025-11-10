@@ -14,14 +14,13 @@ import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.lib.localization.FieldLayout;
+import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
@@ -44,11 +43,9 @@ public class Drive extends SubsystemBase {
 	public SwerveRequest driveRequest = teleopRequest;
 
     private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
-	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(Constants.Drive.MAX_SPEED);
+	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(DriveConstants.MAX_SPEED);
     @SuppressWarnings("unused") 
     private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
-
-	private final Field2d elasticPose = new Field2d();
 
 	private Drive() {
 		lastReadState = drivetrain.getState();
@@ -61,6 +58,7 @@ public class Drive extends SubsystemBase {
         TelemetryManager.getInstance().addSendable(this);
 	}
 
+    /** @return the ctre generated drivetrain */
 	public CtreDrive getCtreDrive() {
 		return drivetrain;
 	}
@@ -73,8 +71,7 @@ public class Drive extends SubsystemBase {
 
 	public void outputTelemetry() {
 		telemetry.telemeterize(lastReadState);
-		elasticPose.setRobotPose(getPose());
-		SmartDashboard.putData("Elastic Field 2D", elasticPose);
+        FieldLayout.field.setRobotPose(getPose());
 	}
 
     /**
@@ -91,6 +88,9 @@ public class Drive extends SubsystemBase {
 		return lastReadState.Pose;
 	}
 
+    /** 
+     * @return the chassis speeds, field relative
+     */
     public ChassisSpeeds getFieldSpeeds() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(lastReadState.Speeds, lastReadState.Pose.getRotation());
     }
@@ -103,10 +103,14 @@ public class Drive extends SubsystemBase {
 	 	driveRequest = request;
 	}
 
+    /**
+     * @return the current swerve request
+     */
     public SwerveRequest getSwerveRequest() {
 		return driveRequest; 
 	}
 
+    /** Open loop during teleop mode */
     public Command teleopCommand() {
         return runOnce(() -> {
             teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
@@ -124,12 +128,16 @@ public class Drive extends SubsystemBase {
             SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
 
             teleopRequest
-                .withVelocityX(xFancy * Constants.Drive.MAX_SPEED)
-                .withVelocityY(yFancy * Constants.Drive.MAX_SPEED)
-                .withRotationalRate(rotFancy * Constants.Drive.MAX_ROTATION_SPEED);        
+                .withVelocityX(xFancy * DriveConstants.MAX_SPEED)
+                .withVelocityY(yFancy * DriveConstants.MAX_SPEED)
+                .withRotationalRate(rotFancy * DriveConstants.MAX_ROTATION_SPEED);        
         }).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
     }
 
+    /** 
+     * Auto aligns to the nearest reef face
+     * @param left chooses the left or right face
+     */
     public Command autoAlign(boolean left) {
         return defer(() -> {
             Pose2d pose;
@@ -142,45 +150,52 @@ public class Drive extends SubsystemBase {
         });
     }
 
+    /** Adds a vision update */
 	public void addVisionUpdate(Pose2d pose, Time timestamp) {
 		getCtreDrive().addVisionMeasurement(pose, timestamp.in(Units.Seconds));
 	}
 
+    /** Adds a vision update with standard deviations */
 	public void addVisionUpdate(Pose2d pose, Time timestamp, Matrix<N3, N1> stdDevs) {
 		getCtreDrive().addVisionMeasurement(pose, timestamp.in(Units.Seconds), stdDevs);
 	}
 
+    /** Resets pose estimator to a pose */
 	public void resetPose(Pose2d pose) {
 		getCtreDrive().resetPose(pose);
 		lastPoseResetTime =
-            Units.Seconds.of(Utils.getCurrentTimeSeconds()).plus(Constants.Drive.POSE_RESET_PREVENTION_TIME);
+            Units.Seconds.of(Utils.getCurrentTimeSeconds()).plus(DriveConstants.POSE_RESET_PREVENTION_TIME);
 	}
 
+    /** A command that resets the pose */
 	public Command resetPoseCommand(Pose2d pose) {
 		return Commands.runOnce(() -> resetPose(pose));
 	}
 
+    /** Whether the pitch is stable */
 	public boolean isPitchStable() {
 		return drivetrain.getPigeon2().getAngularVelocityYDevice().getValue().abs(Units.DegreesPerSecond)
-                < Constants.Drive.MAX_VELOCITY_STABLE
+                < DriveConstants.MAX_VELOCITY_STABLE
             && drivetrain.getPigeon2().getPitch().getValue().abs(BaseUnits.AngleUnit)
-                < Constants.Drive.MAX_PITCH_STABLE;
+                < DriveConstants.MAX_PITCH_STABLE;
 	}
 
+    /** Whether the roll is stable */
 	public boolean isRollStable() {
 		return drivetrain.getPigeon2().getAngularVelocityXDevice().getValue().abs(Units.DegreesPerSecond)
-                < Constants.Drive.MAX_VELOCITY_STABLE
+                < DriveConstants.MAX_VELOCITY_STABLE
             && drivetrain.getPigeon2().getRoll().getValue().abs(BaseUnits.AngleUnit)
-                < Constants.Drive.MAX_PITCH_STABLE;
+                < DriveConstants.MAX_PITCH_STABLE;
 	}
 
+    /** Whether the robot is stable */
 	public boolean isStable() {
 		ChassisSpeeds speeds = getState().Speeds;
 		return isPitchStable()
             && isRollStable()
             && Units.MetersPerSecond.of(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond))
-                .lte(Constants.Drive.kScoringTranslationMaxSpeed)
-            && Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(Constants.Drive.kScoringRotationMaxSpeed);
+                .lte(DriveConstants.MAX_SPEED_SCORING_TRANSLATION)
+            && Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(DriveConstants.MAX_ROTATION_SPEED_SCORING);
 	}
 
 	@Override
@@ -218,6 +233,7 @@ public class Drive extends SubsystemBase {
 		addModuleToBuilder(builder, 3);
 	}
 
+    /** Telemetrerizes a module */
 	private void addModuleToBuilder(SendableBuilder builder, int module) {
 		builder.addDoubleProperty(
             "ModuleStates/" + module + "/Drive/Volts",
