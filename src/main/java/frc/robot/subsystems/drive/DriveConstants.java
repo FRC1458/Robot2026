@@ -10,6 +10,8 @@ import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 public final class DriveConstants {		
+    public static final double EPSILON_TRANSLATION = 0.02; // 2 cm
+    public static final double EPSILON_ROTATION = Units.Degrees.of(2.0).in(Units.Radians); // 2.0 deg in rads
     // Maximums
     public static final double MAX_SPEED = 5.0;
     public static final double MAX_ACCEL = 5.0;

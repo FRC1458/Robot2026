@@ -13,6 +13,9 @@ import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 
+/**
+ * A command that moves the drivetrain to a pose.
+ */
 public class PIDToPoseCommand extends Command {
     public final Drive drive;
 
@@ -65,45 +68,54 @@ public class PIDToPoseCommand extends Command {
 
     public ChassisSpeeds calculateSpeeds() {
         if (target == null || currentPose == null || currentSpeeds == null) {
+            // Safety
             return new ChassisSpeeds();
         }
 
+        // Calculate difference
         var delta = target.getTranslation().minus(currentPose.getTranslation());
         
+        // Magnitude target
         translationController.setTarget(delta.getNorm());
 
         translationController.setInput(
-            0.0,
+            0.0, // We are exactly where we are
             Util.chassisSpeedsMagnitude(
-                currentSpeeds));
+                currentSpeeds)); // How fast we are going
         
         double vMagnitude = translationController.getOutput();
         SmartDashboard.putNumber("Debug/PIDToPoseCommand/vmag", vMagnitude);
+        
+        // The angle we are at relative to the target
         var deltaRotation = delta.getAngle();
 
+        // Theta target
         thetaController.setTarget(target.getRotation().getRadians());
+        // We are where we are and we are as fast as how fast we are going
         thetaController.setInput(
-            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
+            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond); 
 
         double rotation = thetaController.getOutput();
 
         return new ChassisSpeeds(
-            vMagnitude * deltaRotation.getCos(),
+            vMagnitude * deltaRotation.getCos(), // convert from polar to rectangular
             vMagnitude * deltaRotation.getSin(),
             rotation);
     }
 
     @Override
     public boolean isFinished() {
-        return translationController.error < 0.03 
-            && MathUtil.isNear(thetaController.error / Math.PI * 180, 0, 3.0);
+        return translationController.error < DriveConstants.EPSILON_TRANSLATION
+            && MathUtil.isNear(thetaController.error, 0, DriveConstants.EPSILON_ROTATION); // Within tolerance
     }
 
     @Override
     public void end(boolean interrupted) {
+        // Swaps out the drive request to a default robot oriented request
         drive.setSwerveRequest(new SwerveRequest.ApplyRobotSpeeds());
     }
 
+    /** Helper for retrieving the target of this PID to Pose command */
     public Pose2d getTarget() {
         return target;
     }
