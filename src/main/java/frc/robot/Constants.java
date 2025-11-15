@@ -28,6 +28,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 /**
@@ -291,10 +292,10 @@ public final class Constants {
 			}
 		}
 		public static final PathConstraints GLOBAL_CONSTRAINTS = 
-			new PathConstraints(Drive.MAX_SPEED * 0.85, 
-								Drive.MAX_ACCEL * 0.85, 
-								Drive.MAX_ROTATION_SPEED * 0.85, 
-								Drive.MAX_ROTATION_ACCEL * 0.85);
+			new PathConstraints(DriveConstants.MAX_SPEED * 0.85, 
+				DriveConstants.MAX_ACCEL * 0.85, 
+				DriveConstants.MAX_ROTATION_SPEED * 0.85, 
+				DriveConstants.MAX_ROTATION_ACCEL * 0.85);
 		public static final double GENERATION_WAIT_TIME = 5;
 	}
 }

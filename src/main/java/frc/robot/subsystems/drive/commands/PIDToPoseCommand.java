@@ -7,11 +7,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.util.Util;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 
 public class PIDToPoseCommand extends Command {
     public final Drive drive;
@@ -30,8 +30,8 @@ public class PIDToPoseCommand extends Command {
         this(
             Drive.getInstance(), 
             target,
-            Constants.Auto.PROFILED_TRANSLATION_CONSTANTS, 
-            Constants.Auto.ROTATION_CONSTANTS);
+            DriveConstants.PROFILED_TRANSLATION_CONSTANTS, 
+            DriveConstants.ROTATION_CONSTANTS);
     }
     
     public PIDToPoseCommand(Drive drive, Pose2d target, ProfiledPIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
