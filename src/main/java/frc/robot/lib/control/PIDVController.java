@@ -52,7 +52,7 @@ public class PIDVController {
         isContinuous = false;
     }
 
-    public void setInput(double positionMeasurement, double velocityMeasurement) {
+    public void setMeasurement(double positionMeasurement, double velocityMeasurement) {
         this.positionMeasurement = positionMeasurement;
         this.velocityMeasurement = velocityMeasurement;
     }

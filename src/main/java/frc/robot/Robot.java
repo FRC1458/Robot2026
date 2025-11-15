@@ -25,7 +25,7 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
 @SuppressWarnings("unused")
 public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
-	public AutoSelector autoChooser;
+	private AutoSelector autoChooser;
 	private Command autoCommand;
 
 	public static final CommandXboxController controller =
@@ -83,8 +83,6 @@ public class Robot extends TimedRobot {
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
-		// RobotState.setAlliance(DriverStation.getAlliance());
-		// RobotState.setAlliance(DriverStation.getAlliance());
 		autoCommand = autoChooser.getAuto();
 
 		if (autoCommand != null) {
