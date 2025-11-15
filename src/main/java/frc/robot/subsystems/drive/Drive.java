@@ -55,10 +55,6 @@ public class Drive extends SubsystemBase {
 			return driveRequest;
 		}));
 
-		if (!Robot.isReal()) {
-			// drivetrain.resetPose((new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90.0))));
-		}
-
 		drivetrain.getOdometryThread().setThreadPriority(31);
         TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
         TelemetryManager.getInstance().addSendable(this);

@@ -19,7 +19,7 @@ public class VisionDeviceManager extends SubsystemBase {
 	}
 
 	// private VisionDevice leftCamera;
-	private VisionDevice rightCamera;
+	// private VisionDevice rightCamera;
 	private VisionDevice frontrCamera;
 	private VisionDevice frontlCamera;
 

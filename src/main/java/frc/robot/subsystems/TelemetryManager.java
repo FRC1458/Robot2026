@@ -30,7 +30,6 @@ public class TelemetryManager extends SubsystemBase {
         }
     }
 
-
     private final ArrayList<StructPublisherEntry<?>> structPublishers;
 
     public static record StructPublisherEntry<T> (

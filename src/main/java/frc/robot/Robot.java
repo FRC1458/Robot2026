@@ -40,14 +40,10 @@ public class Robot extends TimedRobot {
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
 		}
-		if (Robot.isReal()) {
-			VisionDeviceManager.getInstance();
-		}
+
 		TelemetryManager.getInstance();
 
-		FollowPathCommand.warmupCommand().schedule();;
-
-		FollowPathCommand.warmupCommand().schedule();;
+		FollowPathCommand.warmupCommand().schedule();
 
 		autoChooser = new AutoSelector();
 	}

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Command;
  * A class to select autos
  */
 public class AutoSelector {
-
     @Retention(RetentionPolicy.RUNTIME) 
     @Target(ElementType.METHOD)
     public static @interface Auto {
