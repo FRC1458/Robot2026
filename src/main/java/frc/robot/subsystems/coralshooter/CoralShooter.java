@@ -1,130 +1,181 @@
-/*
-package frc.robot.subsystems;
+package frc.robot.subsystems.coralshooter;
 
-import java.time.Period;
-import java.util.zip.Checksum;
-
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.units.measure.Per;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import frc.robot.Loops.ILooper;
-import frc.robot.Loops.Loop;
-import frc.robot.subsystems.SwerveDrive.PeriodicIO;
-//both shooter and intake for coral
-public class CoralShooter extends Subsystem {
 
-	private static CoralShooter mInstance;
-	
-	private PeriodicIO mPeriodicIO = new PeriodicIO();
+import au.grapplerobotics.LaserCan;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.TelemetryManager;
 
+public class CoralShooter extends SubsystemBase {
+    private static CoralShooter coralShooterInstance;
 	public static CoralShooter getInstance() {
-		if (mInstance == null) {
-		mInstance = new CoralShooter();
+		if (coralShooterInstance == null) {
+			coralShooterInstance = new CoralShooter();
 		}
-		return mInstance;
+		return coralShooterInstance;
 	}
 
-	private class PeriodicIO {
-		double speed = 0.0;
-		ShooterState state = ShooterState.INTAKE;
-		boolean isShooting = false;
-	} 
-	
-	private enum ShooterState {
-		INTAKE,
-		SHOOT,
-		STOP
+    private final TalonFX leftMotor;
+	private final TalonFX rightMotor;
+
+    private final LaserCan intakeLaser;
+    private final LaserCan shooterLaser;
+
+	private double lastReadSpeed;
+	private ControlRequest request = new NeutralOut();
+
+    private CoralShooter() {
+        super();
+
+        leftMotor = new TalonFX(CoralShooterConstants.Motors.LEFT.id);
+		rightMotor = new TalonFX(CoralShooterConstants.Motors.RIGHT.id);
+
+        intakeLaser = new LaserCan(CoralShooterConstants.Lasers.BACK.id);
+        shooterLaser = new LaserCan(CoralShooterConstants.Lasers.FRONT.id);;
+
+		leftMotor.getConfigurator().apply(CoralShooterConstants.getConfig());
+		rightMotor.getConfigurator().apply(CoralShooterConstants.getConfig());
+		leftMotor.setNeutralMode(NeutralModeValue.Brake);
+		rightMotor.setNeutralMode(NeutralModeValue.Brake);
+		rightMotor.setControl(
+			new Follower(leftMotor.getDeviceID(), true));
+        
+		TelemetryManager.getInstance().addSendable(this);
+		setDefaultCommand(stop());
+    }
+
+    @Override
+    public void periodic() {
+        lastReadSpeed = leftMotor.getVelocity().getValueAsDouble();
+        leftMotor.setControl(request);
+    }
+
+    private void setRequest(ControlRequest request) {
+        this.request = request;
+    }
+
+    public Command stop() {
+        return runOnce(() -> setRequest(new NeutralOut())).withName("Stopped");
+    }
+
+    public double getMeasurementIntake() {
+        return intakeLaser.getMeasurement().distance_mm;
+    }
+
+    public double getMeasurementShooter() {
+        return shooterLaser.getMeasurement().distance_mm;
+    }
+
+    public boolean inRangeIntake() {
+        return getMeasurementIntake() < 100;
+    }
+
+    public boolean inRangeShooter() {
+        return getMeasurementShooter() < 100;
+    }
+
+    public boolean isCoralObstructingElevator() {
+        return inRangeIntake();
+    }
+
+    public Command intake() {
+        return runOnce(
+            () -> setRequest(
+                new VelocityVoltage(CoralShooterConstants.MAX_SPEED)))
+            .andThen(Commands.waitUntil(() -> !inRangeIntake())).withName("Intaking");
+    }
+
+    public Command shoot() {
+        return runOnce(() -> setRequest(
+            new VelocityVoltage(CoralShooterConstants.MAX_SPEED)))
+        .andThen(Commands.waitUntil(() -> !inRangeShooter())).withName("Shooting");
+    }
+
+    @Override
+	public void initSendable(SendableBuilder builder) {
+		super.initSendable(builder);
+		builder.addDoubleProperty(
+			"Speed",
+			() -> lastReadSpeed,
+			null);
+		builder.addDoubleProperty(
+            "Left/Volts",
+            () -> leftMotor
+                .getMotorVoltage()
+                .getValue()
+                .in(Units.Volts),
+            null);
+		builder.addDoubleProperty(
+            "Left/Stator Current",
+            () -> leftMotor
+                .getStatorCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+		builder.addDoubleProperty(
+            "Left/Temperature Celsius",
+            () -> leftMotor
+                .getDeviceTemp()
+                .getValue()
+                .in(Units.Celsius),
+            null);
+		builder.addDoubleProperty(
+            "Left/Supply Current",
+            () -> leftMotor
+                .getSupplyCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+		builder.addDoubleProperty(
+            "Left/Temperature Celsius",
+            () -> leftMotor
+                .getDeviceTemp()
+                .getValue()
+                .in(Units.Celsius),
+            null);
+		builder.addDoubleProperty(
+			"Right/Volts",
+			() -> rightMotor
+				.getMotorVoltage()
+				.getValue()
+				.in(Units.Volts),
+			null);
+		builder.addDoubleProperty(
+			"Right/Stator Current",
+			() -> rightMotor
+				.getStatorCurrent()
+				.getValue()
+				.in(Units.Amps),
+			null);
+		builder.addDoubleProperty(
+			"Right/Temperature Celsius",
+			() -> rightMotor
+				.getDeviceTemp()
+				.getValue()
+				.in(Units.Celsius),
+			null);
+		builder.addDoubleProperty(
+			"Right/Supply Current",
+			() -> rightMotor
+				.getSupplyCurrent()
+				.getValue()
+				.in(Units.Amps),
+			null);
+		builder.addDoubleProperty(
+			"Right/Temperature Celsius",
+			() -> rightMotor
+				.getDeviceTemp()
+				.getValue()
+				.in(Units.Celsius),
+			null);
 	}
-
-	private TalonFX mLeftShooterMotor;
-	private TalonFX mRightShooterMotor;
-
-	private CoralShooter() {
-		//super("Shooter");
-		mLeftShooterMotor = new TalonFX(Constants.CoralShooter.kShooterLeftMotorId);
-		mRightShooterMotor = new TalonFX(Constants.CoralShooter.kShooterRightMotorId); //LEADER
-		mRightShooterMotor.setControl(new Follower(mLeftShooterMotor.getDeviceID(), true));
-		mLeftShooterMotor.setNeutralMode(NeutralModeValue.Brake);
-		mRightShooterMotor.setNeutralMode(NeutralModeValue.Brake);
-	}
-
-
-	@Override
-	public void registerEnabledLoops(ILooper enabledLooper) {
-		enabledLooper.register(new Loop() {
-			@Override
-			public void onStart(double timestamp) {}
-
-			@Override
-			public void onLoop(double timestamp) {
-///* dc.2.10.25, commented out to compile so that we can merge GIT
-				switch (mPeriodicIO.state) {
-					case INTAKE:
-						if (Laser.inRangeIntake()) {
-							spin();
-						} else {
-							stop();
-						}
-						break;
-					case SHOOT:
-						if (Laser.inRangeShooter()) {
-							spinFast();
-						} else {
-							intake();
-						}
-						break;
-					default:
-						System.err.println("coral shooter state corruption happened?");
-						break;
-				}
-
-			}
-
-			@Override
-			public void onStop(double timestamp) {
-				stop();
-			}
-		});
-	}
-
-	@Override
-	public void writePeriodicOutputs() {
-		mLeftShooterMotor.set(mPeriodicIO.speed);
-	}
-
-	@Override
-	public void outputTelemetry() {
-
-	}
-
-
-
-	public void intake() {
-		mPeriodicIO.state = ShooterState.INTAKE;
-	}
-
-	public void shoot() {
-		mPeriodicIO.state = ShooterState.SHOOT;
-	}
-
-	public void spin() {
-		mPeriodicIO.speed = Constants.CoralShooter.kShooterIntakeSpeed; //Constants.Shooter.kShooterSpeed;
-	}
-
-	public void spinFast() {
-		mPeriodicIO.speed = Constants.CoralShooter.kShooterShootSpeed;
-	}
-	
-	@Override
-	public void stop() {
-		mPeriodicIO.speed = 0.0;
-	}
-  
 }
-*/
