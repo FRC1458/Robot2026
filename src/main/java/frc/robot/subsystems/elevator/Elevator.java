@@ -201,7 +201,6 @@ public class Elevator extends SubsystemBase {
 			"Height",
 			() -> lastReadHeight,
 			null);
-
 		builder.addDoubleProperty(
             "Left/Volts",
             () -> leftMotor
@@ -209,7 +208,6 @@ public class Elevator extends SubsystemBase {
                 .getValue()
                 .in(Units.Volts),
             null);
-
 		builder.addDoubleProperty(
             "Left/Stator Current",
             () -> leftMotor
@@ -217,7 +215,6 @@ public class Elevator extends SubsystemBase {
                 .getValue()
                 .in(Units.Amps),
             null);
-
 		builder.addDoubleProperty(
             "Left/Temperature Celsius",
             () -> leftMotor
@@ -225,7 +222,6 @@ public class Elevator extends SubsystemBase {
                 .getValue()
                 .in(Units.Celsius),
             null);
-
 		builder.addDoubleProperty(
             "Left/Supply Current",
             () -> leftMotor
@@ -233,7 +229,6 @@ public class Elevator extends SubsystemBase {
                 .getValue()
                 .in(Units.Amps),
             null);
-
 		builder.addDoubleProperty(
             "Left/Temperature Celsius",
             () -> leftMotor
@@ -241,7 +236,6 @@ public class Elevator extends SubsystemBase {
                 .getValue()
                 .in(Units.Celsius),
             null);
-
 		builder.addDoubleProperty(
 			"Right/Volts",
 			() -> rightMotor
@@ -249,7 +243,6 @@ public class Elevator extends SubsystemBase {
 				.getValue()
 				.in(Units.Volts),
 			null);
-
 		builder.addDoubleProperty(
 			"Right/Stator Current",
 			() -> rightMotor
@@ -257,7 +250,6 @@ public class Elevator extends SubsystemBase {
 				.getValue()
 				.in(Units.Amps),
 			null);
-
 		builder.addDoubleProperty(
 			"Right/Temperature Celsius",
 			() -> rightMotor
@@ -265,7 +257,6 @@ public class Elevator extends SubsystemBase {
 				.getValue()
 				.in(Units.Celsius),
 			null);
-
 		builder.addDoubleProperty(
 			"Right/Supply Current",
 			() -> rightMotor
@@ -273,7 +264,6 @@ public class Elevator extends SubsystemBase {
 				.getValue()
 				.in(Units.Amps),
 			null);
-
 		builder.addDoubleProperty(
 			"Right/Temperature Celsius",
 			() -> rightMotor

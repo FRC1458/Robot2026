@@ -12,7 +12,7 @@ import frc.robot.Constants;
 public class ElevatorConstants {
     public static final double EPSILON = 0.01; // Meters
 
-    public static final double SPROCKET_RADIUS = 2.225; // Effective pitch radius
+    public static final double SPROCKET_RADIUS = 0.02225; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
     public static final double METERS_PER_ROTATION = 0.01552; // Approximated via measuring distance between chain centers
@@ -55,7 +55,7 @@ public class ElevatorConstants {
                 .withKD(0.05)
                 .withKG(0.3))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m^2/s
+                .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m/s^2
                 .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))
                 .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
