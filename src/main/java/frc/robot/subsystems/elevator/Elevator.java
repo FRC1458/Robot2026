@@ -16,6 +16,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,6 +34,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.coralshooter.CoralShooter;
+import frc.robot.subsystems.led.Led;
 
 public class Elevator extends SubsystemBase {
 	private static Elevator elevatorInstance;
@@ -139,11 +143,28 @@ public class Elevator extends SubsystemBase {
 
 	/** Moves to a known scoring height */
 	public Command moveToScoringHeight(ElevatorConstants.Heights height) {
+		return defer(() -> {
+			if (!CoralShooter.getInstance().isCoralObstructingElevator()) {
+				return moveToScoringHeightUnsafe(height);
+			} else {
+				DriverStation.reportWarning(
+					"Tried to move elevator while a coral is obstructing",
+					 null);
+				return Commands.parallel(stop(), Led.getInstance().setSolidColorCommand(Color.kRed));
+			}
+		});
+	}
+
+	/** 
+	 * Moves to a known scoring height 
+	 * <p> is not safe </p>
+	*/
+	private Command moveToScoringHeightUnsafe(ElevatorConstants.Heights height) {
 		return moveToTarget(height.height).withName("Moving to height: " + height.name());
 	}
 
 	/** Attempts to move the end effector to a height, in meters */
-	public Command moveToTarget(double targetHeight) {
+	private Command moveToTarget(double targetHeight) {
 		return runOnce(() -> setRequest(
 			new MotionMagicVoltage(
 				ElevatorConstants.metersToRotations(
@@ -155,7 +176,10 @@ public class Elevator extends SubsystemBase {
 
 	/** Stops the elevator */
 	public Command stop() {
-		return runOnce(() -> setRequest(new PositionVoltage(leftMotor.getPosition().getValue()))).withName("Stopped");
+		return runOnce(
+			() -> setRequest(
+				new PositionVoltage(leftMotor.getPosition().getValue())))
+			.withName("Stopped");
 	}
 
 	/** Sysid commands
