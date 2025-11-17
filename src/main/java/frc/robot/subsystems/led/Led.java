@@ -95,7 +95,6 @@ public class Led extends SubsystemBase {
         timer.start();
         colorer = new Colorer();
         ledNotifier.startPeriodic(0.125);
-        setDefaultCommand(setRainbowCommand());
         SmartDashboard.putData(this);
     }
 
@@ -110,15 +109,15 @@ public class Led extends SubsystemBase {
     }
 
     public Command setSolidColorCommand(Color color) {
-        return runOnce(() -> colorer.setSolidColor(color)).withName(
-            "Solid Color " + color.toString());
+        return runOnce(() -> colorer.setSolidColor(color)).ignoringDisable(true)
+            .withName("Solid Color " + color.toString());
     }
 
     public Command setRainbowCommand() {
         return runOnce(() -> colorer.setTimedPattern(
             (Integer index, Double time) -> 
                 Color.fromHSV(index + (int) (time * 50), 255, 255)
-        )).withName("Rainbow");
+        )).ignoringDisable(true).withName("Rainbow");
     }
 
     public Command setRandomCommand() {
@@ -131,7 +130,7 @@ public class Led extends SubsystemBase {
                 () -> colorer.setPattern(
                     colors));
             }
-        ).withName("Random");
+        ).ignoringDisable(true).withName("Random");
     }
 
     @Override

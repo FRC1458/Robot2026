@@ -15,8 +15,8 @@ public class ElevatorConstants {
     public static final double SPROCKET_RADIUS = 0.02225; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double METERS_PER_ROTATION = 0.01552; // Approximated via measuring distance between chain centers
-    public static final double END_EFFECTOR_HEIGHT = 0.58; // Meters
+    public static final double METERS_PER_ROTATION = 0.028776; // Approximated via measuring distance between chain centers
+    public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters
     public static final double CARRIAGE_WEIGHT = 6.55; // kg
 
     public static final double MAX_SPEED = 0.6; // m/s
@@ -37,7 +37,7 @@ public class ElevatorConstants {
         L1(END_EFFECTOR_HEIGHT + 0.003),
         L2(Units.inchesToMeters(2 * 12 + 7 + 7 / 8.0)),
         L3(Units.inchesToMeters(3 * 12 + 11 + 5 / 8.0)),
-        L4(Units.inchesToMeters(6 * 12));
+        L4(Units.inchesToMeters(6 * 12) - 0.05);
         public final double height;
         private Heights(double height) {
             this.height = height;
@@ -53,7 +53,7 @@ public class ElevatorConstants {
                 .withKP(1.0)
                 .withKI(0.0)
                 .withKD(0.05)
-                .withKG(0.3))
+                .withKG(0.375))
             .withMotionMagic(new MotionMagicConfigs()
                 .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m/s^2
                 .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))

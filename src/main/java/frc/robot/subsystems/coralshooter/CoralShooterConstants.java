@@ -6,7 +6,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
 public class CoralShooterConstants {
-    public static final double MAX_SPEED = 1; // rotations per second
+    public static final double INTAKE_SPEED = 5; // rotations per second
+    public static final double SHOOT_SPEED = 25; // rotations per second
 
     public static enum Motors {
         LEFT(12),
@@ -29,12 +30,10 @@ public class CoralShooterConstants {
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
-                .withKS(0.125)
                 .withKV(0.0)
-                .withKP(1.0)
+                .withKP(0.3)
                 .withKI(0.0)
-                .withKD(0.05)
-                .withKG(0.3))
+                .withKD(0.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(30)
                 .withSupplyCurrentLimit(30))

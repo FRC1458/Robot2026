@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -149,10 +150,13 @@ public class Elevator extends SubsystemBase {
 			} else {
 				DriverStation.reportWarning(
 					"Tried to move elevator while a coral is obstructing",
-					 null);
-				return Commands.parallel(stop(), Led.getInstance().setSolidColorCommand(Color.kRed));
+					false);
+				return Commands.parallel(
+					stop(), 
+					Led.getInstance().setSolidColorCommand(Color.kRed)
+						.andThen(Commands.waitSeconds(0.5)));
 			}
-		});
+		}).withName("(Safe) Moving to height: " + height.name());
 	}
 
 	/** 
@@ -221,6 +225,10 @@ public class Elevator extends SubsystemBase {
 	@Override
 	public void initSendable(SendableBuilder builder) {
 		super.initSendable(builder);
+		builder.addDoubleProperty(
+			"Rotations",
+			() -> leftMotor.getPosition().getValueAsDouble(),
+			null);
 		builder.addDoubleProperty(
 			"Height",
 			() -> lastReadHeight,

@@ -5,6 +5,7 @@ import static frc.robot.Robot.controller;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 //import frc.robot.subsystems.drive.commands.TeleopCommand;
@@ -18,13 +19,17 @@ public class ControlsMapping {
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.b().whileTrue(new PIDToPoseCommand(
-			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
-		controller.x().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.BASE));
-		controller.y().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L2));
+		controller.leftTrigger(0.5).onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.b().whileTrue(new PIDToPoseCommand(
+		// 	new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
+		controller.a().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.BASE));
+		controller.x().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L2));
+		controller.b().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L3));
+		controller.y().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L4));
+		controller.leftBumper().onTrue(CoralShooter.getInstance().intake());
+		controller.rightBumper().onTrue(CoralShooter.getInstance().shoot());
 	}
 
 	public static void mapSysId() {

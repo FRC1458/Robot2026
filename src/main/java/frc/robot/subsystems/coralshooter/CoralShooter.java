@@ -50,7 +50,7 @@ public class CoralShooter extends SubsystemBase {
 			new Follower(leftMotor.getDeviceID(), true));
         
 		TelemetryManager.getInstance().addSendable(this);
-		setDefaultCommand(stop());
+		setDefaultCommand(listenAndIntake());
     }
 
     @Override
@@ -87,17 +87,25 @@ public class CoralShooter extends SubsystemBase {
         return inRangeIntake();
     }
 
+    public Command listenAndIntake() {
+        return Commands.repeatingSequence(
+            stop(),
+            Commands.waitUntil(() -> inRangeIntake()),
+            intake()
+        ).withName("Listening and Intaking");
+    }
+
     public Command intake() {
         return runOnce(
             () -> setRequest(
-                new VelocityVoltage(CoralShooterConstants.MAX_SPEED)))
+                new VelocityVoltage(CoralShooterConstants.INTAKE_SPEED)))
             .andThen(Commands.waitUntil(() -> !inRangeIntake())).withName("Intaking");
     }
 
     public Command shoot() {
         return runOnce(() -> setRequest(
-            new VelocityVoltage(CoralShooterConstants.MAX_SPEED)))
-        .andThen(Commands.waitUntil(() -> !inRangeShooter())).withName("Shooting");
+            new VelocityVoltage(CoralShooterConstants.SHOOT_SPEED)))
+        .andThen(Commands.waitUntil(() -> !inRangeShooter()), Commands.waitSeconds(0.15)).withName("Shooting");
     }
 
     @Override
