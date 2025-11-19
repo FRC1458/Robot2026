@@ -1,181 +1,177 @@
-/*package frc.robot.subsystems;
+package frc.robot.subsystems.algaearm;
 
-import java.lang.constant.DirectMethodHandleDesc;
-
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import frc.robot.Loops.ILooper;
-import frc.robot.Loops.Loop;
-
+import com.ctre.phoenix6.controls.MotionMagicDutyCycle;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.wpilibj.DigitalInput;
-import frc.robot.subsystems.DigitalSensor;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
-public class AlgaeShooter extends Subsystem {
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.subsystems.TelemetryManager;
 
-    private static AlgaeShooter mInstance = null;
-    private PeriodicIO mPeriodicIO;
-
-    // private static final double kPivotCLRampRate = 0.5;
-    // private static final double kCLRampRate = 0.5;
-
-    public static AlgaeShooter getInstance() {
-        if (mInstance == null) {
-            mInstance = new AlgaeShooter();
-        }
-        return mInstance;
-    }
-
-    private TalonFX mPivotMotor;
-
-
-    private MotionMagicVoltage m_request;
-    private boolean mSafeStop = true;
-    private DigitalInput sensor;
-
-
-
-    private AlgaeShooter() {
-        mPeriodicIO = new PeriodicIO();
-
-        mPivotMotor = new TalonFX(Constants.AlgaeShooter.kAlgaePivotMotorId); // MASTER
-        
-
-        var talonFXConfigs = new TalonFXConfiguration();
-
-        sensor = new DigitalInput(3);
-
-        var slot0Configs = talonFXConfigs.Slot0;
-        slot0Configs.kS = Constants.AlgaeShooter.kS; // Add 0.0 V output to overcome static friction
-        slot0Configs.kV = Constants.AlgaeShooter.kV; // A velocity target of 1 rps results in 0.0 V output
-        slot0Configs.kP = Constants.AlgaeShooter.kP; // An error of 1 rotation results in 0.4 V output
-        slot0Configs.kI = Constants.AlgaeShooter.kI; // no output for integrated error
-        slot0Configs.kD = Constants.AlgaeShooter.kD; // A velocity of 1 rps results in 0.0 V output
-
-        var motionMagicConfigs = talonFXConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = Constants.AlgaeShooter.kCruiseVelocity; // Target cruise velocity of 80 rps
-        motionMagicConfigs.MotionMagicAcceleration = Constants.AlgaeShooter.kAcceleration; // Target acceleration of 240 rps/s (0.5 seconds)
-        motionMagicConfigs.MotionMagicJerk = Constants.AlgaeShooter.kJerk;
-
-        mPivotMotor.getConfigurator().apply(talonFXConfigs);
-
-//        mPivotMotor.setControl(new DutyCycleOut(mPivotMotor.getDutyCycle().getValue()));//dc.3.15.25, why is this here? it could cause bugs
-
-        m_request = new MotionMagicVoltage(0);
-    }
-
-    private static class PeriodicIO {
-        double pivot_target = 0.0;
-        double des_shooter_speed = 0.0;
-        String state = "Resting";
-        double mCurrentPos = 0.0;//current encoder reading 
-    }
-
-
-	@Override
-	public void registerEnabledLoops(ILooper enabledLooper) {
-		enabledLooper.register(new Loop() {
-			@Override
-			public void onStart(double timestamp) {}
-
-			@Override
-			public void onLoop(double timestamp) {
-        
-			}
-
-			@Override
-			public void onStop(double timestamp) {
-				stop();
-			}
-		});
+public class AlgaeArm extends SubsystemBase {
+	private static AlgaeArm AlgaeArmInstance;
+	public static AlgaeArm getInstance() {
+		if (AlgaeArmInstance == null) {
+			AlgaeArmInstance = new AlgaeArm();
+		}
+		return AlgaeArmInstance;
 	}
 
-    @Override
-    public void readPeriodicInputs() {
-        //if ()
-        mPeriodicIO.mCurrentPos = mPivotMotor.getPosition().getValueAsDouble(); //update pivot current position
-    }
+	private final TalonFX pivotMotor;
 
+	private ControlRequest request;
 
-    @Override
-    public void writePeriodicOutputs() {
-            goToTarget();
-    }
+    private double lastReadHeight;
 
-    @Override
-    public void stop() {
-        mPeriodicIO.pivot_target = mPivotMotor.getPosition().getValueAsDouble();
-    }
+	//private DCMotorSim motorSim;
+	//private AlgaeArmSim algaeArmSim; we need to make sim
+	private Mechanism2d mechanism;
+	private MechanismLigament2d ligament;
 
-    @Override
-    public void outputTelemetry() {
-        SmartDashboard.putNumber("Position/Target", mPeriodicIO.pivot_target);
-    }
+	private AlgaeArm() {
+		pivotMotor = new TalonFX(AlgaeArmConstants.Motors.PIVOT_MOTOR.id);
+		pivotMotor.getConfigurator().apply(AlgaeArmConstants.getConfig());
+		pivotMotor.setControl(new Follower(pivotMotor.getDeviceID(), true));
+		pivotMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    public void resetRot(double pos) {
-        mPivotMotor.setPosition(pos);
-    }
+		mechanism = new Mechanism2d(1, 3);
+		MechanismRoot2d root = mechanism.getRoot("AlgaeArm", 0, 0);
+		ligament = new MechanismLigament2d("AlgaeArm", 0, 90);
+		root.append(ligament);
+		SmartDashboard.putData("Mechanisms/AlgaeArm", mechanism);
+		TelemetryManager.getInstance().addSendable(this);
+		setDefaultCommand(stop());
+	}
 
+	@Override
+	public void periodic() {
 
-    public void runPivotRaw(double speed) {
-        mPivotMotor.set(speed);
-    }
+		lastReadHeight = AlgaeArmConstants.rotationsToHeight(
+			pivotMotor.getPosition().getValueAsDouble()) 
+			+ AlgaeArmConstants.END_EFFECTOR_HEIGHT;
+		pivotMotor.setControl(request);
+		if (Robot.isReal()) {
+			ligament.setLength(lastReadHeight - AlgaeArmConstants.END_EFFECTOR_HEIGHT);
+		}
+	}
+/* code from elevator to be fitted with AlgaeArm
+	@Override
+	public void simulationPeriodic() {
+		TalonFXSimState simState = leftMotor.getSimState();
+		simState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    public synchronized void setTarget(String targ) {
-        mSafeStop = false;
-        String prevString = targ;
-        mPeriodicIO.state = targ;
-        switch (targ) {
-            case "Resting":
-                mPeriodicIO.pivot_target = Constants.AlgaeShooter.kRestingPosition;
-                break;
-            case "Intake":
-                mPeriodicIO.pivot_target = Constants.AlgaeShooter.kIntakePosition;
-                break;
-            case "Barge":
-                mPeriodicIO.pivot_target = Constants.AlgaeShooter.kBargePosition;
-                break;
-            case "Processor":
-                mPeriodicIO.pivot_target = Constants.AlgaeShooter.kProcessorPosition;
-                break;
-            case "Ground":
-                mPeriodicIO.pivot_target = Constants.AlgaeShooter.kGroundPosition;
-                break;
-            default:
-                mPeriodicIO.state = prevString;
-                break;
-        }
-        
-    }
+		double motorVoltage = simState.getMotorVoltageMeasure().in(Units.Volts);
+		elevatorSim.setInput(motorVoltage);
+		elevatorSim.update(Constants.DT);
 
+		double mechanismPositionRot = ElevatorConstants.heightToRotations(elevatorSim.getPositionMeters());
+		double mechanismVelocityRotPerSec = ElevatorConstants.heightToRotations(elevatorSim.getVelocityMetersPerSecond());
 
-    private void goToTarget() {
-        mPivotMotor.setControl(m_request.withPosition(mPeriodicIO.pivot_target));
-    }
+		simState.setRawRotorPosition(mechanismPositionRot);
+		simState.setRotorVelocity(mechanismVelocityRotPerSec);
 
-    public synchronized boolean isAtTarget() {
-        return Math.abs(mPeriodicIO.mCurrentPos - mPeriodicIO.pivot_target) < 0.5; //TODO: tune magic number in constants
-    }
+		RoboRioSim.setVInVoltage(
+			BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
 
-    public void shoot() {
-        mPeriodicIO.des_shooter_speed = Constants.AlgaeShooter.kAlgaeShooterSpeed;
-    }
+		ligament.setLength(elevatorSim.getPositionMeters());
+	}*/
 
-    public void intake() {
-        mPeriodicIO.des_shooter_speed = -Constants.AlgaeShooter.kAlgaeShooterSpeed;
-    }
+	private void setRequest(ControlRequest request) {
+		this.request = request;
+	}
 
-    public void stopAlgaeShooter() {
-        mPeriodicIO.des_shooter_speed = 0.0;
-    }
+	public Command moveToScoringHeight(AlgaeArmConstants.Heights height) {
+		return moveToTarget(height.height).withName("Moving to height: " + height.name());
+	}
+
+	public Command moveToTarget(double targetHeight) {
+		return runOnce(() -> setRequest(
+			new MotionMagicDutyCycle(
+				AlgaeArmConstants.heightToRotations(
+					targetHeight - AlgaeArmConstants.END_EFFECTOR_HEIGHT))))
+			.andThen(
+				Commands.waitUntil(() -> isNearTarget(targetHeight)))
+			.withName("Moving to height: " + targetHeight);
+	}
+
+	public Command stop() {
+		return runOnce(() -> setRequest(new NeutralOut())).withName("Stopped");
+	}
+
+	public boolean isNearTarget(double targetHeight) {
+		return MathUtil.isNear(
+			lastReadHeight,
+			targetHeight,
+			AlgaeArmConstants.EPSILON);
+	}
+
+	@Override
+	public void initSendable(SendableBuilder builder) {
+		super.initSendable(builder);
+		builder.addDoubleProperty(
+			"Height",
+			() -> lastReadHeight,
+			null);
+
+		builder.addDoubleProperty(
+            "PivotMotor/Volts",
+            () -> pivotMotor
+                .getMotorVoltage()
+                .getValue()
+                .in(Units.Volts),
+            null);
+
+		builder.addDoubleProperty(
+            "PivotMotor/Stator Current",
+            () -> pivotMotor
+                .getStatorCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+
+		builder.addDoubleProperty(
+            "PivotMotor/Temperature Celsius",
+            () -> pivotMotor
+                .getDeviceTemp()
+                .getValue()
+                .in(Units.Celsius),
+            null);
+
+		builder.addDoubleProperty(
+            "PivotMotor/Supply Current",
+            () -> pivotMotor
+                .getSupplyCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+
+		builder.addDoubleProperty(
+            "PivotMotor/Temperature Celsius",
+            () -> pivotMotor
+                .getDeviceTemp()
+                .getValue()
+                .in(Units.Celsius),
+            null);
+	}
 }
-*/
