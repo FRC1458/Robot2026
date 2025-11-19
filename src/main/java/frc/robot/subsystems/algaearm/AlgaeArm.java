@@ -52,7 +52,6 @@ public class AlgaeArm extends SubsystemBase {
 	private AlgaeArm() {
 		pivotMotor = new TalonFX(AlgaeArmConstants.Motors.PIVOT_MOTOR.id);
 		pivotMotor.getConfigurator().apply(AlgaeArmConstants.getConfig());
-		pivotMotor.setControl(new Follower(pivotMotor.getDeviceID(), true));
 		pivotMotor.setNeutralMode(NeutralModeValue.Brake);
 
 		mechanism = new Mechanism2d(1, 3);
@@ -101,7 +100,7 @@ public class AlgaeArm extends SubsystemBase {
 		this.request = request;
 	}
 
-	public Command moveToScoringHeight(AlgaeArmConstants.Heights height) {
+	public Command moveToScoringHeight(AlgaeArmConstants.Heights height) { // TODO: change setpoint
 		return moveToTarget(height.height).withName("Moving to height: " + height.name());
 	}
 
