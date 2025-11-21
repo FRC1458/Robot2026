@@ -68,7 +68,7 @@ public class TrajectoryCommand extends Command {
             .addStructPublisher("Debug/TrajectoryCommand", 
                 Pose3d.struct, () -> new Pose3d(
                     targetState.pose));
-        setName("Trajectory " + trajectory.name);
+        setName(trajectory.name + " :Trajectory");
     }
 
     @Override

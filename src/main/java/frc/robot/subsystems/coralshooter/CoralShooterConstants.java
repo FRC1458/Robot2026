@@ -9,6 +9,7 @@ public class CoralShooterConstants {
     public static final double INTAKE_SPEED = 5; // rotations per second
     public static final double SHOOT_SPEED = 25; // rotations per second
 
+    /** Motor ids */
     public static enum Motors {
         LEFT(12),
         RIGHT(13);
@@ -18,6 +19,7 @@ public class CoralShooterConstants {
         }
     }
 
+    /** Laser ids */
     public static enum Lasers {
         BACK(30),
         FRONT(31);
@@ -27,6 +29,7 @@ public class CoralShooterConstants {
         }
     }
 
+    /** Config for shooter motors */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()

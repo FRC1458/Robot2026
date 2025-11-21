@@ -125,8 +125,9 @@ public class Robot extends TimedRobot {
 		}
 
 		Led.getInstance().setDefaultCommand(
-			Led.getInstance().setRainbowCommand()
-		);
+			Led.getInstance().setRainbowCommand());
+		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		
 		ControlsMapping.mapTeleopCommand();
 	}
 

@@ -5,7 +5,6 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -153,10 +152,9 @@ public class Elevator extends SubsystemBase {
 					false);
 				return Commands.parallel(
 					stop(), 
-					Led.getInstance().setSolidColorCommand(Color.kRed)
-						.andThen(Commands.waitSeconds(0.5)));
+					Led.getInstance().blinkCommand(Color.kRed, Color.kBlack, 0.12, 0.5));
 			}
-		}).withName("(Safe) Moving to height: " + height.name());
+		}).withName(height.name() + ": Safe, Moving");
 	}
 
 	/** 
@@ -164,7 +162,7 @@ public class Elevator extends SubsystemBase {
 	 * <p> is not safe </p>
 	*/
 	private Command moveToScoringHeightUnsafe(ElevatorConstants.Heights height) {
-		return moveToTarget(height.height).withName("Moving to height: " + height.name());
+		return moveToTarget(height.height).withName(height.name() + ": Unsafe, Moving");
 	}
 
 	/** Attempts to move the end effector to a height, in meters */
@@ -175,7 +173,7 @@ public class Elevator extends SubsystemBase {
 					targetHeight - ElevatorConstants.END_EFFECTOR_HEIGHT))))
 			.andThen(
 				Commands.waitUntil(() -> isNearTarget(targetHeight)))
-			.withName("Moving to height: " + targetHeight);
+			.withName(String.format("%.2f: Unknown, Moving", targetHeight));
 	}
 
 	/** Stops the elevator */
@@ -226,82 +224,10 @@ public class Elevator extends SubsystemBase {
 	public void initSendable(SendableBuilder builder) {
 		super.initSendable(builder);
 		builder.addDoubleProperty(
-			"Rotations",
-			() -> leftMotor.getPosition().getValueAsDouble(),
-			null);
-		builder.addDoubleProperty(
 			"Height",
 			() -> lastReadHeight,
 			null);
-		builder.addDoubleProperty(
-            "Left/Volts",
-            () -> leftMotor
-                .getMotorVoltage()
-                .getValue()
-                .in(Units.Volts),
-            null);
-		builder.addDoubleProperty(
-            "Left/Stator Current",
-            () -> leftMotor
-                .getStatorCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
-		builder.addDoubleProperty(
-            "Left/Temperature Celsius",
-            () -> leftMotor
-                .getDeviceTemp()
-                .getValue()
-                .in(Units.Celsius),
-            null);
-		builder.addDoubleProperty(
-            "Left/Supply Current",
-            () -> leftMotor
-                .getSupplyCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
-		builder.addDoubleProperty(
-            "Left/Temperature Celsius",
-            () -> leftMotor
-                .getDeviceTemp()
-                .getValue()
-                .in(Units.Celsius),
-            null);
-		builder.addDoubleProperty(
-			"Right/Volts",
-			() -> rightMotor
-				.getMotorVoltage()
-				.getValue()
-				.in(Units.Volts),
-			null);
-		builder.addDoubleProperty(
-			"Right/Stator Current",
-			() -> rightMotor
-				.getStatorCurrent()
-				.getValue()
-				.in(Units.Amps),
-			null);
-		builder.addDoubleProperty(
-			"Right/Temperature Celsius",
-			() -> rightMotor
-				.getDeviceTemp()
-				.getValue()
-				.in(Units.Celsius),
-			null);
-		builder.addDoubleProperty(
-			"Right/Supply Current",
-			() -> rightMotor
-				.getSupplyCurrent()
-				.getValue()
-				.in(Units.Amps),
-			null);
-		builder.addDoubleProperty(
-			"Right/Temperature Celsius",
-			() -> rightMotor
-				.getDeviceTemp()
-				.getValue()
-				.in(Units.Celsius),
-			null);
+		TelemetryManager.makeSendableTalonFX("Left", leftMotor, builder);
+		TelemetryManager.makeSendableTalonFX("Right", rightMotor, builder);
 	}
 }

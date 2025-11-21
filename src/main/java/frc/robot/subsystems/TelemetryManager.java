@@ -3,10 +3,14 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -29,7 +33,6 @@ public class TelemetryManager extends SubsystemBase {
             publisher.set(supplier.get());
         }
     }
-
 
     private final ArrayList<StructPublisherEntry<?>> structPublishers;
 
@@ -73,6 +76,49 @@ public class TelemetryManager extends SubsystemBase {
                 NetworkTableInstance.getDefault()
                     .getStructArrayTopic("SmartDashboard/" + name, struct).publish(), 
                 supplier));
+    }
+
+    public static void makeSendableTalonFX(String name, TalonFX motor, SendableBuilder builder) {
+		builder.addDoubleProperty(
+            name + "/Rotations",
+            () -> motor
+                .getPosition()
+                .getValueAsDouble(),
+            null);
+        builder.addDoubleProperty(
+            name + "/Velocity RPS",
+            () -> motor
+                .getVelocity()
+                .getValueAsDouble(),
+            null);
+		builder.addDoubleProperty(
+            name + "/Volts",
+            () -> motor
+                .getMotorVoltage()
+                .getValue()
+                .in(Units.Volts),
+            null);
+		builder.addDoubleProperty(
+            name + "/Stator Current",
+            () -> motor
+                .getStatorCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+		builder.addDoubleProperty(
+            name + "/Supply Current",
+            () -> motor
+                .getSupplyCurrent()
+                .getValue()
+                .in(Units.Amps),
+            null);
+		builder.addDoubleProperty(
+            name + "/Temperature Celsius",
+            () -> motor
+                .getDeviceTemp()
+                .getValue()
+                .in(Units.Celsius),
+            null);
     }
 
     public void addSendable(Sendable sendable) {

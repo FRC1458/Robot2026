@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Led extends SubsystemBase {    
@@ -22,13 +23,16 @@ public class Led extends SubsystemBase {
         return ledInstance;
     }
 
+    /** A helper to optimize LEDs state */
     private static class Colorer {
+        /** The state of the LEDs */
         private static enum State {
             SOLID,
             PATTERN,
             TIMED_PATTERN;
         }
 
+        private final Object lock = new Object();
         private State state = State.SOLID;
         private Color solidColor = Color.kGreen;
         private Color[] pattern;
@@ -37,45 +41,56 @@ public class Led extends SubsystemBase {
         private boolean hasUpdated = true;
         
         public void setSolidColor(Color color) {
-            solidColor = color;
-            state = State.SOLID;
-            hasUpdated = true;
+            synchronized (lock) {
+                hasUpdated = true;
+                solidColor = color;
+                state = State.SOLID;
+            }
         }
 
         public void setPattern(Color[] colors) {
-            pattern = colors;
-            state = State.PATTERN;
-            hasUpdated = true;
+            synchronized (lock) {
+                hasUpdated = true;
+                pattern = Arrays.stream(colors)
+                    .map((Color c) -> new Color(c.red, c.green, c.blue))
+                    .toArray(Color[]::new);
+                state = State.PATTERN;
+            }
         }
 
         public void setTimedPattern(BiFunction<Integer, Double, Color> timedPatternSupplier) {
-            this.timedPatternSupplier = timedPatternSupplier;
-            state = State.TIMED_PATTERN;
-            hasUpdated = true;
+            synchronized (lock) {
+                hasUpdated = true;
+                this.timedPatternSupplier = timedPatternSupplier;
+                state = State.TIMED_PATTERN;
+            }
         }
 
+        /** Gets the colors based on the state */
         public Color[] get(double time) {
-            switch (state) {
-                case SOLID: 
-                    if (hasUpdated) {
-                        Arrays.fill(colors, solidColor);
-                    }
-                    break;
-                case PATTERN:
-                    if (hasUpdated) {
-                        colors = pattern;
-                    }
-                    break;
-                case TIMED_PATTERN:
-                    for (int i = 0; i < colors.length; i++) {
-                        colors[i] = timedPatternSupplier.apply(i, time);
-                    }
-                    break;
-                default:
-                    break;
-            };
-            hasUpdated = false;
-            return colors;
+            synchronized (lock) {
+                switch (state) {
+                    case SOLID: 
+                        if (hasUpdated) {
+                            Arrays.fill(colors, solidColor);
+                        }
+                        break;
+                    case PATTERN:
+                        if (hasUpdated) {
+                            colors = pattern;
+                        }
+                        break;
+                    case TIMED_PATTERN:
+                        for (int i = 0; i < colors.length; i++) {
+                            colors[i] = timedPatternSupplier.apply(i, time);
+                        }
+                        break;
+                    default:
+                        break;
+                };
+                hasUpdated = false;
+                return colors;
+            }
         }
     }
 
@@ -94,10 +109,11 @@ public class Led extends SubsystemBase {
         led.start();
         timer.start();
         colorer = new Colorer();
-        ledNotifier.startPeriodic(0.125);
+        ledNotifier.startPeriodic(LedConstants.UPDATE_DT);
         SmartDashboard.putData(this);
     }
 
+    /** Updates the LEDs */
     private void update() {
         if (colorer.state != Colorer.State.TIMED_PATTERN || colorer.hasUpdated) {
             var colors = colorer.get(timer.get());
@@ -106,21 +122,44 @@ public class Led extends SubsystemBase {
             }
             led.setData(ledBuffer);
         }
-    }
-
+    }    
+    
+    /** Sets the LEDs to a color indefinitely */
     public Command setSolidColorCommand(Color color) {
-        return runOnce(() -> colorer.setSolidColor(color)).ignoringDisable(true)
-            .withName("Solid Color " + color.toString());
+        return setSolidColorCommand(color, Double.POSITIVE_INFINITY);
     }
 
+    /** Sets the LEDs to a color for a set time */
+    public Command setSolidColorCommand(Color color, double holdTime) {
+        return runOnce(() -> colorer.setSolidColor(color))
+            .andThen(
+                Commands.waitSeconds(holdTime)
+            ).ignoringDisable(true)
+            .withName(color.toString() + ": Solid Color");
+    }
+
+    /** Animates the LEDs with a rainbow animation */
     public Command setRainbowCommand() {
+        return setRainbowCommand(Double.POSITIVE_INFINITY);
+    }
+
+    /** Sets the LEDs to an animated rainbow for a set time */
+    public Command setRainbowCommand(double holdTime) {
         return runOnce(() -> colorer.setTimedPattern(
             (Integer index, Double time) -> 
                 Color.fromHSV(index + (int) (time * 50), 255, 255)
-        )).ignoringDisable(true).withName("Rainbow");
+        )).andThen(
+            Commands.waitSeconds(holdTime)
+        ).ignoringDisable(true).withName("Rainbow");
     }
 
+    /** Holds the LEDs at a random state */
     public Command setRandomCommand() {
+        return setRandomCommand(Double.POSITIVE_INFINITY);
+    }
+
+    /** Sets the LEDs to a random state for a set time */
+    public Command setRandomCommand(double holdTime) {
         return defer(() -> {
             Color[] colors = new Color[LedConstants.LED_LENGTH];
             for (int i = 0; i < colors.length; i++) {
@@ -130,7 +169,24 @@ public class Led extends SubsystemBase {
                 () -> colorer.setPattern(
                     colors));
             }
+        ).andThen(
+            Commands.waitSeconds(holdTime)
         ).ignoringDisable(true).withName("Random");
+    }
+
+    /** Blinks the LEDs indefinitely */
+    public Command blinkCommand(Color color1, Color color2, double delta) {
+        return blinkCommand(color1, color2, delta, Double.POSITIVE_INFINITY);
+    }
+
+    /** Blinks the LEDs for a set time */
+    public Command blinkCommand(Color color1, Color color2, double delta, double holdTime) {
+        return Commands.repeatingSequence(
+            setSolidColorCommand(color1, delta),
+            setSolidColorCommand(color2, delta)
+        ).raceWith(
+            Commands.waitSeconds(holdTime)
+        ).withName(color1.toString() + ":" + color2.toString() + ":" +  (int) (delta * 1000) + " ms Blink");
     }
 
     @Override

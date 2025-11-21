@@ -8,7 +8,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,6 +31,12 @@ public class CoralShooter extends SubsystemBase {
     private final LaserCan intakeLaser;
     private final LaserCan shooterLaser;
 
+    private final Debouncer intakeDebouncer;
+    private final Debouncer shooterDebouncer;
+
+    private boolean inRangeIntake;
+    private boolean inRangeShooter; 
+
 	private double lastReadSpeed;
 	private ControlRequest request = new NeutralOut();
 
@@ -40,7 +47,7 @@ public class CoralShooter extends SubsystemBase {
 		rightMotor = new TalonFX(CoralShooterConstants.Motors.RIGHT.id);
 
         intakeLaser = new LaserCan(CoralShooterConstants.Lasers.BACK.id);
-        shooterLaser = new LaserCan(CoralShooterConstants.Lasers.FRONT.id);;
+        shooterLaser = new LaserCan(CoralShooterConstants.Lasers.FRONT.id);
 
 		leftMotor.getConfigurator().apply(CoralShooterConstants.getConfig());
 		rightMotor.getConfigurator().apply(CoralShooterConstants.getConfig());
@@ -49,141 +56,104 @@ public class CoralShooter extends SubsystemBase {
 		rightMotor.setControl(
 			new Follower(leftMotor.getDeviceID(), true));
         
+        intakeDebouncer = new Debouncer(0.06, DebounceType.kBoth);
+        shooterDebouncer = new Debouncer(0.06, DebounceType.kBoth);
+
+        inRangeIntake = false;
+        inRangeShooter = false;
+
 		TelemetryManager.getInstance().addSendable(this);
 		setDefaultCommand(listenAndIntake());
     }
 
     @Override
     public void periodic() {
+        // Read inputs
         lastReadSpeed = leftMotor.getVelocity().getValueAsDouble();
+        inRangeIntake = intakeDebouncer.calculate(getIntakeLaser());
+        inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
         leftMotor.setControl(request);
     }
 
+    /** Replaces the request */
     private void setRequest(ControlRequest request) {
         this.request = request;
     }
 
+    /** Stops the shooter */
     public Command stop() {
         return runOnce(() -> setRequest(new NeutralOut())).withName("Stopped");
     }
 
-    public double getMeasurementIntake() {
-        return intakeLaser.getMeasurement().distance_mm;
+    /** Gets the intake laser measurement */
+    private double getMeasurementIntake() {
+        var measurement = intakeLaser.getMeasurement();
+        if (measurement != null) {
+            return measurement.distance_mm;
+        } else {
+            return Double.POSITIVE_INFINITY;
+        }
     }
 
-    public double getMeasurementShooter() {
-        return shooterLaser.getMeasurement().distance_mm;
+    /** Gets the intake laser measurement */
+    private double getMeasurementShooter() {
+        var measurement = shooterLaser.getMeasurement();
+        if (measurement != null) {
+            return measurement.distance_mm;
+        } else {
+            return Double.POSITIVE_INFINITY;
+        }
     }
 
-    public boolean inRangeIntake() {
+    /** Gets whether the intake laser detects a coral */
+    private boolean getIntakeLaser() {
         return getMeasurementIntake() < 100;
     }
 
-    public boolean inRangeShooter() {
+    /** Gets whether the intake laser detects a coral */
+    private boolean getShooterLaser() {
         return getMeasurementShooter() < 100;
     }
 
+    /** Returns whether a coral might be obstructing the elevator */
     public boolean isCoralObstructingElevator() {
-        return inRangeIntake();
+        return inRangeIntake;
     }
 
     public Command listenAndIntake() {
         return Commands.repeatingSequence(
             stop(),
-            Commands.waitUntil(() -> inRangeIntake()),
+            Commands.waitUntil(() -> inRangeIntake),
             intake()
-        ).withName("Listening and Intaking");
+        ).withName("Listen, Intake");
     }
 
     public Command intake() {
-        return runOnce(
-            () -> setRequest(
-                new VelocityVoltage(CoralShooterConstants.INTAKE_SPEED)))
-            .andThen(Commands.waitUntil(() -> !inRangeIntake())).withName("Intaking");
+        return runOnce(() -> setRequest(
+            new VelocityVoltage(CoralShooterConstants.INTAKE_SPEED))
+        ).andThen( 
+            Commands.waitUntil(() -> !inRangeIntake)
+        ).withName("Intaking");
     }
 
     public Command shoot() {
         return runOnce(() -> setRequest(
-            new VelocityVoltage(CoralShooterConstants.SHOOT_SPEED)))
-        .andThen(Commands.waitUntil(() -> !inRangeShooter()), Commands.waitSeconds(0.15)).withName("Shooting");
+            new VelocityVoltage(CoralShooterConstants.SHOOT_SPEED))
+        ).andThen(
+            Commands.waitUntil(() -> !inRangeShooter), 
+            Commands.waitSeconds(0.15),
+            stop()
+        ).withName("Shooting");
     }
 
     @Override
 	public void initSendable(SendableBuilder builder) {
 		super.initSendable(builder);
-		builder.addDoubleProperty(
-			"Speed",
-			() -> lastReadSpeed,
-			null);
-		builder.addDoubleProperty(
-            "Left/Volts",
-            () -> leftMotor
-                .getMotorVoltage()
-                .getValue()
-                .in(Units.Volts),
+        builder.addDoubleProperty(
+            "/Speed", 
+            () -> lastReadSpeed, 
             null);
-		builder.addDoubleProperty(
-            "Left/Stator Current",
-            () -> leftMotor
-                .getStatorCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
-		builder.addDoubleProperty(
-            "Left/Temperature Celsius",
-            () -> leftMotor
-                .getDeviceTemp()
-                .getValue()
-                .in(Units.Celsius),
-            null);
-		builder.addDoubleProperty(
-            "Left/Supply Current",
-            () -> leftMotor
-                .getSupplyCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
-		builder.addDoubleProperty(
-            "Left/Temperature Celsius",
-            () -> leftMotor
-                .getDeviceTemp()
-                .getValue()
-                .in(Units.Celsius),
-            null);
-		builder.addDoubleProperty(
-			"Right/Volts",
-			() -> rightMotor
-				.getMotorVoltage()
-				.getValue()
-				.in(Units.Volts),
-			null);
-		builder.addDoubleProperty(
-			"Right/Stator Current",
-			() -> rightMotor
-				.getStatorCurrent()
-				.getValue()
-				.in(Units.Amps),
-			null);
-		builder.addDoubleProperty(
-			"Right/Temperature Celsius",
-			() -> rightMotor
-				.getDeviceTemp()
-				.getValue()
-				.in(Units.Celsius),
-			null);
-		builder.addDoubleProperty(
-			"Right/Supply Current",
-			() -> rightMotor
-				.getSupplyCurrent()
-				.getValue()
-				.in(Units.Amps),
-			null);
-		builder.addDoubleProperty(
-			"Right/Temperature Celsius",
-			() -> rightMotor
-				.getDeviceTemp()
-				.getValue()
-				.in(Units.Celsius),
-			null);
+		TelemetryManager.makeSendableTalonFX("/Left", leftMotor, builder);
+		TelemetryManager.makeSendableTalonFX("/Right", rightMotor, builder);
 	}
 }

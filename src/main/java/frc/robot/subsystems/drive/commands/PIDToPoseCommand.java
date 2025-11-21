@@ -45,7 +45,8 @@ public class PIDToPoseCommand extends Command {
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(drive);
-        setName("PID to " + target.toString());
+        setName("(" + target.getX() + ", " + target.getY() + ", " 
+            + target.getRotation().getDegrees() + " deg)" + " :PID to pose");
     }
 
     @Override
