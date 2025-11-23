@@ -15,9 +15,10 @@ public class AlgaeArmConstants {
     
     public static final double SPROCKET_RADIUS = Units.inchesToMeters(0.8785);
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double GEAR_RATIO = 9;
+    public static final double GEAR_RATIO = 24;
 
     private static final double RADIANCONVERSION = 180.0/Math.PI;
+    private static final double RADIANS_PER_ROTATION = 0.26179938779;
 
     public static final double MAX_ANGLE = 90.0 * RADIANCONVERSION;
     public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION;
@@ -54,10 +55,10 @@ public class AlgaeArmConstants {
     }
 
     public static double angleToRotations(double angle) {
-        return angle / 360.0 * GEAR_RATIO * RADIANCONVERSION;
+        return angle / RADIANS_PER_ROTATION;
     }
 
     public static double rotationsToAngle(double rotations) {
-        return rotations / GEAR_RATIO * 360.0 * RADIANCONVERSION;
+        return rotations * RADIANS_PER_ROTATION;
     }
 }
