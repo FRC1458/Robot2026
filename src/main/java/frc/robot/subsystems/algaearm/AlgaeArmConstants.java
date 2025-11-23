@@ -11,18 +11,19 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
 public class AlgaeArmConstants {
-    public static final double EPSILON = 0.01;
+    public static final double EPSILON = 0.01; // Meters
     
-    public static final double SPROCKET_RADIUS = Units.inchesToMeters(0.8785);
+    public static final double SPROCKET_RADIUS = Units.inchesToMeters(0.8785); // Effective pitch radius
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
     public static final double GEAR_RATIO = 24;
 
     private static final double RADIANCONVERSION = 180.0/Math.PI;
-    private static final double RADIANS_PER_ROTATION = 0.26179938779;
+    private static final double RADIANS_PER_ROTATION = 0.26179938779; // Approximated via counting both gears used + the gear box. gear box is 2:1
 
-    public static final double MAX_ANGLE = 90.0 * RADIANCONVERSION;
-    public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION;
+    public static final double MAX_ANGLE = 90.0 * RADIANCONVERSION; // Max angle in Radians
+    public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION; // Min angle in Radians
 
+    /** Motor ID */
     public static enum Motors {
         PIVOT_MOTOR(26);
         public final int id;
@@ -31,7 +32,7 @@ public class AlgaeArmConstants {
         }
     }
 
-
+    /** AlgaeArm config factory */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
@@ -54,10 +55,12 @@ public class AlgaeArmConstants {
                 .withPeakReverseVoltage(-12.0));
     }
 
+    /** Conversion utility */
     public static double angleToRotations(double angle) {
         return angle / RADIANS_PER_ROTATION;
     }
 
+    /** Conversion utility */
     public static double rotationsToAngle(double rotations) {
         return rotations * RADIANS_PER_ROTATION;
     }

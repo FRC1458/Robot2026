@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class AlgaeArm extends SubsystemBase {
 
     private static AlgaeArm algaeArmInstance;
-	
+
 	private ControlRequest request;
 
     public static AlgaeArm getInstance() {
@@ -45,7 +45,7 @@ public class AlgaeArm extends SubsystemBase {
 				MathUtil.clamp(targetAngle, AlgaeArmConstants.MIN_ANGLE, AlgaeArmConstants.MAX_ANGLE));
 
 			return runOnce(() -> 
-				setRequest(new MotionMagicVoltage(targetRotations))
+				setRequest(new MotionMagicVoltage(targetRotations)) // Updates motor
 			).withName("Moving to angle: " + targetAngle);
 		});
     }
@@ -54,12 +54,13 @@ public class AlgaeArm extends SubsystemBase {
 		this.request = request;
 	}
 
+	/** Stops the AlgaeArm */
     public Command stop() {
         return runOnce(() -> setRequest(
 			new PositionVoltage(pivotMotor.getPosition().getValue())))
 		.withName("Stop Arm");
     }
-
+	
     public double getCurrentAngle() {
         return currentAngle;
     }
