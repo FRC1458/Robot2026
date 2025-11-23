@@ -20,11 +20,10 @@ public class AlgaeArmConstants {
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
     public static final double GEAR_RATIO = 24;
 
-    private static final double RADIANCONVERSION = 180.0/Math.PI;
-    private static final double RADIANS_PER_ROTATION = Constants.TAU / 2.0 / GEAR_RATIO; // Approximated via counting both gears used + the gear box. gear box is 2:1
+    private static final double RADIANS_PER_ROTATION = Constants.TAU / GEAR_RATIO; // Approximated via counting both gears used + the gear box. gear box is 2:1
 
-    public static final double MAX_ANGLE = 90.0 * RADIANCONVERSION; // Max angle in Radians
-    public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION; // Min angle in Radians
+    public static final double MAX_ANGLE = Math.PI / 2;
+    public static final double MIN_ANGLE = 0; // Min angle in Radians
 
     /** Motor ID */
     public static enum Motors {
@@ -39,7 +38,7 @@ public class AlgaeArmConstants {
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive)
+                .withInverted(InvertedValue.CounterClockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake))
             .withSlot0(new Slot0Configs()
                 .withKS(0.125)
@@ -50,12 +49,12 @@ public class AlgaeArmConstants {
                 .withKG(0.1)
                 .withGravityType(GravityTypeValue.Arm_Cosine))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(72.5)
-                .withMotionMagicCruiseVelocity(10.0)
+                .withMotionMagicAcceleration(172.5)
+                .withMotionMagicCruiseVelocity(30.0)
                 .withMotionMagicJerk(1600.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(10.0)
-                .withSupplyCurrentLimit(10.0))
+                .withStatorCurrentLimit(30.0)
+                .withSupplyCurrentLimit(30.0))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));
