@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
@@ -22,7 +23,7 @@ public class AlgaeArmConstants {
     public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION;
 
     public static enum Motors {
-        PIVOT_MOTOR(20);
+        PIVOT_MOTOR(67);
         public final int id;
         private Motors(int id) {
             this.id = id;
@@ -37,8 +38,9 @@ public class AlgaeArmConstants {
                 .withKV(0.0)
                 .withKP(5.0)
                 .withKI(0.0)
-                .withKD(0.0)
-                .withKG(0.0))
+                .withKD(0.1)
+                .withKG(0.1)
+                .withGravityType(GravityTypeValue.Arm_Cosine))
             .withMotionMagic(new MotionMagicConfigs()
                 .withMotionMagicAcceleration(72.5)
                 .withMotionMagicCruiseVelocity(10.0)

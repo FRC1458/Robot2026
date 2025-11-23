@@ -3,6 +3,7 @@ package frc.robot.subsystems.algaearm;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -13,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class AlgaeArm extends SubsystemBase {
 
     private static AlgaeArm algaeArmInstance;
-
+	
 	private ControlRequest request;
 
     public static AlgaeArm getInstance() {
@@ -40,7 +41,8 @@ public class AlgaeArm extends SubsystemBase {
 
     public Command moveToAngle(double targetAngle) {
 		return defer(() -> {
-			double targetRotations = AlgaeArmConstants.angleToRotations(MathUtil.clamp(targetAngle, AlgaeArmConstants.MIN_ANGLE, AlgaeArmConstants.MAX_ANGLE));
+			double targetRotations = AlgaeArmConstants.angleToRotations(
+				MathUtil.clamp(targetAngle, AlgaeArmConstants.MIN_ANGLE, AlgaeArmConstants.MAX_ANGLE));
 
 			return runOnce(() -> 
 				setRequest(new MotionMagicVoltage(targetRotations))
@@ -53,7 +55,9 @@ public class AlgaeArm extends SubsystemBase {
 	}
 
     public Command stop() {
-        return runOnce(() -> pivotMotor.setControl(new NeutralOut())).withName("Stop Arm");
+        return runOnce(() -> setRequest(
+			new PositionVoltage(pivotMotor.getPosition().getValue())))
+		.withName("Stop Arm");
     }
 
     public double getCurrentAngle() {
