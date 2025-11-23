@@ -48,8 +48,8 @@ public class AlgaeArmConstants {
                 .withMotionMagicCruiseVelocity(10.0)
                 .withMotionMagicJerk(1600.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40.0)
-                .withSupplyCurrentLimit(40.0))
+                .withStatorCurrentLimit(10.0)
+                .withSupplyCurrentLimit(10.0))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));
