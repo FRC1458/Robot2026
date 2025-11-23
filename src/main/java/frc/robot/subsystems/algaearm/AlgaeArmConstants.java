@@ -2,10 +2,13 @@ package frc.robot.subsystems.algaearm;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
@@ -18,7 +21,7 @@ public class AlgaeArmConstants {
     public static final double GEAR_RATIO = 24;
 
     private static final double RADIANCONVERSION = 180.0/Math.PI;
-    private static final double RADIANS_PER_ROTATION = 0.26179938779; // Approximated via counting both gears used + the gear box. gear box is 2:1
+    private static final double RADIANS_PER_ROTATION = Constants.TAU / 2.0 / GEAR_RATIO; // Approximated via counting both gears used + the gear box. gear box is 2:1
 
     public static final double MAX_ANGLE = 90.0 * RADIANCONVERSION; // Max angle in Radians
     public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION; // Min angle in Radians
@@ -35,6 +38,9 @@ public class AlgaeArmConstants {
     /** AlgaeArm config factory */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake))
             .withSlot0(new Slot0Configs()
                 .withKS(0.125)
                 .withKV(0.0)

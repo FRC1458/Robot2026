@@ -4,6 +4,7 @@ import static frc.robot.Robot.controller;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.algaearm.AlgaeArm;
 import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
@@ -21,6 +22,8 @@ public class ControlsMapping {
 		controller.y().onTrue(Elevator.getInstance().moveToScoringHeight(ElevatorConstants.Heights.L4));
 		controller.leftTrigger().onTrue(CoralShooter.getInstance().intake());
 		controller.rightTrigger().onTrue(CoralShooter.getInstance().shoot());
+		controller.povUp().onTrue(AlgaeArm.getInstance().moveToAngle(0));
+		controller.povDown().onTrue(AlgaeArm.getInstance().moveToAngle(Math.PI * (1.0 / 2.0)));
 	}
 
 	public static void mapSysId() {
