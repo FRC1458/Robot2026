@@ -24,7 +24,7 @@ public class AlgaeArmConstants {
     public static final double MIN_ANGLE = 0.0 * RADIANCONVERSION;
 
     public static enum Motors {
-        PIVOT_MOTOR(67);
+        PIVOT_MOTOR(26);
         public final int id;
         private Motors(int id) {
             this.id = id;
