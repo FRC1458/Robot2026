@@ -2,6 +2,7 @@ package frc.robot.auto;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorConstants;
@@ -22,6 +23,7 @@ public class Automation {
         return Commands.parallel(
             Drive.getInstance().autoAlign(left),
             Commands.waitSeconds(0.5).andThen(Elevator.getInstance().moveToScoringHeight(level.height))
-        );
+        ).andThen(
+            CoralShooter.getInstance().shoot());
     }
 }

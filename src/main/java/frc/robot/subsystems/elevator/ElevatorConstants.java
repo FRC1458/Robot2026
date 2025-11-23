@@ -11,12 +11,17 @@ import frc.robot.Constants;
 
 public class ElevatorConstants {
     public static final double EPSILON = 0.01; // Meters
-    public static final double SPROCKET_RADIUS = Units.inchesToMeters(0.8785);
-    public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double GEAR_RATIO = 9;
-    public static final double END_EFFECTOR_HEIGHT = 0.62; // Meters
-    public static final double MAX_SPEED = 0.5;
 
+    public static final double SPROCKET_RADIUS = 0.02225; // Effective pitch radius
+    public static final double GEAR_RATIO = 9;
+    public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
+    public static final double METERS_PER_ROTATION = 0.028776; // Approximated via measuring distance between chain centers
+    public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters
+    public static final double CARRIAGE_WEIGHT = 6.55; // kg
+
+    public static final double MAX_SPEED = 0.6; // m/s
+
+    /** Motor IDs */
     public static enum Motors {
         LEFT(20),
         RIGHT(21);
@@ -26,44 +31,48 @@ public class ElevatorConstants {
         }
     }
 
+    /** Heights for the end effector to score */
     public static enum Heights {
-        BASE(END_EFFECTOR_HEIGHT),
-        L1(Units.inchesToMeters(1 * 12 + 6)),
+        BASE(END_EFFECTOR_HEIGHT + 0.003), // small offset to prevent stalling (allegedly)
+        L1(END_EFFECTOR_HEIGHT + 0.003),
         L2(Units.inchesToMeters(2 * 12 + 7 + 7 / 8.0)),
         L3(Units.inchesToMeters(3 * 12 + 11 + 5 / 8.0)),
-        L4(Units.inchesToMeters(6 * 12));
+        L4(Units.inchesToMeters(6 * 12) - 0.05);
         public final double height;
         private Heights(double height) {
             this.height = height;
         }
     }
 
+    /** Elevator config factory */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKS(0.125)
                 .withKV(0.0)
-                .withKP(5.0)
+                .withKP(1.0)
                 .withKI(0.0)
-                .withKD(0.0)
-                .withKG(0.0))
+                .withKD(0.05)
+                .withKG(0.375))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(72.5)
-                .withMotionMagicCruiseVelocity(heightToRotations(MAX_SPEED))
-                .withMotionMagicJerk(1600.0))
+                .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))
+                .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40.0)
-                .withSupplyCurrentLimit(40.0))
+                .withStatorCurrentLimit(30)
+                .withSupplyCurrentLimit(30))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));
     }
 
-    public static double rotationsToHeight(double rotations) {
-        return rotations / GEAR_RATIO * SPROCKET_CIRCUMFERENCE;
+    /** Conversion utility */
+    public static double rotationsToMeters(double rotations) {
+        return rotations * METERS_PER_ROTATION;
     }
     
-    public static double heightToRotations(double meters) {
-        return meters / SPROCKET_CIRCUMFERENCE * GEAR_RATIO;
+    /** Conversion utility */
+    public static double metersToRotations(double meters) {
+        return meters / METERS_PER_ROTATION;
     }
 }

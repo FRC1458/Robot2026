@@ -13,15 +13,16 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.auto.*;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.led.Led;
-//import frc.robot.subsystems.drive.commands.TeleopCommand;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -29,9 +30,10 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
+@SuppressWarnings("unused")
 public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
-	public AutoSelector autoChooser;
+	private AutoSelector autoChooser;
 	private Command autoCommand;
 
 	public static final CommandXboxController controller =
@@ -53,6 +55,7 @@ public class Robot extends TimedRobot {
 		Drive.getInstance();
 		Led.getInstance();
 		Elevator.getInstance();
+		CoralShooter.getInstance();
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
 		}
@@ -82,7 +85,8 @@ public class Robot extends TimedRobot {
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
 	public void disabledInit() {
-
+		Led.getInstance().setDefaultCommand(
+			Led.getInstance().setSolidColorCommand(Color.kGreen));
 	}
 
 	/** This function is called periodically during disabled. */
@@ -94,7 +98,6 @@ public class Robot extends TimedRobot {
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
-		// RobotState.setAlliance(DriverStation.getAlliance());
 		autoCommand = autoChooser.getAuto();
 
 		if (autoCommand != null) {
@@ -121,6 +124,10 @@ public class Robot extends TimedRobot {
 			autoCommand.cancel();
 		}
 
+		Led.getInstance().setDefaultCommand(
+			Led.getInstance().setRainbowCommand());
+		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		
 		ControlsMapping.mapTeleopCommand();
 	}
 

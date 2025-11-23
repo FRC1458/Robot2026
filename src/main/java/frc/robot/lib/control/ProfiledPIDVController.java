@@ -1,7 +1,6 @@
 package frc.robot.lib.control;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.lib.control.ControlConstants.*;
