@@ -12,14 +12,15 @@ import frc.robot.Constants;
 public class ElevatorConstants {
     public static final double EPSILON = 0.01; // Meters
 
-    public static final double SPROCKET_RADIUS = 0.02225; // Effective pitch radius
+    public static final double SPROCKET_RADIUS = 0.0412; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double METERS_PER_ROTATION = 0.028776; // Approximated via measuring distance between chain centers
+    public static final double METERS_PER_ROTATION = 0.028776; // Approximated using measurement
     public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters
     public static final double CARRIAGE_WEIGHT = 6.55; // kg
 
-    public static final double MAX_SPEED = 0.6; // m/s
+    public static final double MAX_ACCEL = 1.5;
+    public static final double MAX_SPEED = 1.0; // m/s
 
     /** Motor IDs */
     public static enum Motors {
@@ -55,12 +56,12 @@ public class ElevatorConstants {
                 .withKD(0.05)
                 .withKG(0.375))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(metersToRotations(1.0)) // 1.0 m/s^2
+                .withMotionMagicAcceleration(metersToRotations(MAX_ACCEL)) // 1.0 m/s^2
                 .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))
                 .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(30)
-                .withSupplyCurrentLimit(30))
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(60))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));

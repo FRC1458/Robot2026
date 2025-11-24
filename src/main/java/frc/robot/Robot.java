@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.auto.*;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.algaearm.AlgaeArm;
 import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.elevator.Elevator;
@@ -56,6 +57,7 @@ public class Robot extends TimedRobot {
 		Led.getInstance();
 		Elevator.getInstance();
 		CoralShooter.getInstance();
+		AlgaeArm.getInstance();
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
 		}

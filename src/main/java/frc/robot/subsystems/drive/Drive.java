@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import static frc.robot.subsystems.drive.DriveConstants.*;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -43,7 +45,7 @@ public class Drive extends SubsystemBase {
 	public SwerveRequest driveRequest = teleopRequest;
 
     private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
-	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(DriveConstants.MAX_SPEED);
+	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(MAX_SPEED);
     @SuppressWarnings("unused") 
     private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
 
@@ -128,9 +130,9 @@ public class Drive extends SubsystemBase {
             SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
 
             teleopRequest
-                .withVelocityX(xFancy * DriveConstants.MAX_SPEED)
-                .withVelocityY(yFancy * DriveConstants.MAX_SPEED)
-                .withRotationalRate(rotFancy * DriveConstants.MAX_ROTATION_SPEED);        
+                .withVelocityX(xFancy * MAX_SPEED)
+                .withVelocityY(yFancy * MAX_SPEED)
+                .withRotationalRate(rotFancy * MAX_ROTATION_SPEED);        
         }).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
     }
 
@@ -164,7 +166,7 @@ public class Drive extends SubsystemBase {
 	public void resetPose(Pose2d pose) {
 		getCtreDrive().resetPose(pose);
 		lastPoseResetTime =
-            Units.Seconds.of(Utils.getCurrentTimeSeconds()).plus(DriveConstants.POSE_RESET_PREVENTION_TIME);
+            Units.Seconds.of(Utils.getCurrentTimeSeconds()).plus(POSE_RESET_PREVENTION_TIME);
 	}
 
     /** A command that resets the pose */
@@ -175,17 +177,17 @@ public class Drive extends SubsystemBase {
     /** Whether the pitch is stable */
 	public boolean isPitchStable() {
 		return drivetrain.getPigeon2().getAngularVelocityYDevice().getValue().abs(Units.DegreesPerSecond)
-                < DriveConstants.MAX_VELOCITY_STABLE
+                < MAX_VELOCITY_STABLE
             && drivetrain.getPigeon2().getPitch().getValue().abs(BaseUnits.AngleUnit)
-                < DriveConstants.MAX_PITCH_STABLE;
+                < MAX_PITCH_STABLE;
 	}
 
     /** Whether the roll is stable */
 	public boolean isRollStable() {
 		return drivetrain.getPigeon2().getAngularVelocityXDevice().getValue().abs(Units.DegreesPerSecond)
-                < DriveConstants.MAX_VELOCITY_STABLE
+                < MAX_VELOCITY_STABLE
             && drivetrain.getPigeon2().getRoll().getValue().abs(BaseUnits.AngleUnit)
-                < DriveConstants.MAX_PITCH_STABLE;
+                < MAX_PITCH_STABLE;
 	}
 
     /** Whether the robot is stable */
@@ -194,8 +196,8 @@ public class Drive extends SubsystemBase {
 		return isPitchStable()
             && isRollStable()
             && Units.MetersPerSecond.of(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond))
-                .lte(DriveConstants.MAX_SPEED_SCORING_TRANSLATION)
-            && Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(DriveConstants.MAX_ROTATION_SPEED_SCORING);
+                .lte(MAX_SPEED_SCORING_TRANSLATION)
+            && Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(MAX_ROTATION_SPEED_SCORING);
 	}
 
 	@Override

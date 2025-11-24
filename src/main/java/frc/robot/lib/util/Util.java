@@ -251,4 +251,45 @@ public class Util {
 	public static ChassisSpeeds fromTwist2d(Twist2d t) {
 		return new ChassisSpeeds(t.dx, t.dy, t.dtheta);
 	}
+
+	public static double trapezoidProfileTimeToTarget(
+        double currentPosition, double currentSpeed,
+        double target, double maxSpeed, double maxAccel
+	) {
+		double delta = target - currentPosition;
+		double distance = Math.abs(delta);
+		double direction = Math.signum(delta);
+		double v0 = currentSpeed * direction;
+		// Decelerating line
+		double stopDist = (v0 * v0) / (2 * maxAccel);
+		if (distance < stopDist) {
+			// Triangle
+			return v0 / maxAccel; // time to stop
+		}
+		double accelDist = (maxSpeed * maxSpeed - v0 * v0) / (2 * maxAccel);
+		if (accelDist < 0) accelDist = 0; 
+		double decelDist = (maxSpeed * maxSpeed) / (2 * maxAccel);
+		double minDistance = accelDist + decelDist;
+
+		// Triangle
+		if (distance < minDistance) {
+			// Solve for peak velocity vp
+			double A = maxAccel;
+			double vp = Math.sqrt((2 * A * distance + v0 * v0) / 2);
+
+			double accelTime = (vp - v0) / A;
+			double decelTime = vp / A;
+
+			return accelTime + decelTime;
+		}
+
+		// Trapezoid
+		double accelTime = (maxSpeed - v0) / maxAccel;
+		double cruiseDist = distance - minDistance;
+		double cruiseTime = cruiseDist / maxSpeed;
+		double decelTime = maxSpeed / maxAccel;
+
+		return accelTime + cruiseTime + decelTime;
+	}
+
 }

@@ -1,5 +1,7 @@
 package frc.robot.subsystems.elevator;
 
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
@@ -13,13 +15,11 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -52,40 +52,34 @@ public class Elevator extends SubsystemBase {
 	private double lastReadHeight;
 	private ControlRequest request = new NeutralOut();
 
-	private DCMotorSim motorSim;
 	private ElevatorSim elevatorSim;
 	private Mechanism2d mechanism;
 	private MechanismLigament2d ligament;
 
 	private Elevator() {
 		super();
-		leftMotor = new TalonFX(ElevatorConstants.Motors.LEFT.id);
-		rightMotor = new TalonFX(ElevatorConstants.Motors.RIGHT.id);
-		leftMotor.getConfigurator().apply(ElevatorConstants.getConfig());
-		rightMotor.getConfigurator().apply(ElevatorConstants.getConfig());
+		leftMotor = new TalonFX(Motors.LEFT.id);
+		rightMotor = new TalonFX(Motors.RIGHT.id);
+		leftMotor.getConfigurator().apply(getConfig());
+		rightMotor.getConfigurator().apply(getConfig());
 		leftMotor.setNeutralMode(NeutralModeValue.Brake);
 		rightMotor.setNeutralMode(NeutralModeValue.Brake);
 		rightMotor.setControl(
 			new Follower(leftMotor.getDeviceID(), true));
-
 		if (Robot.isSimulation()) {
-			motorSim = new DCMotorSim(
-				LinearSystemId.createDCMotorSystem(
-					DCMotor.getKrakenX60Foc(2), 0.001, ElevatorConstants.GEAR_RATIO),
-					DCMotor.getKrakenX60Foc(2));
 			elevatorSim = new ElevatorSim(
-				LinearSystemId.createElevatorSystem(
-					motorSim.getGearbox(),
-					ElevatorConstants.CARRIAGE_WEIGHT,
-					ElevatorConstants.SPROCKET_RADIUS,
-					ElevatorConstants.GEAR_RATIO),
-				motorSim.getGearbox(),
+				DCMotor.getKrakenX60(2),
+				GEAR_RATIO,
+				CARRIAGE_WEIGHT,
+				SPROCKET_RADIUS,
 				0.0,
 				2.0,
 				true,
-				0.0,
-				0.01, 0.0);
+				0.01, 
+				0.0001, 0.0
+			);
 		}
+			
 		mechanism = new Mechanism2d(1, 3);
 		MechanismRoot2d root = mechanism.getRoot("Elevator", 0.5, 0);
 		ligament = new MechanismLigament2d("Elevator", 0, 90);
@@ -98,14 +92,14 @@ public class Elevator extends SubsystemBase {
 	@Override
 	public void periodic() {
 		// Read the height from the motor encoder
-		lastReadHeight = ElevatorConstants.rotationsToMeters(
+		lastReadHeight = rotationsToMeters(
 			leftMotor.getPosition().getValueAsDouble()) 
-			+ ElevatorConstants.END_EFFECTOR_HEIGHT;
+			+ END_EFFECTOR_HEIGHT;
 		// updates the motor
 		leftMotor.setControl(request);
 		// Only if not in simulation: sets the ligament manually
 		if (Robot.isReal()) {
-			ligament.setLength(lastReadHeight - ElevatorConstants.END_EFFECTOR_HEIGHT);
+			ligament.setLength(lastReadHeight - END_EFFECTOR_HEIGHT);
 		}
 	}
 
@@ -120,13 +114,12 @@ public class Elevator extends SubsystemBase {
 		elevatorSim.setInput(motorVoltage);
 		elevatorSim.update(Constants.DT);
 
-		// Gets the motor position and velocities from the elevator
-		double mechanismPositionRot = ElevatorConstants.metersToRotations(elevatorSim.getPositionMeters());
-		double mechanismVelocityRotPerSec = ElevatorConstants.metersToRotations(elevatorSim.getVelocityMetersPerSecond());
+		double motorRot = metersToRotations(elevatorSim.getPositionMeters());
+		double motorVel = metersToRotations(elevatorSim.getVelocityMetersPerSecond());
 
-		// Puts them back in the motor sim
-		simState.setRawRotorPosition(mechanismPositionRot);
-		simState.setRotorVelocity(mechanismVelocityRotPerSec);
+		// Feed correct motor values into CTRE sim
+		simState.setRawRotorPosition(motorRot);
+		simState.setRotorVelocity(motorVel);
 
 		// Updates the battery
 		RoboRioSim.setVInVoltage(
@@ -142,7 +135,7 @@ public class Elevator extends SubsystemBase {
 	}
 
 	/** Moves to a known scoring height */
-	public Command moveToScoringHeight(ElevatorConstants.Heights height) {
+	public Command moveToScoringHeight(Heights height) {
 		return defer(() -> {
 			if (!CoralShooter.getInstance().isCoralObstructingElevator()) {
 				return moveToScoringHeightUnsafe(height);
@@ -161,7 +154,7 @@ public class Elevator extends SubsystemBase {
 	 * Moves to a known scoring height 
 	 * <p> is not safe </p>
 	*/
-	private Command moveToScoringHeightUnsafe(ElevatorConstants.Heights height) {
+	private Command moveToScoringHeightUnsafe(Heights height) {
 		return moveToTarget(height.height).withName(height.name() + ": Unsafe, Moving");
 	}
 
@@ -169,8 +162,8 @@ public class Elevator extends SubsystemBase {
 	private Command moveToTarget(double targetHeight) {
 		return runOnce(() -> setRequest(
 			new MotionMagicVoltage(
-				ElevatorConstants.metersToRotations(
-					targetHeight - ElevatorConstants.END_EFFECTOR_HEIGHT))))
+				metersToRotations(
+					targetHeight - END_EFFECTOR_HEIGHT))))
 			.andThen(
 				Commands.waitUntil(() -> isNearTarget(targetHeight)))
 			.withName(String.format("%.2f: Unknown, Moving", targetHeight));
@@ -217,7 +210,7 @@ public class Elevator extends SubsystemBase {
 		return MathUtil.isNear(
 			lastReadHeight,
 			targetHeight,
-			ElevatorConstants.EPSILON);
+			EPSILON);
 	}
 
 	@Override

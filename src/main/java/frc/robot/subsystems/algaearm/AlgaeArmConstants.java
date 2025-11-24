@@ -10,20 +10,27 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
 public class AlgaeArmConstants {
-    public static final double EPSILON = 0.01; // Meters
-    
-    public static final double SPROCKET_RADIUS = Units.inchesToMeters(0.8785); // Effective pitch radius
-    public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
+    public static final double EPSILON = Constants.TAU / 360 ; // Radians
     public static final double GEAR_RATIO = 24;
 
     private static final double RADIANS_PER_ROTATION = Constants.TAU / GEAR_RATIO; // Approximated via counting both gears used + the gear box. gear box is 2:1
 
     public static final double MAX_ANGLE = Math.PI / 2;
     public static final double MIN_ANGLE = 0; // Min angle in Radians
+    public static final double LENGTH = 0.43; // Meters
+
+
+    public static enum Angles {
+        STOW(0.0),
+        DEPLOY(Math.PI / 2);
+        public final double angle;
+        private Angles(double angle) {
+            this.angle = angle;
+        }
+    }
 
     /** Motor ID */
     public static enum Motors {
@@ -43,10 +50,10 @@ public class AlgaeArmConstants {
             .withSlot0(new Slot0Configs()
                 .withKS(0.125)
                 .withKV(0.0)
-                .withKP(5.0)
+                .withKP(1.0)
                 .withKI(0.0)
-                .withKD(0.1)
-                .withKG(0.1)
+                .withKD(0.05)
+                .withKG(0.5)
                 .withGravityType(GravityTypeValue.Arm_Cosine))
             .withMotionMagic(new MotionMagicConfigs()
                 .withMotionMagicAcceleration(172.5)
