@@ -29,7 +29,7 @@ public class CtreDriveConstants {
     public static final Distance kWheelRadius = Inches.of(2);
 
     // Both sets of gains need to be tuned to your individual robot via sysid.
-    
+
     // translation sysid results 
     static double kS_sysid_drive = 0.12903;
     static double kV_sysid_drive = 2.3293;
@@ -107,7 +107,7 @@ public class CtreDriveConstants {
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
-    private static final double kCoupleRatio = 3.5714285714285716;
+    private static final double kCoupleRatio = kDriveGearRatio /3.; //(drive gear ratio)/(bevel gear ratio) 3.5714285714285716;
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;
