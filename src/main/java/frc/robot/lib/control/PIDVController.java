@@ -8,8 +8,10 @@ import frc.robot.lib.control.ControlConstants.*;
 public class PIDVController {
     private final PIDFConstants constants;
 
+    private double positionMeasurement = 0.0;
+    private double velocityMeasurement = 0.0;
+
     private double target = 0.0;
-    private Pair<Double, Double> measurement = new Pair<>(0.0, 0.0);
     private double feedforward = 0.0;
     private double integral = 0.0;
 
@@ -51,39 +53,37 @@ public class PIDVController {
         isContinuous = false;
     }
 
-    public void setInput(Pair<Double, Double> input) {
-        this.measurement = input;
+    public void setInput(double positionMeasurement, double velocityMeasurement) {
+        this.positionMeasurement = positionMeasurement;
+        this.velocityMeasurement = velocityMeasurement;
     }
 
-    public void setTarget(Double target) {
+    public void setTarget(double target) {
         this.target = target;
     }
 
     /** Sets the feedforward value. */
-    public void setFeedforward(Double feedforward) {
+    public void setFeedforward(double feedforward) {
         this.feedforward = feedforward;
     }
 
-    public Double getOutput() {
+    public double getOutput() {
         double dt = timer.get();
         timer.reset();
         if (dt <= 0.0) return 0.0;
-        
-        double position = measurement.getFirst();
-        double velocity = measurement.getSecond();
 
         error = isContinuous
-            ? MathUtil.inputModulus(target - position, -(maxRange - minRange) / 2.0, (maxRange - minRange) / 2.0)
-            : target - position;
+            ? MathUtil.inputModulus(target - positionMeasurement, -(maxRange - minRange) / 2.0, (maxRange - minRange) / 2.0)
+            : target - positionMeasurement;
 
         integral += error * dt;
 
-        double derivative = feedforward - velocity;
+        double derivative = feedforward - velocityMeasurement;
 
         return constants.kP * error
-             + constants.kI * integral
-             + constants.kD * derivative
-             + constants.kF * feedforward;
+            + constants.kI * integral
+            + constants.kD * derivative
+            + constants.kF * feedforward;
     }
 
     /** Sets the integral value. */

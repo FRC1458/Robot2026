@@ -3,9 +3,7 @@ package frc.robot.subsystems.drive.commands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -74,10 +72,10 @@ public class PIDToPoseCommand extends Command {
         
         translationController.setTarget(delta.getNorm());
 
-        translationController.setInput(new Pair<Double, Double>(
+        translationController.setInput(
             0.0,
             Util.chassisSpeedsMagnitude(
-                currentSpeeds)));
+                currentSpeeds));
         
         double vMagnitude = translationController.getOutput();
         SmartDashboard.putNumber("Debug/PIDToPoseCommand/vmag", vMagnitude);
@@ -85,8 +83,7 @@ public class PIDToPoseCommand extends Command {
 
         thetaController.setTarget(target.getRotation().getRadians());
         thetaController.setInput(
-            new Pair<Double, Double>(
-                currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond));
+            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
 
         double rotation = thetaController.getOutput();
 

@@ -3,7 +3,6 @@ package frc.robot.subsystems.drive.commands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -120,8 +119,8 @@ public class TrajectoryCommand extends Command {
         xController.setFeedforward(vxFF);
         yController.setFeedforward(vyFF);
 
-        xController.setInput(new Pair<Double, Double>(currentPose.getX(), currentSpeeds.vxMetersPerSecond));
-        yController.setInput(new Pair<Double, Double>(currentPose.getY(), currentSpeeds.vyMetersPerSecond));
+        xController.setInput(currentPose.getX(), currentSpeeds.vxMetersPerSecond);
+        yController.setInput(currentPose.getY(), currentSpeeds.vyMetersPerSecond);
 
         double vx = xController.getOutput();
         double vy = yController.getOutput();
@@ -129,8 +128,7 @@ public class TrajectoryCommand extends Command {
         thetaController.setTarget(targetState.pose.getRotation().getRadians());
         thetaController.setFeedforward(targetState.speeds.omegaRadiansPerSecond);
         thetaController.setInput(
-            new Pair<Double, Double>(
-                currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond));
+            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
 
         double rotation = thetaController.getOutput();
 

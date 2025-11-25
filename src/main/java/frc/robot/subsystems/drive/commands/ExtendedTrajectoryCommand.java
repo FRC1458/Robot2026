@@ -15,11 +15,10 @@ public class ExtendedTrajectoryCommand extends TrajectoryCommand {
 	@SafeVarargs
 	public ExtendedTrajectoryCommand(Drive drive, RedTrajectory trajectory, Pair<Double, Command>... triggers) {
 		super(trajectory);
-		
 		addRequirements(drive);
 		setName("Extended Trajectory Command");
 		this.triggers = new ArrayList<>(List.of(triggers));
-		for (Pair<Double,Command> trigger : triggers) {
+		for (Pair<Double, Command> trigger : triggers) {
 			new Trigger(() -> trajectory.progress > trigger.getFirst()).onTrue(trigger.getSecond());
 			addRequirements(trigger.getSecond().getRequirements());
 		}
@@ -27,6 +26,7 @@ public class ExtendedTrajectoryCommand extends TrajectoryCommand {
 
 	@Override
 	public void end(boolean interrupted) {
+		super.end(interrupted);
 		if (interrupted) {
 			for (Pair<Double, Command> trigger : triggers) {
 				if (trigger.getSecond().isScheduled() && !trigger.getSecond().isFinished()){
