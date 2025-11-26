@@ -19,6 +19,7 @@ public class VisionDeviceManager extends SubsystemBase {
 	}
 
 	// private VisionDevice leftCamera;
+	@SuppressWarnings("unused")
 	private VisionDevice rightCamera;
 	private VisionDevice frontrCamera;
 	private VisionDevice frontlCamera;
