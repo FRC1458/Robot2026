@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.subsystems.drive.DriveConstants;
-// import frc.robot.lib.swerve.COTSTalonFXSwerveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 /**
@@ -200,12 +199,26 @@ public final class Constants {
 			// 		Rotation2d.fromDegrees(180)),
 			// 	0, 1600, 1200);
 
-			R_CONSTANTS (
-				"OV9281",  
+			// R_CONSTANTS (
+			// 	"right",  
+			// 	new edu.wpi.first.math.geometry.Transform3d(
+			// 		new Translation3d(0.267, 0.0312, 0.2791),
+			//		new Rotation3d(TAU/4, -TAU/4, 0)),
+			//	0, 1280, 800),
+			
+			FR_CONSTANTS (
+				"frontr",
 				new edu.wpi.first.math.geometry.Transform3d(
-					new Translation3d(0.267, 0.0312, 0.2791),
-					new Rotation3d(TAU/4, -TAU/4, 0)),
-				0, 1280, 800);
+					new Translation3d(0.2822, 0.1087, 0.1984),
+					new Rotation3d(0.5 * TAU, 14.0 * TAU / 360.0, -26.0 * TAU/360.0)),
+				1, 1280, 800),
+			
+			FL_CONSTANTS (
+				"frontl",
+				new edu.wpi.first.math.geometry.Transform3d(
+					new Translation3d(0.2822, -0.1087, 0.1984),
+					new Rotation3d(0.5 * TAU, 14.0 * TAU / 360.0, 26.0 * TAU/360.0)),
+				2, 1280, 800);
 
 			public final String tableName;
 			public final Transform3d robotToCamera;
