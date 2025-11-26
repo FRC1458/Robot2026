@@ -24,13 +24,11 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.elevator.Elevator;
 
 public class AlgaeArm extends SubsystemBase {
     private static AlgaeArm algaeArmInstance;
@@ -46,7 +44,6 @@ public class AlgaeArm extends SubsystemBase {
     private double currentAngle;
     
 	private SingleJointedArmSim armSim;
-	private Mechanism2d mechanism;
 	private MechanismLigament2d ligament;
 
     private AlgaeArm() {
@@ -66,11 +63,8 @@ public class AlgaeArm extends SubsystemBase {
                 Constants.TAU * 1.0 / 4.0);
         }
         
-		mechanism = new Mechanism2d(1, 1);
-		MechanismRoot2d root = mechanism.getRoot("AlgaeArm", 0.5, 0);
 		ligament = new MechanismLigament2d("AlgaeArm", LENGTH, 90);
-		root.append(ligament);
-		SmartDashboard.putData("Mechanisms/AlgaeArm", mechanism);
+        Elevator.getInstance().getLigament().append(ligament);
         setDefaultCommand(stop());
 		TelemetryManager.getInstance().addSendable(this);
     }
@@ -111,7 +105,7 @@ public class AlgaeArm extends SubsystemBase {
 			BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
 
 		// updates the widget
-		ligament.setAngle(armSim.getAngleRads() / Constants.TAU * 360);
+		ligament.setAngle(-armSim.getAngleRads() / Constants.TAU * 360);
 	}
     
 	/** Swaps the control request */

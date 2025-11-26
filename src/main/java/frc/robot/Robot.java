@@ -2,6 +2,8 @@ package frc.robot;
 
 import frc.robot.auto.AutoSelector;
 
+import java.util.Optional;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -89,6 +91,9 @@ public class Robot extends TimedRobot {
 	public void disabledInit() {
 		Led.getInstance().setDefaultCommand(
 			Led.getInstance().setSolidColorCommand(Color.kGreen));
+		try {
+			commandScheduler.requiring(Led.getInstance()).cancel();
+		} catch (Exception e) {}
 	}
 
 	/** This function is called periodically during disabled. */
@@ -101,6 +106,12 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		autoCommand = autoChooser.getAuto();
+
+		Led.getInstance().setDefaultCommand(
+			Led.getInstance().blinkCommand(Color.kOrange, Color.kBlue, 0.5));
+		try {
+			commandScheduler.requiring(Led.getInstance()).cancel();
+		} catch (Exception e) {}
 
 		if (autoCommand != null) {
 			autoCommand.schedule();
@@ -128,6 +139,9 @@ public class Robot extends TimedRobot {
 
 		Led.getInstance().setDefaultCommand(
 			Led.getInstance().setRainbowCommand());
+		try {
+			commandScheduler.requiring(Led.getInstance()).cancel();
+		} catch (Exception e) {}
 		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
 		
 		ControlsMapping.mapTeleopCommand();

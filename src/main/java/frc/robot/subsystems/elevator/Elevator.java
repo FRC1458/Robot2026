@@ -22,10 +22,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -33,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.lib.util.Mechanisms;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.led.Led;
@@ -53,7 +51,6 @@ public class Elevator extends SubsystemBase {
 	private ControlRequest request = new NeutralOut();
 
 	private ElevatorSim elevatorSim;
-	private Mechanism2d mechanism;
 	private MechanismLigament2d ligament;
 
 	private Elevator() {
@@ -79,12 +76,9 @@ public class Elevator extends SubsystemBase {
 				0.0001, 0.0
 			);
 		}
-			
-		mechanism = new Mechanism2d(1, 3);
-		MechanismRoot2d root = mechanism.getRoot("Elevator", 0.5, 0);
+
 		ligament = new MechanismLigament2d("Elevator", 0, 90);
-		root.append(ligament);
-		SmartDashboard.putData("Mechanisms/Elevator", mechanism);
+		Mechanisms.getInstance().elevatorAndArmRoot.append(ligament);
 		TelemetryManager.getInstance().addSendable(this);
 		setDefaultCommand(stop());
 	}
@@ -99,7 +93,7 @@ public class Elevator extends SubsystemBase {
 		leftMotor.setControl(request);
 		// Only if not in simulation: sets the ligament manually
 		if (Robot.isReal()) {
-			ligament.setLength(lastReadHeight - END_EFFECTOR_HEIGHT);
+			ligament.setLength(lastReadHeight);
 		}
 	}
 
@@ -126,7 +120,7 @@ public class Elevator extends SubsystemBase {
 			BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
 
 		// updates the widget
-		ligament.setLength(elevatorSim.getPositionMeters());
+		ligament.setLength(elevatorSim.getPositionMeters() + END_EFFECTOR_HEIGHT);
 	}
 
 	/** Swaps the control request */
@@ -211,6 +205,10 @@ public class Elevator extends SubsystemBase {
 			lastReadHeight,
 			targetHeight,
 			EPSILON);
+	}
+
+	public MechanismLigament2d getLigament() {
+		return ligament;
 	}
 
 	@Override

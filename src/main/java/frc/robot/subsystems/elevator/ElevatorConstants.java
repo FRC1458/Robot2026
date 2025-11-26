@@ -17,7 +17,7 @@ public class ElevatorConstants {
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
     public static final double METERS_PER_ROTATION = 0.028776; // Approximated using measurement
     public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters
-    public static final double CARRIAGE_WEIGHT = 6.55; // kg
+    public static final double CARRIAGE_WEIGHT = 7.55; // kg
 
     public static final double MAX_ACCEL = 1.5;
     public static final double MAX_SPEED = 1.0; // m/s
