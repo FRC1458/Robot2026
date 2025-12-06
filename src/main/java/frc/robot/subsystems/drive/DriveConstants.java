@@ -16,9 +16,9 @@ public final class DriveConstants {
     public static final double MAX_SPEED = 5.0;
     public static final double MAX_ACCEL = 5.0;
     public static final double MAX_ROTATION_SPEED = 
-        Units.DegreesPerSecond.of(540.0).in(Units.RadiansPerSecond);
+        Units.RotationsPerSecond.of(3.0).in(Units.RadiansPerSecond);
     public static final double MAX_ROTATION_ACCEL = 
-        Units.DegreesPerSecond.of(2880.0).in(Units.RadiansPerSecond);
+        Units.RotationsPerSecondPerSecond.of(5.0).in(Units.RadiansPerSecondPerSecond);
 
     // Swerve dimensions
     public static final double TRACK_WIDTH = Units.Inches.of(24).in(Units.Meters);
@@ -39,11 +39,13 @@ public final class DriveConstants {
     public static final PIDFConstants TRANSLATION_CONSTANTS = 
         new PIDFConstants(3.5, 0.0, 0.1, 1.0);
     public static final ProfiledPIDFConstants PROFILED_TRANSLATION_CONSTANTS = 
-        new ProfiledPIDFConstants(3.5, 0.0, 0.1, 1.0, 
+        new ProfiledPIDFConstants(4.0, 0.0, 0.1, 1.0, 
             new TrapezoidProfile.Constraints(
-                MAX_SPEED * 0.7, 
-                MAX_ACCEL * 0.7));
-    public static final ProfiledPIDFConstants ROTATION_CONSTANTS = 
+                MAX_SPEED, 
+                MAX_ACCEL));
+    public static final PIDFConstants ROTATION_CONSTANTS = 
+        new PIDFConstants(4.0, 0.0, 0.1, 1.0);
+    public static final ProfiledPIDFConstants PROFILED_ROTATION_CONSTANTS = 
         new ProfiledPIDFConstants(4.0, 0.0, 0.0, 1.0, 
             new TrapezoidProfile.Constraints(
                 MAX_ROTATION_SPEED, 

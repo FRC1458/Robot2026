@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.util.Mechanisms;
+import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.coralshooter.CoralShooter;
 import frc.robot.subsystems.led.Led;
@@ -48,6 +49,9 @@ public class Elevator extends SubsystemBase {
 	private final TalonFX rightMotor;
 
 	private double lastReadHeight;
+	private double lastReadSpeed;
+
+	private double targetHeight = END_EFFECTOR_HEIGHT;
 	private ControlRequest request = new NeutralOut();
 
 	private ElevatorSim elevatorSim;
@@ -89,6 +93,8 @@ public class Elevator extends SubsystemBase {
 		lastReadHeight = rotationsToMeters(
 			leftMotor.getPosition().getValueAsDouble()) 
 			+ END_EFFECTOR_HEIGHT;
+		lastReadSpeed = rotationsToMeters(
+			leftMotor.getVelocity().getValueAsDouble());
 		// updates the motor
 		leftMotor.setControl(request);
 		// Only if not in simulation: sets the ligament manually
@@ -154,20 +160,24 @@ public class Elevator extends SubsystemBase {
 
 	/** Attempts to move the end effector to a height, in meters */
 	private Command moveToTarget(double targetHeight) {
-		return runOnce(() -> setRequest(
-			new MotionMagicVoltage(
-				metersToRotations(
-					targetHeight - END_EFFECTOR_HEIGHT))))
-			.andThen(
-				Commands.waitUntil(() -> isNearTarget(targetHeight)))
-			.withName(String.format("%.2f: Unknown, Moving", targetHeight));
+		return runOnce(
+			() -> {
+				this.targetHeight = targetHeight;
+				setRequest(new MotionMagicVoltage(
+					metersToRotations(
+						targetHeight - END_EFFECTOR_HEIGHT)));
+			}
+		).andThen(
+			Commands.waitUntil(() -> isNearTarget())
+		).withName(String.format("%.2f: Unknown, Moving", targetHeight));
 	}
 
 	/** Stops the elevator */
 	public Command stop() {
 		return runOnce(
 			() -> setRequest(
-				new PositionVoltage(leftMotor.getPosition().getValue())))
+				new PositionVoltage(
+					metersToRotations(targetHeight - END_EFFECTOR_HEIGHT))))
 			.withName("Stopped");
 	}
 
@@ -199,8 +209,26 @@ public class Elevator extends SubsystemBase {
 		});
 	}
 
+	public double estimateTimeToTarget(Heights height) {
+		return estimateTimeToTarget(height.height);
+	}
+
+	public double estimateTimeToTarget(double targetHeight) {
+		return Util.trapezoidProfileTimeToTarget(
+			lastReadHeight, lastReadSpeed, 
+			targetHeight, MAX_SPEED, MAX_ACCEL) 
+			+ 0.3; // Jerk offset
+	}
+
+	public double estimateTimeRemaining() {
+		return Util.trapezoidProfileTimeToTarget(
+			lastReadHeight, lastReadSpeed, targetHeight, 
+			MAX_SPEED, MAX_ACCEL) 
+			+ 0.16; // Jerk offset
+	}
+
 	/** Checks if the end effector is within 1 cm of the target */
-	public boolean isNearTarget(double targetHeight) {
+	public boolean isNearTarget() {
 		return MathUtil.isNear(
 			lastReadHeight,
 			targetHeight,
@@ -217,6 +245,14 @@ public class Elevator extends SubsystemBase {
 		builder.addDoubleProperty(
 			"Height",
 			() -> lastReadHeight,
+			null);
+		builder.addDoubleProperty(
+			"Speed",
+			() -> lastReadSpeed,
+			null);
+		builder.addDoubleProperty(
+			"Target Height",
+			() -> targetHeight,
 			null);
 		TelemetryManager.makeSendableTalonFX("Left", leftMotor, builder);
 		TelemetryManager.makeSendableTalonFX("Right", rightMotor, builder);

@@ -1,6 +1,7 @@
 package frc.robot.auto;
 
 import frc.robot.auto.AutoSelector.Auto;
+import frc.robot.auto.Automation.Levels;
 import frc.robot.lib.trajectory.RedTrajectory;
 import frc.robot.lib.trajectory.TrajectoryLoader;
 import frc.robot.lib.trajectory.RedTrajectory.TrajectoryType;
@@ -22,6 +23,11 @@ public final class AutoRoutines {
 		RedTrajectory traj = TrajectoryLoader.loadAutoTrajectory(TrajectoryType.PATHPLANNER, 
 			"testPath2").get();
 		return new TrajectoryCommand(traj);
+	}
+
+	@Auto(name = "Score Test")
+	public static Command testAutoScore() {
+		return Automation.score(true, Levels.L4);
 	}
 }
 

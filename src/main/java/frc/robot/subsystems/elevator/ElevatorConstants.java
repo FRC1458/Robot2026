@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
 public class ElevatorConstants {
-    public static final double EPSILON = 0.01; // Meters
+    public static final double EPSILON = 0.03; // Meters
 
     public static final double SPROCKET_RADIUS = 0.0412; // Effective pitch radius
     public static final double GEAR_RATIO = 9;

@@ -274,11 +274,10 @@ public class Util {
 		// Triangle
 		if (distance < minDistance) {
 			// Solve for peak velocity vp
-			double A = maxAccel;
-			double vp = Math.sqrt((2 * A * distance + v0 * v0) / 2);
+			double vp = Math.sqrt((2 * maxAccel * distance + v0 * v0) / 2);
 
-			double accelTime = (vp - v0) / A;
-			double decelTime = vp / A;
+			double accelTime = (vp - v0) / maxAccel;
+			double decelTime = vp / maxAccel;
 
 			return accelTime + decelTime;
 		}
@@ -291,5 +290,4 @@ public class Util {
 
 		return accelTime + cruiseTime + decelTime;
 	}
-
 }

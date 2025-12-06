@@ -5,11 +5,13 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
-import frc.robot.lib.util.Util;
+import frc.robot.lib.control.PIDVController;
 import frc.robot.lib.control.ProfiledPIDVController;
+import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 
@@ -22,25 +24,27 @@ public class PIDToPoseCommand extends Command {
     private final SwerveRequest.ApplyFieldSpeeds request = 
         new SwerveRequest.ApplyFieldSpeeds();
 
-    private final ProfiledPIDVController translationController;
+    private final PIDVController translationController;
     private final ProfiledPIDVController thetaController;
 
     private final Pose2d target;
     private Pose2d currentPose;
     private ChassisSpeeds currentSpeeds;
 
+    private ChassisSpeeds targetSpeeds = new ChassisSpeeds();
+
     public PIDToPoseCommand(Pose2d target) {
         this(
             Drive.getInstance(), 
             target,
-            DriveConstants.PROFILED_TRANSLATION_CONSTANTS, 
-            DriveConstants.ROTATION_CONSTANTS);
+            DriveConstants.TRANSLATION_CONSTANTS, 
+            DriveConstants.PROFILED_ROTATION_CONSTANTS);
     }
     
-    public PIDToPoseCommand(Drive drive, Pose2d target, ProfiledPIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
+    public PIDToPoseCommand(Drive drive, Pose2d target, PIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
-        translationController = new ProfiledPIDVController(translationConstants);
+        translationController = new PIDVController(translationConstants);
         thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -59,7 +63,8 @@ public class PIDToPoseCommand extends Command {
         setRobotState(
             drive.getPose(), drive.getFieldSpeeds());
         // updates the request
-        request.withSpeeds(calculateSpeeds());
+        targetSpeeds = calculateSpeeds();
+        request.withSpeeds(targetSpeeds);
     }
 
     public void setRobotState(Pose2d pose, ChassisSpeeds speeds) {
@@ -77,26 +82,21 @@ public class PIDToPoseCommand extends Command {
         var delta = target.getTranslation().minus(currentPose.getTranslation());
         
         // Magnitude target
-        translationController.setTarget(delta.getNorm());
-
-        translationController.setInput(
-            0.0, // We are exactly where we are
-            Util.chassisSpeedsMagnitude(
-                currentSpeeds)); // How fast we are going
-        
-        double vMagnitude = translationController.getOutput();
-        SmartDashboard.putNumber("Debug/PIDToPoseCommand/vmag", vMagnitude);
+        double vMagnitude = translationController.setTarget(delta.getNorm())
+            .setMeasurement(
+                0.0, // We are exactly where we are
+                Util.chassisSpeedsMagnitude(
+                    currentSpeeds)) // How fast we are going
+            .getOutput();
         
         // The angle we are at relative to the target
         var deltaRotation = delta.getAngle();
 
-        // Theta target
-        thetaController.setTarget(target.getRotation().getRadians());
-        // We are where we are and we are as fast as how fast we are going
-        thetaController.setInput(
-            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond); 
-
-        double rotation = thetaController.getOutput();
+        double rotation = thetaController.setTarget(target.getRotation().getRadians()) // Theta target
+            .setMeasurement(
+                currentPose.getRotation().getRadians(), 
+                currentSpeeds.omegaRadiansPerSecond) // We are where we are and we are as fast as how fast we are going
+            .getOutput();
 
         return new ChassisSpeeds(
             vMagnitude * deltaRotation.getCos(), // convert from polar to rectangular
@@ -106,8 +106,8 @@ public class PIDToPoseCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return translationController.error < DriveConstants.EPSILON_TRANSLATION
-            && MathUtil.isNear(thetaController.error, 0, DriveConstants.EPSILON_ROTATION); // Within tolerance
+        return translationController.getError() < DriveConstants.EPSILON_TRANSLATION
+            && MathUtil.isNear(thetaController.getError(), 0, DriveConstants.EPSILON_ROTATION); // Within tolerance
     }
 
     @Override
@@ -116,8 +116,31 @@ public class PIDToPoseCommand extends Command {
         drive.setSwerveRequest(new SwerveRequest.ApplyRobotSpeeds());
     }
 
+    public static double estimateTimeToPose(
+        Pose2d currentPose,
+        ChassisSpeeds currentSpeeds,
+        Pose2d targetPose
+    ) {
+        double translationError = 
+            currentPose.getTranslation().getDistance(targetPose.getTranslation());
+
+        double currentV = Util.chassisSpeedsMagnitude(currentSpeeds);
+
+        return Util.trapezoidProfileTimeToTarget(
+            translationError, 
+            currentV, 
+            0, 
+            DriveConstants.MAX_SPEED, 
+            DriveConstants.MAX_ACCEL);
+    }
+
     /** Helper for retrieving the target of this PID to Pose command */
     public Pose2d getTarget() {
         return target;
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        super.initSendable(builder);
     }
 }

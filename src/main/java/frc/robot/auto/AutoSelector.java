@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
  * A class to select autos
  */
 public class AutoSelector {
-
     @Retention(RetentionPolicy.RUNTIME) 
     @Target(ElementType.METHOD)
     /** An autonomous routine command. */
@@ -36,7 +35,7 @@ public class AutoSelector {
                     name = auto.getName();
                 }
 
-                if (auto.getReturnType().equals(Command.class)) {
+                if (auto.getReturnType() == Command.class) {
                     chooser.addOption(name, () -> {
                         try {
                             return (Command) auto.invoke(null);
