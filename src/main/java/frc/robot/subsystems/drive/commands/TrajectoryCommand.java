@@ -11,15 +11,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
-import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.control.PIDVController;
-import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.trajectory.RedTrajectory;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 
 /**
  * Command that follows a trajectory
+ * TODO: fix the profiled pid controller
  */
 public class TrajectoryCommand extends Command {
     public final Drive drive;
@@ -29,7 +28,7 @@ public class TrajectoryCommand extends Command {
 
     private final PIDVController xController;
     private final PIDVController yController;
-    private final ProfiledPIDVController thetaController;
+    private final PIDVController thetaController;
     private double accelConstant;
 
     private final RedTrajectory trajectory;
@@ -44,22 +43,22 @@ public class TrajectoryCommand extends Command {
             Drive.getInstance(), 
             trajectory, 
             TRANSLATION_CONSTANTS, 
-            PROFILED_ROTATION_CONSTANTS, 
+            ROTATION_CONSTANTS, 
             ACCELERATION_CONSTANT);
     }
     
     /**
-     * A drive controller that works with 2 {@link PIDVController}s for translation and one {@link ProfiledPIDVController} for rotation.
+     * A drive controller that works with 2 {@link PIDVController}s for translation and one {@link PIDVController} for rotation.
      * @param translationConstants The {@link PIDFConstants} for the translation of the robot.
-     * @param rotationConstants The {@link ProfiledPIDFConstants} for the rotation of the robot.
+     * @param rotationConstants The {@link PIDFConstants} for the rotation of the robot.
      * @param accelConstant The acceleration feedforwards (useful for traversing sharp turns on a trajectory).
      */
-    public TrajectoryCommand(Drive drive, RedTrajectory trajectory, PIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants, double accelConstant) {
+    public TrajectoryCommand(Drive drive, RedTrajectory trajectory, PIDFConstants translationConstants, PIDFConstants rotationConstants, double accelConstant) {
         this.drive = drive;
         this.trajectory = trajectory;
         xController = new PIDVController(translationConstants);
         yController = new PIDVController(translationConstants);
-        thetaController = new ProfiledPIDVController(rotationConstants);
+        thetaController = new PIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
         this.accelConstant = accelConstant;
 
