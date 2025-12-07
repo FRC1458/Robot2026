@@ -121,7 +121,6 @@ public class TrajectoryCommand extends Command {
             .setMeasurement(currentPose.getX(), currentSpeeds.vxMetersPerSecond) // Measurement setting
             .getOutput(); // Output getting
 
-
         // same thing but for vy and rotation instead
         double vy = yController.setTarget(targetState.pose.getY())    
             .setFeedforward(vyFF)

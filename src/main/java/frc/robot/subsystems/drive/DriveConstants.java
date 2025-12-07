@@ -14,12 +14,12 @@ public final class DriveConstants {
     public static final double EPSILON_ROTATION = Units.Degrees.of(2.0).in(Units.Radians); // 2.0 deg in rads
     
     // Maximums
-    public static final double MAX_SPEED = Units.MetersPerSecond.of(2.5).in(Units.MetersPerSecond);
-    public static final double MAX_ACCEL = Units.MetersPerSecondPerSecond.of(5.0).in(Units.MetersPerSecondPerSecond);
+    public static final double MAX_SPEED = Units.MetersPerSecond.of(3.5).in(Units.MetersPerSecond);
+    public static final double MAX_ACCEL = Units.MetersPerSecondPerSecond.of(6.0).in(Units.MetersPerSecondPerSecond);
     public static final double MAX_ROTATION_SPEED = 
-        Units.RotationsPerSecond.of(3.0).in(Units.RadiansPerSecond);
+        Units.RotationsPerSecond.of(2.0).in(Units.RadiansPerSecond);
     public static final double MAX_ROTATION_ACCEL = 
-        Units.RotationsPerSecondPerSecond.of(5.0).in(Units.RadiansPerSecondPerSecond);
+        Units.RotationsPerSecondPerSecond.of(4.0).in(Units.RadiansPerSecondPerSecond);
 
     // Swerve dimensions
     public static final double TRACK_WIDTH = Units.Inches.of(24).in(Units.Meters);
