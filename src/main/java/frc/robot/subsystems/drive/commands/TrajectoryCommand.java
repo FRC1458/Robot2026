@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive.commands;
 
+import static frc.robot.subsystems.drive.DriveConstants.*;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
@@ -8,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.control.PIDVController;
@@ -42,9 +43,9 @@ public class TrajectoryCommand extends Command {
         this(
             Drive.getInstance(), 
             trajectory, 
-            Constants.Auto.TRANSLATION_CONSTANTS, 
-            Constants.Auto.ROTATION_CONSTANTS, 
-            Constants.Auto.ACCELERATION_CONSTANT);
+            TRANSLATION_CONSTANTS, 
+            PROFILED_ROTATION_CONSTANTS, 
+            ACCELERATION_CONSTANT);
     }
     
     /**
@@ -68,12 +69,12 @@ public class TrajectoryCommand extends Command {
             .addStructPublisher("Debug/TrajectoryCommand", 
                 Pose3d.struct, () -> new Pose3d(
                     targetState.pose));
-        setName("Trajectory " + trajectory.name);
+        setName(trajectory.name + " :Trajectory");
     }
 
     @Override
     public void initialize() {
-        timer.start();
+        timer.start(); // actually starts the timer
         drive.setSwerveRequest(request);
     }
 
@@ -92,69 +93,77 @@ public class TrajectoryCommand extends Command {
 
     public ChassisSpeeds calculateSpeeds() {
         if (trajectory == null || currentPose == null || currentSpeeds == null || trajectory.isDone()) {
-            return new ChassisSpeeds();
+            return new ChassisSpeeds(); // Safety
         }
 
+        // Advances along the trajectory
         targetState = trajectory.advanceTo(timer.get());
 
+        // gets the feedforwards for translation
         double vxFF = targetState.speeds.vxMetersPerSecond;
         double vyFF = targetState.speeds.vyMetersPerSecond;
 
         double xAccelFF = MathUtil.applyDeadband(
             targetState.accels.ax,    
-            Constants.Drive.MAX_ACCEL * 0.5);
+            MAX_ACCEL * 0.5);
         double yAccelFF = MathUtil.applyDeadband(
             targetState.accels.ay,
-            Constants.Drive.MAX_ACCEL * 0.5);
-
+            MAX_ACCEL * 0.5);
         double angularAccel = MathUtil.applyDeadband(
             targetState.accels.alpha,
-            Constants.Drive.MAX_ROTATION_ACCEL * 0.5);
+            MAX_ROTATION_ACCEL * 0.5); // what did i even want to accomplish from this
+            
+        // acceleration feedforwards
         xAccelFF += -angularAccel * targetState.pose.getRotation().getSin();
         yAccelFF += angularAccel * targetState.pose.getRotation().getCos();
 
-        xController.setTarget(targetState.pose.getX());
-        yController.setTarget(targetState.pose.getY());
+        double vx = xController.setTarget(targetState.pose.getX())// Target setting        
+            .setFeedforward(vxFF) // Feedforward setting
+            .setMeasurement(currentPose.getX(), currentSpeeds.vxMetersPerSecond) // Measurement setting
+            .getOutput(); // Output getting
 
-        xController.setFeedforward(vxFF);
-        yController.setFeedforward(vyFF);
 
-        xController.setInput(currentPose.getX(), currentSpeeds.vxMetersPerSecond);
-        yController.setInput(currentPose.getY(), currentSpeeds.vyMetersPerSecond);
+        // same thing but for vy and rotation instead
+        double vy = yController.setTarget(targetState.pose.getY())    
+            .setFeedforward(vyFF)
+            .setMeasurement(currentPose.getY(), currentSpeeds.vyMetersPerSecond)
+            .getOutput();
 
-        double vx = xController.getOutput();
-        double vy = yController.getOutput();
-
-        thetaController.setTarget(targetState.pose.getRotation().getRadians());
-        thetaController.setFeedforward(targetState.speeds.omegaRadiansPerSecond);
-        thetaController.setInput(
-            currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
-
-        double rotation = thetaController.getOutput();
+        double rotation = thetaController.setTarget(targetState.pose.getRotation().getRadians())
+            .setFeedforward(targetState.speeds.omegaRadiansPerSecond)
+            .setMeasurement(
+                currentPose.getRotation().getRadians(), 
+                currentSpeeds.omegaRadiansPerSecond)
+            .getOutput();
 
         return new ChassisSpeeds(
             vx + xAccelFF * accelConstant,
             vy + yAccelFF * accelConstant,
-            rotation);
+            rotation); // Finally
     }
 
     @Override
     public boolean isFinished() {
         if (trajectory == null) {
-            return true;
+            return true; // safety
         }
+
         if (trajectory.isDone()) {
-            System.out.println("Done with trajectory, error: " + Math.hypot(xController.error, yController.error));
-            return true;
+            System.out.println("Done with trajectory, error: " + 
+                Math.hypot(xController.getError(), yController.getError()));
+            return true; // We are done guys
         }
+
         return false;
     }
 
     @Override
     public void end(boolean interrupted) {
+        // swap out request at end
         drive.setSwerveRequest(new SwerveRequest.FieldCentric());
     }
 
+    /** Helper for getting trajectory from this object */
     public RedTrajectory getTrajectory() {
         return trajectory;
     }

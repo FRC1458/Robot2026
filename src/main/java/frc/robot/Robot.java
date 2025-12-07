@@ -2,12 +2,18 @@ package frc.robot;
 
 import frc.robot.auto.AutoSelector;
 
+import java.util.Optional;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
@@ -20,9 +26,10 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
+@SuppressWarnings("unused")
 public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
-	public AutoSelector autoChooser;
+	private AutoSelector autoChooser;
 	private Command autoCommand;
 
 	public static final CommandXboxController controller =
@@ -33,22 +40,12 @@ public class Robot extends TimedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		if (Robot.isSimulation()) {
-			// TODO: remove this
-			
-		}
-		
-		// RobotState.reset(Timer.getFPGATimestamp(), new Pose2d());
-		// RobotState.resetKalman();
-
-		Drive.getInstance();
 		if (Robot.isReal()) {
 			VisionDeviceManager.getInstance();
 		}
+		Drive.getInstance();
 		TelemetryManager.getInstance();
-
-		FollowPathCommand.warmupCommand().schedule();;
-
+		FollowPathCommand.warmupCommand().schedule();
 		autoChooser = new AutoSelector();
 	}
 
@@ -71,7 +68,6 @@ public class Robot extends TimedRobot {
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
 	public void disabledInit() {
-
 	}
 
 	/** This function is called periodically during disabled. */
@@ -83,9 +79,7 @@ public class Robot extends TimedRobot {
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
-		// RobotState.setAlliance(DriverStation.getAlliance());
 		autoCommand = autoChooser.getAuto();
-
 		if (autoCommand != null) {
 			autoCommand.schedule();
 		} else {
@@ -109,7 +103,8 @@ public class Robot extends TimedRobot {
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-
+		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		
 		ControlsMapping.mapTeleopCommand();
 	}
 

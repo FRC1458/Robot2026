@@ -3,33 +3,27 @@ package frc.robot;
 import static frc.robot.Robot.controller;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
-		// run sysID functions
-		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
-		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.b().whileTrue(new PIDToPoseCommand(
-			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
 	}
 
 	public static void mapSysId() {
-		controller.a().onTrue(
+		// run sysID functions
+		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
+		controller.a().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward));
-		controller.b().onTrue(
+		controller.b().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse));
-		controller.x().onTrue(
+		controller.x().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward));
-		controller.y().onTrue(
+		controller.y().whileTrue(
 			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse));
 	}
 }

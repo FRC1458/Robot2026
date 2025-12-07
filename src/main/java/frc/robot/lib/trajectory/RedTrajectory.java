@@ -10,8 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
-// import frc.robot.RobotState;
-import frc.robot.lib.localization.FieldUtil;
+import frc.robot.lib.field.FieldUtil;
 
 public class RedTrajectory {
     public TrajectoryType type;

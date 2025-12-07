@@ -16,7 +16,7 @@ public class ExtendedTrajectoryCommand extends TrajectoryCommand {
 	public ExtendedTrajectoryCommand(Drive drive, RedTrajectory trajectory, Pair<Double, Command>... triggers) {
 		super(trajectory);
 		addRequirements(drive);
-		setName("Extended Trajectory Command");
+		setName(trajectory.name + ": Extended Trajectory Command");
 		this.triggers = new ArrayList<>(List.of(triggers));
 		for (Pair<Double, Command> trigger : triggers) {
 			new Trigger(() -> trajectory.progress > trigger.getFirst()).onTrue(trigger.getSecond());
