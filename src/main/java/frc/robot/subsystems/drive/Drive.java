@@ -146,8 +146,8 @@ public class Drive extends SubsystemBase {
             } else {
                 pose = getPose().nearest(FieldLayout.ALIGN_POSES_RIGHT);
             }
-            return new PIDToPoseCommand(pose).withName("Auto Align to " + pose);
-        });
+            return new PIDToPoseCommand(pose);
+        }).withName("Auto Align");
     }
 
     /** Adds a vision update */
