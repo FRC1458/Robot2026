@@ -86,7 +86,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledInit() {
 		Led.getInstance().setDefaultCommand(
-			Led.getInstance().setSolidColorCommand(Color.kGreen));
+			Led.getInstance().setRGB(0,255,0)); //Green
 	}
 
 	/** This function is called periodically during disabled. */
