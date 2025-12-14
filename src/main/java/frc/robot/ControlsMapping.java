@@ -17,14 +17,14 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
-		// // run sysID functions
-		// Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
+		// // // run sysID functions
+		// // Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.b().whileTrue(new PIDToPoseCommand(
-			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
+		// controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.b().whileTrue(new PIDToPoseCommand(
+		// 	new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120.0))));
 	}
 
 	public static void mapSysId() {

@@ -111,17 +111,33 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(Math.PI),
             null, // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+            //state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+            null
         ),
         new SysIdRoutine.Mechanism(
             output -> {
-                /* output is actually radians per second, but SysId only supports "volts" */
-                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+                System.out.println("sysid/rotation routine called.");
+                m_lastAppliedVolts = output.in(Volts);
+                setControl(m_rotationCharacterization.withRotationalRate(m_lastAppliedVolts));
             },
-            null,
-            this
+            log -> {
+                var s = getStateCopy();
+                log.motor("yaw")
+                   .voltage(Volts.of(m_lastAppliedVolts))
+                   .angularPosition(Radians.of(s.Pose.getRotation().getRadians())) // get rotation position
+                   .angularVelocity(RadiansPerSecond.of(getKinematics()
+                             .toChassisSpeeds(s.ModuleStates).omegaRadiansPerSecond));
+              },
+              this
+           
+            // output -> {
+            //     /* output is actually radians per second, but SysId only supports "volts" */
+            //     setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+            //     /* also log the requested output for SysId */
+            //     SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+            // },
+            // null,
+            // this
         )
     );
 
