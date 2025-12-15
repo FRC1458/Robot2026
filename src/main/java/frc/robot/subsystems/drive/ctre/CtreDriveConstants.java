@@ -110,7 +110,7 @@ public class CtreDriveConstants {
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
-    private static final double kCoupleRatio = kDriveGearRatio /3.; //(drive gear ratio)/(bevel gear ratio) 3.5714285714285716;
+    private static final double kCoupleRatio = kDriveGearRatio /(150./7.); //(drive gear ratio)/(steering gear ratio) 3.5714285714285716;
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;
