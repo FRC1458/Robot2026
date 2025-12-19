@@ -11,7 +11,9 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib.control.ControlConstants.PIDFConstants;
+import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
 import frc.robot.lib.control.PIDVController;
+import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
 
@@ -25,7 +27,7 @@ public class PIDToPoseCommand extends Command {
         new SwerveRequest.ApplyFieldSpeeds();
 
     private final PIDVController translationController;
-    private final PIDVController thetaController;
+    private final ProfiledPIDVController thetaController;
 
     private final Pose2d target;
     private Pose2d currentPose;
@@ -38,14 +40,14 @@ public class PIDToPoseCommand extends Command {
             Drive.getInstance(), 
             target,
             TRANSLATION_CONSTANTS, 
-            ROTATION_CONSTANTS);
+            PROFILED_ROTATION_CONSTANTS);
     }
     
-    public PIDToPoseCommand(Drive drive, Pose2d target, PIDFConstants translationConstants, PIDFConstants rotationConstants) {
+    public PIDToPoseCommand(Drive drive, Pose2d target, PIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
         translationController = new PIDVController(translationConstants);
-        thetaController = new PIDVController(rotationConstants);
+        thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(drive);
@@ -83,10 +85,10 @@ public class PIDToPoseCommand extends Command {
         
         // Magnitude target
         double vMagnitude = MathUtil.clamp(
-            translationController.setTarget(delta.getNorm())
+            translationController.setTarget(0.0)
                 .setMeasurement(
-                    0.0, // We are exactly where we are
-                    Util.chassisSpeedsMagnitude(
+                    delta.getNorm(), // We are exactly where we are
+                    -Util.chassisSpeedsMagnitude(
                         currentSpeeds)) // How fast we are going
                 .getOutput(), 
             -MAX_SPEED, MAX_SPEED);

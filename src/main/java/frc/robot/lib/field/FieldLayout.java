@@ -2,7 +2,12 @@ package frc.robot.lib.field;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+
+import com.therekrab.autopilot.APTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -39,6 +44,9 @@ public class FieldLayout {
 	public static final double APRITAG_WIDTH = Units.inchesToMeters(6.50);
 	public static final AprilTagFieldLayout APRILTAG_MAP;
 
+	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_RIGHT = new HashMap<>();
+	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_LEFT = new HashMap<>();
+
 	public static final List<Pose2d> ALIGN_POSES_RIGHT = new ArrayList<>();
 	public static final List<Pose2d> ALIGN_POSES_LEFT = new ArrayList<>();
 
@@ -50,17 +58,36 @@ public class FieldLayout {
 			int[] reefIds = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
 			Transform2d leftReefTransform = new Transform2d(
 				DriveConstants.TRACK_WIDTH / 2 + Units.inchesToMeters(1.5), -Units.inchesToMeters(13.0 / 2), Rotation2d.kPi);
-			for (int i : reefIds) {
-				ALIGN_POSES_LEFT.add(APRILTAG_MAP.getTagPose(i).get().toPose2d().transformBy(leftReefTransform));
-			}
 			Transform2d rightReefTransform = new Transform2d(
 				DriveConstants.TRACK_WIDTH / 2 + Units.inchesToMeters(1.5), Units.inchesToMeters(13.0 / 2), Rotation2d.kPi);
 			for (int i : reefIds) {
-				ALIGN_POSES_RIGHT.add(APRILTAG_MAP.getTagPose(i).get().toPose2d().transformBy(rightReefTransform));
+				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
+				var right = tagPose.transformBy(rightReefTransform);
+				var left = tagPose.transformBy(leftReefTransform);
+				ALIGN_POSES_RIGHT.add(right);
+				ALIGN_POSES_LEFT.add(left);
+				ENTRY_ANGLES_RIGHT.put(right, tagPose.getRotation().plus(Rotation2d.k180deg));
+				ENTRY_ANGLES_LEFT.put(left, tagPose.getRotation().plus(Rotation2d.k180deg));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static Pose2d getNearestPose(Pose2d pose, boolean left) {
+		return pose.nearest(left ? ALIGN_POSES_LEFT : ALIGN_POSES_RIGHT);
+	}
+
+	public static APTarget getNearestTarget(Pose2d pose, boolean left) {
+		var set = left ? ENTRY_ANGLES_LEFT : ENTRY_ANGLES_RIGHT;
+		var out = Collections.min(
+			set.keySet(),
+			Comparator.comparing(
+				(Pose2d other) -> pose.getTranslation().getDistance(other.getTranslation())
+			).thenComparing(
+				(Pose2d other) ->
+					Math.abs(pose.getRotation().minus(other.getRotation()).getRadians())));
+		return new APTarget(out).withEntryAngle(set.get(out));
 	}
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {

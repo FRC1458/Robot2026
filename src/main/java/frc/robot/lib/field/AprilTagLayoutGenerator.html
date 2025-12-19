@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AprilTag Code Generator</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			background-color: #f4f4f9;
+		}
+		.container {
+			max-width: 1000px;
+			margin: 0 auto;
+			background-color: #fff;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+		h1 {
+			color: #333;
+			text-align: center;
+		}
+		label {
+			display: block;
+			margin-top: 15px;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+		textarea {
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 20px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			box-sizing: border-box;
+			font-family: monospace;
+		}
+		#jsonInput {
+			height: 250px;
+		}
+		.output-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 20px;
+			margin-bottom: 5px;
+		}
+		#outputCode {
+			background-color: #e9e9e9;
+			border: 1px solid #ddd;
+			padding: 15px;
+			height: 400px;
+			overflow-y: scroll;
+			white-space: pre;
+			font-family: monospace;
+			border-radius: 4px;
+			font-size: 13px;
+		}
+		.btn-group {
+			display: flex;
+			gap: 10px;
+		}
+		button {
+			padding: 10px 20px;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 14px;
+			transition: background-color 0.3s;
+		}
+		#genBtn {
+			background-color: #007bff;
+		}
+		#genBtn:hover {
+			background-color: #0056b3;
+		}
+		#copyBtn {
+			background-color: #28a745;
+		}
+		#copyBtn:hover {
+			background-color: #218838;
+		}
+		#copyBtn:disabled {
+			background-color: #ccc;
+			cursor: not-allowed;
+		}
+	</style>
+</head>
+<body>
+
+<div class="container">
+	<h1>AprilTag Code Generator</h1>
+
+	<label for="jsonInput">Paste AprilTag JSON Data Here:</label>
+	<textarea id="jsonInput" placeholder="Paste your JSON data here..."></textarea>
+	
+	<button id="genBtn" onclick="generateCode()">Generate Java Code</button>
+	
+	<div class="output-header">
+		<label style="margin: 0;">Generated Java Code:</label>
+		<button id="copyBtn" onclick="copyToClipboard()" disabled>Copy to Clipboard</button>
+	</div>
+	<div id="outputCode">// Generated code will appear here...</div>
+</div>
+
+<script>
+	function generateCode() { 
+		const jsonInput = document.getElementById('jsonInput').value;
+		const outputElement = document.getElementById('outputCode');
+		
+		outputElement.textContent = ''; // Clear previous output
+
+		let data;
+		try {
+			data = JSON.parse(jsonInput);
+		} catch (e) {
+			outputElement.textContent = '// ERROR: Invalid JSON format. Please check for syntax errors.';
+			return;
+		}
+
+		if (!data.tags || !Array.isArray(data.tags)) {
+			outputElement.textContent = '// ERROR: JSON must contain a top-level array named "tags".';
+			return;
+		}
+		
+		const tags = data.tags;
+		let javaCode = ``;
+		javaCode += `package frc.robot.lib.field;\n\n`
+		javaCode += `import java.util.ArrayList;\n`
+		javaCode += `import java.util.List;\n\n`
+
+		javaCode += `import edu.wpi.first.apriltag.AprilTag;\n`
+		javaCode += `import edu.wpi.first.apriltag.AprilTagFieldLayout;\n\n`
+		javaCode += `import edu.wpi.first.math.geometry.Pose3d;\n`
+		javaCode += `import edu.wpi.first.math.geometry.Quaternion;\n`
+		javaCode += `import edu.wpi.first.math.geometry.Rotation3d;\n`
+		javaCode += `import edu.wpi.first.math.geometry.Translation3d;\n\n`
+		javaCode += `public class AprilTagLayoutGenerated {\n`;
+		javaCode += `	public static final List<AprilTag> APRILTAG_FIELD_POSES = new ArrayList<>();\n`
+		javaCode += `	static {\n`;
+		let hasError = false;
+		
+		tags.forEach(tag => {
+			if (hasError) return;
+			try {
+				const id = tag.ID;
+				const trans = tag.pose.translation;
+				const rot = tag.pose.rotation.quaternion;
+
+				javaCode += `		APRILTAG_FIELD_POSES.add(new AprilTag(`;
+				javaCode += `${id}, `;
+				javaCode += `new Pose3d(`;
+				javaCode += `new Translation3d(`;
+				javaCode += `${trans.x.toFixed(12)}D, `;
+				javaCode += `${trans.y.toFixed(12)}D, `;
+				javaCode += `${trans.z.toFixed(12)}D`;
+				javaCode += `), `;
+				javaCode += `new Rotation3d(`;
+				javaCode += `new Quaternion(`;
+				javaCode += `${rot.W.toFixed(12)}D, `;
+				javaCode += `${rot.X.toFixed(12)}D, `;
+				javaCode += `${rot.Y.toFixed(12)}D, `;
+				javaCode += `${rot.Z.toFixed(12)}D`;
+				javaCode += `)`;
+				javaCode += `)`;
+				javaCode += `)));\n`;
+				
+			} catch (e) {
+				outputElement.textContent = `// ERROR: Error processing tag. Check structure for ID: ${tag.ID}. Missing 'pose', 'translation', or 'rotation/quaternion'.`;
+				hasError = true;
+			}
+		});
+
+		javaCode += `	};\n`;
+		
+		if (data.field) {
+			javaCode += `	public static final double FIELD_LENGTH_METERS = ${data.field.length.toFixed(3)}D;\n`;
+			javaCode += `	public static final double FIELD_WIDTH_METERS = ${data.field.width.toFixed(3)}D;\n`;
+		} else {
+			hasError = true;
+			outputElement.textContent = `// Error: No field dimensions detected.`;
+		}
+		
+		javaCode += `	public static AprilTagFieldLayout getLayout() {\n`;
+		javaCode += `		return new AprilTagFieldLayout(APRILTAG_FIELD_POSES, FIELD_LENGTH_METERS, FIELD_WIDTH_METERS);\n`
+		javaCode += `	}\n`;
+		
+		javaCode += `}`;
+		if (hasError) return;
+
+		outputElement.textContent = javaCode;
+		copyBtn.disabled = false;
+	}
+	
+	async function copyToClipboard() {
+		const code = document.getElementById('outputCode').textContent;
+		const copyBtn = document.getElementById('copyBtn');
+		
+		try {
+			await navigator.clipboard.writeText(code);
+			copyBtn.textContent = "Copied!";
+			setTimeout(() => {
+				copyBtn.textContent = "Copy to Clipboard";
+			}, 2000);
+		} catch (err) {
+			alert('Failed to copy code: ', err);
+		}
+	}
+</script>
+
+</body>
+</html>
