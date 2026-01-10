@@ -9,6 +9,8 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -47,6 +49,17 @@ public class Robot extends TimedRobot {
 		TelemetryManager.getInstance();
 		FollowPathCommand.warmupCommand().schedule();
 		autoChooser = new AutoSelector();
+
+		//robot data loggers 
+		boolean usbPresent = new java.io.File("/u").exists();
+		if (usbPresent) {
+		  DataLogManager.start("/u/logs");  // USB stick
+		  System.out.println("Log/USB mounts OK");
+		} else {
+		  DataLogManager.start();           // falls back to /home/lvuser/logs
+		  System.out.println("Log/USB mounts NOT OK");
+		}
+		DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
 	/**
@@ -117,6 +130,9 @@ public class Robot extends TimedRobot {
 	public void testInit() {
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
+
+		//map test commands
+		ControlsMapping.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */

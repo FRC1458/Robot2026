@@ -138,18 +138,20 @@ public class Drive extends SubsystemBase {
 		return driveRequest; 
 	}
 
-	/** Open loop during teleop mode */
-	public Command teleopCommand() {
-		return runOnce(() -> {
-			teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
-			setSwerveRequest(teleopRequest);
-		}).andThen(run(() -> {
-			double xDesiredRaw = -Robot.controller.getLeftY();
-			double yDesiredRaw = -Robot.controller.getLeftX();
-			double rotDesiredRaw = -Robot.controller.getRightX();
-			double xFancy = Util.applyJoystickDeadband(xDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-			double yFancy = Util.applyJoystickDeadband(yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-			double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+	/** Open loop during teleop */
+    public Command teleopCommand() {
+        return runOnce(() -> {
+            teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+            setSwerveRequest(teleopRequest);
+        }).andThen(run(() -> {
+            double xDesiredRaw = -Robot.controller.getLeftY();
+            double yDesiredRaw = -Robot.controller.getLeftX();
+            double rotDesiredRaw = -Robot.controller.getRightX();
+
+            double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+            double xFancy = xy[0];
+            double yFancy = xy[1];
+            double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
 			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
 			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);

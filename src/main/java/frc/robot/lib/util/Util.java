@@ -130,6 +130,19 @@ public class Util {
 		return Math.signum(deadbandedValue) * ((Math.abs(deadbandedValue) - stickDeadband) / (1.0 - stickDeadband)); //joystick max is always 1.0
 	}
 
+	// dc 12.15.25, apply radial deadband instead of axis-based ones
+	public static double[] applyRadialDeadband(double x, double y, double deadband) {
+		double mag = Math.hypot(x, y);
+		if (mag <= deadband) return new double[] {0.0, 0.0};
+	  
+		// Rescale so output reaches 1.0 when mag==1.0
+		double scaledMag = (mag - deadband) / (1.0 - deadband);
+		double ux = x / mag;
+		double uy = y / mag;
+		return new double[] {ux * scaledMag, uy * scaledMag};
+	}
+	  
+
 	public static Rotation2d robotToFieldRelative(Rotation2d rot, boolean is_red_alliance) {
 		if (is_red_alliance) {
 			return rot.rotateBy(Rotation2d.fromDegrees(180.0));
