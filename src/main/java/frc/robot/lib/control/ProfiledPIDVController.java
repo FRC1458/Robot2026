@@ -2,7 +2,6 @@ package frc.robot.lib.control;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
 
@@ -19,6 +18,11 @@ public class ProfiledPIDVController {
 		this.constants = constants;
 		this.controller = new PIDVController(constants.getPIDVConstants());
 		profile = new TrapezoidProfile(constants.constraints);
+	}
+
+	public ProfiledPIDVController setInitialSetpoint(double position, double speed) {
+		setpoint = new TrapezoidProfile.State(position, speed);
+		return this;
 	}
 
 	/**
@@ -51,22 +55,20 @@ public class ProfiledPIDVController {
 	}
 
 	public double getOutput() {
-		if (controller.isContinuous) {
-			double errorBound = (controller.maxRange - controller.minRange) / 2.0;
+		// if (controller.isContinuous) {
+		// 	double errorBound = (controller.maxRange - controller.minRange) / 2.0;
 
-			double goalDelta =
-				MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
-			double setpointDelta =
-				MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
+		// 	double goalDelta =
+		// 		MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
+		// 	double setpointDelta =
+		// 		MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
 
-			goal.position = goalDelta + controller.positionMeasurement;
-			setpoint.position = setpointDelta + controller.positionMeasurement;
-		}
+		// 	goal.position = goalDelta + controller.positionMeasurement;
+		// 	setpoint.position = setpointDelta + controller.positionMeasurement;
+		// }
 
 		// Advance profile by one timestep
 		setpoint = profile.calculate(Constants.DT, setpoint, goal);
-
-		SmartDashboard.putNumber("Debug/Profile", setpoint.velocity);
 
 		// Use profiled position & velocity as setpoints
 		return controller.setTarget(setpoint.position, setpoint.velocity).getOutput();

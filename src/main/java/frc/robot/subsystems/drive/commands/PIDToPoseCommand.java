@@ -55,6 +55,10 @@ public class PIDToPoseCommand extends Command {
 
     @Override
     public void initialize() {
+        var state = drive.getState();
+        thetaController.setInitialSetpoint(
+            state.Pose.getRotation().getRadians(), 
+            state.Speeds.omegaRadiansPerSecond);
         drive.setSwerveRequest(request);
     }
 
@@ -94,12 +98,13 @@ public class PIDToPoseCommand extends Command {
         // The angle we are at relative to the target
         var deltaRotation = delta.getAngle();
 
-        double rotation = 
+        double rotation = MathUtil.clamp(
             thetaController.setTarget(target.getRotation().getRadians()) // Theta target
                 .setMeasurement(
                     currentPose.getRotation().getRadians(), 
                     currentSpeeds.omegaRadiansPerSecond) // We are where we are and we are as fast as how fast we are going
-                .getOutput();
+                .getOutput(),
+            -MAX_ROTATION_SPEED, MAX_ROTATION_SPEED);
 
         SmartDashboard.putNumber("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
         SmartDashboard.putNumber("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
