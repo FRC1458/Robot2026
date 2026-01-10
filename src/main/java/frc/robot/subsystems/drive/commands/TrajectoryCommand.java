@@ -120,17 +120,20 @@ public class TrajectoryCommand extends Command {
         xAccelFF += -angularAccel * targetState.pose.getRotation().getSin();
         yAccelFF += angularAccel * targetState.pose.getRotation().getCos();
 
-        double vx = xController.setTarget(targetState.pose.getX())// Target setting
+        double vx = xController.setTarget(targetState.pose.getX(), targetState.speeds.vxMetersPerSecond) // Target setting
             .setMeasurement(currentPose.getX(), currentSpeeds.vxMetersPerSecond) // Measurement setting
             .getOutput(); // Output getting
 
         // same thing but for vy and rotation instead
-        double vy = yController.setTarget(targetState.pose.getY())
+        double vy = yController.setTarget(targetState.pose.getY(), targetState.speeds.vyMetersPerSecond)
             .setMeasurement(currentPose.getY(), currentSpeeds.vyMetersPerSecond)
             .getOutput();
 
-        double rotation = thetaController.setTarget(targetState.pose.getRotation().getRadians())
-            .setMeasurement(
+        double rotation = thetaController
+            .setTarget(
+                targetState.pose.getRotation().getRadians(), 
+                targetState.speeds.omegaRadiansPerSecond
+            ).setMeasurement(
                 currentPose.getRotation().getRadians(), 
                 currentSpeeds.omegaRadiansPerSecond)
             .getOutput();
@@ -149,10 +152,10 @@ public class TrajectoryCommand extends Command {
 
         if (trajectory.isDone()) {
             System.out.printf(
-                "Done with trajectory, error: %.5f m, int error translation: %.5f m, rot: %.5f rad\n", 
+                "Done with trajectory, error: %.5f m, int error translation: %.5f m*s, rot: %.5f deg*s\n", 
                 Math.hypot(xController.getError(), yController.getError()),
                 tracker.getTranslationRmsError(),
-                tracker.getRotationRmsError());
+                tracker.getRotationRmsError() / Math.PI * 180);
             return true; // We are done guys
         }
 

@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 
 public class AutopilotCommand extends Command {
 	private final APTarget target;
@@ -26,8 +27,8 @@ public class AutopilotCommand extends Command {
 		.withJerk(3.0);
 
 	private static final APProfile profile = new APProfile(constraints)
-		.withErrorXY(Units.Centimeters.of(2))
-		.withErrorTheta(Units.Degrees.of(0.5))
+		.withErrorXY(Units.Meters.of(DriveConstants.EPSILON_TRANSLATION))
+		.withErrorTheta(Units.Radians.of(DriveConstants.EPSILON_ROTATION))
 		.withBeelineRadius(Units.Centimeters.of(8));
 
 	public static final Autopilot autoPilot = new Autopilot(profile);

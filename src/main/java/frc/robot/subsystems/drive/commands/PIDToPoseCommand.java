@@ -5,6 +5,8 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -24,7 +26,7 @@ public class PIDToPoseCommand extends Command {
     private final SwerveRequest.ApplyFieldSpeeds request = 
         new SwerveRequest.ApplyFieldSpeeds();
 
-    private final PIDVController translationController;
+    private final ProfiledPIDVController translationController;
     private final ProfiledPIDVController thetaController;
 
     private final Pose2d target;
@@ -33,20 +35,24 @@ public class PIDToPoseCommand extends Command {
 
     private ChassisSpeeds targetSpeeds = new ChassisSpeeds();
 
+    private final Debouncer finishDebouncer;
+
     public PIDToPoseCommand(Pose2d target) {
         this(
             Drive.getInstance(), 
             target,
-            TRANSLATION_CONSTANTS, 
+            PROFILED_TRANSLATION_CONSTANTS, 
             PROFILED_ROTATION_CONSTANTS);
     }
     
-    public PIDToPoseCommand(Drive drive, Pose2d target, PIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants) {
+    public PIDToPoseCommand(Drive drive, Pose2d target, ProfiledPIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
-        translationController = new PIDVController(translationConstants);
+        translationController = new ProfiledPIDVController(translationConstants);
         thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        finishDebouncer = new Debouncer(0.040, DebounceType.kRising);
 
         addRequirements(drive);
         setName("(" + target.getX() + ", " + target.getY() + ", " 
@@ -86,11 +92,11 @@ public class PIDToPoseCommand extends Command {
         var delta = target.getTranslation().minus(currentPose.getTranslation());
         
         // Magnitude target
-        double vMagnitude = MathUtil.clamp(
-            translationController.setTarget(delta.getNorm())
+        double vMagnitude = -MathUtil.clamp(
+            translationController.setTarget(0)
                 .setMeasurement(
-                    0, // We are exactly where we are
-                    Util.chassisSpeedsMagnitude(
+                    delta.getNorm(), // We are exactly where we are
+                    -Util.chassisSpeedsMagnitude(
                         currentSpeeds)) // How fast we are going
                 .getOutput(), 
             -MAX_SPEED, MAX_SPEED);
@@ -118,8 +124,9 @@ public class PIDToPoseCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return Math.abs(translationController.getError()) <= EPSILON_TRANSLATION
-            && MathUtil.isNear(thetaController.getError(), 0, EPSILON_ROTATION); // Within tolerance
+        return finishDebouncer.calculate(
+            Math.abs(translationController.getError()) <= EPSILON_TRANSLATION
+                && MathUtil.isNear(thetaController.getError(), 0, EPSILON_ROTATION)); // Within tolerance
     }
 
     @Override
@@ -128,7 +135,7 @@ public class PIDToPoseCommand extends Command {
         drive.setSwerveRequest(new SwerveRequest.ApplyRobotSpeeds());
         System.out.printf(
             "Done with auto-align, error: %.5f m, interrupted: %b\n",
-            translationController.getError(), interrupted);
+            -translationController.getError(), interrupted);
     }
 
     public static double estimateTimeToPose(
