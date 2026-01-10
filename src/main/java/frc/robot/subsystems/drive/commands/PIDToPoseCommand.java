@@ -10,10 +10,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib.control.ControlConstants.PIDFConstants;
-import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
-import frc.robot.lib.control.PIDVController;
-import frc.robot.lib.control.ProfiledPIDVController;
+import frc.robot.lib.control.ControlConstants.*;
+import frc.robot.lib.control.*;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
 
@@ -43,7 +41,7 @@ public class PIDToPoseCommand extends Command {
             PROFILED_ROTATION_CONSTANTS);
     }
     
-    public PIDToPoseCommand(Drive drive, Pose2d target, PIDFConstants translationConstants, ProfiledPIDFConstants rotationConstants) {
+    public PIDToPoseCommand(Drive drive, Pose2d target, PIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
         translationController = new PIDVController(translationConstants);
@@ -85,10 +83,10 @@ public class PIDToPoseCommand extends Command {
         
         // Magnitude target
         double vMagnitude = MathUtil.clamp(
-            translationController.setTarget(0.0)
+            translationController.setTarget(delta.getNorm())
                 .setMeasurement(
-                    delta.getNorm(), // We are exactly where we are
-                    -Util.chassisSpeedsMagnitude(
+                    0, // We are exactly where we are
+                    Util.chassisSpeedsMagnitude(
                         currentSpeeds)) // How fast we are going
                 .getOutput(), 
             -MAX_SPEED, MAX_SPEED);
@@ -96,13 +94,12 @@ public class PIDToPoseCommand extends Command {
         // The angle we are at relative to the target
         var deltaRotation = delta.getAngle();
 
-        double rotation = MathUtil.clamp(
+        double rotation = 
             thetaController.setTarget(target.getRotation().getRadians()) // Theta target
                 .setMeasurement(
                     currentPose.getRotation().getRadians(), 
                     currentSpeeds.omegaRadiansPerSecond) // We are where we are and we are as fast as how fast we are going
-                .getOutput(),
-            -MAX_ROTATION_SPEED, MAX_ROTATION_SPEED);
+                .getOutput();
 
         SmartDashboard.putNumber("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
         SmartDashboard.putNumber("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
@@ -116,7 +113,7 @@ public class PIDToPoseCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return translationController.getError() < EPSILON_TRANSLATION
+        return Math.abs(translationController.getError()) <= EPSILON_TRANSLATION
             && MathUtil.isNear(thetaController.getError(), 0, EPSILON_ROTATION); // Within tolerance
     }
 
@@ -124,6 +121,9 @@ public class PIDToPoseCommand extends Command {
     public void end(boolean interrupted) {
         // Swaps out the drive request to a default robot oriented request
         drive.setSwerveRequest(new SwerveRequest.ApplyRobotSpeeds());
+        System.out.printf(
+            "Done with auto-align, error: %.5f m, interrupted: %b\n",
+            translationController.getError(), interrupted);
     }
 
     public static double estimateTimeToPose(

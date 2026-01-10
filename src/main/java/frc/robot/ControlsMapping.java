@@ -10,8 +10,10 @@ import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
 		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autopilotAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autopilotAlign(false));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 	}
 
 	public static void mapSysId() {

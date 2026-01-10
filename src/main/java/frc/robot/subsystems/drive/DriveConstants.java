@@ -5,13 +5,12 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import frc.robot.lib.control.ControlConstants.PIDFConstants;
-import frc.robot.lib.control.ControlConstants.ProfiledPIDFConstants;
+import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 public final class DriveConstants {		
-    public static final double EPSILON_TRANSLATION = 0.02; // 2 cm
-    public static final double EPSILON_ROTATION = Units.Degrees.of(2.0).in(Units.Radians); // 2.0 deg in rads
+    public static final double EPSILON_TRANSLATION = 0.015; // cm
+    public static final double EPSILON_ROTATION = Units.Degrees.of(1).in(Units.Radians);
     
     // Maximums
     public static final double MAX_SPEED = Units.MetersPerSecond.of(3.5).in(Units.MetersPerSecond);
@@ -37,17 +36,17 @@ public final class DriveConstants {
     public static final Time POSE_RESET_PREVENTION_TIME = Units.Seconds.of(0.15);
 
     // Trajectory and snap constants
-    public static final PIDFConstants TRANSLATION_CONSTANTS = 
-        new PIDFConstants(4.5, 0.0, 0.1, 1.0);
-    public static final ProfiledPIDFConstants PROFILED_TRANSLATION_CONSTANTS = 
-        new ProfiledPIDFConstants(1.0, 0.0, 0.1, 1.0, 
+    public static final PIDVConstants TRANSLATION_CONSTANTS = 
+        new PIDVConstants(5, 0.001, 0.1);
+    public static final ProfiledPIDVConstants PROFILED_TRANSLATION_CONSTANTS = 
+        new ProfiledPIDVConstants(5.0, 0.001, 0.1, 
             new TrapezoidProfile.Constraints(
                 MAX_SPEED, 
                 MAX_ACCEL));
-    public static final PIDFConstants ROTATION_CONSTANTS = 
-        new PIDFConstants(4.0, 0.0, 0.1, 1.0);
-    public static final ProfiledPIDFConstants PROFILED_ROTATION_CONSTANTS = 
-        new ProfiledPIDFConstants(4.0, 0.0, 0.0, 1.0, 
+    public static final PIDVConstants ROTATION_CONSTANTS = 
+        new PIDVConstants(4.0, 0.001, 0.1);
+    public static final ProfiledPIDVConstants PROFILED_ROTATION_CONSTANTS = 
+        new ProfiledPIDVConstants(5.0, 0.001, 0.1, 
             new TrapezoidProfile.Constraints(
                 MAX_ROTATION_SPEED, 
                 MAX_ROTATION_ACCEL));

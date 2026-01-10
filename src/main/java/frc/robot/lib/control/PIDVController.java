@@ -5,34 +5,30 @@ import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.*;
 
 public class PIDVController {
-    private final PIDFConstants constants;
+    final PIDVConstants constants;
 
-    private double positionMeasurement = 0.0;
-    private double velocityMeasurement = 0.0;
+    double positionMeasurement = 0.0;
+    double velocityMeasurement = 0.0;
 
-    private double target = 0.0;
-    private double feedforward = 0.0;
-    private double integral = 0.0;
+    double targetPosition = 0.0;
+    double targetSpeed = 0.0;
+    double integral = 0.0;
 
-    private double error = 0.0;
+    double error = 0.0;
 
-    private boolean isContinuous = false;
-    private double minRange = 0.0;
-    private double maxRange = 0.0;
+    boolean isContinuous = false;
+    double minRange = 0.0;
+    double maxRange = 0.0;
 
     /**
      * Creates a PIDV controller, which is a PID controller 
      * where the derivative is replaced by accurate velocity measurements.
-     * @param constants The {@link PIDFConstants}.
+     * @param constants The {@link PIDVConstants}.
      */
-    public PIDVController(PIDFConstants constants) {
+    public PIDVController(PIDVConstants constants) {
         this.constants = constants;
     }
 
-    public PIDVController(PIDConstants constants) {
-        this(new PIDFConstants(constants));
-    }
-    
     /**
      * Makes the controller continuous, which means that values repeat.
      * @param minInput The minimum value.
@@ -59,35 +55,35 @@ public class PIDVController {
     }
 
     /** Sets the goal */
-    public PIDVController setTarget(double target) {
-        this.target = target;
+    public PIDVController setTarget(double targetPosition) {
+        this.targetPosition = targetPosition;
         return this;
     }
 
-    /** Sets the feedforward value. */
-    public PIDVController setFeedforward(double feedforward) {
-        this.feedforward = feedforward;
+    /** Sets the goal */
+    public PIDVController setTarget(double targetPosition, double targetSpeed) {
+        this.targetPosition = targetPosition;
+        this.targetSpeed = targetSpeed;
         return this;
     }
 
     public double getOutput() {
         if (isContinuous) {
             error = MathUtil.inputModulus(
-                target - positionMeasurement, 
+                targetPosition - positionMeasurement, 
                 -(maxRange - minRange) / 2.0, 
                 (maxRange - minRange) / 2.0);
         } else {
-            error = target - positionMeasurement;
+            error = targetPosition - positionMeasurement;
         }
 
         integral += error * Constants.DT;
 
-        double derivative = feedforward - velocityMeasurement;
+        double derivative = targetSpeed - velocityMeasurement;
 
         return constants.kP * error
             + constants.kI * integral
-            + constants.kD * derivative
-            + constants.kF * feedforward;
+            + constants.kD * derivative;
     }
 
     public double getError() {
@@ -103,7 +99,6 @@ public class PIDVController {
     /** Resets the controller. */
     public PIDVController reset() {
         integral = 0.0;
-        feedforward = 0.0;
         error = 0.0;
         return this;
     }

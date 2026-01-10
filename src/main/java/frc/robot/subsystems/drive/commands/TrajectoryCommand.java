@@ -10,8 +10,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib.control.ControlConstants.PIDFConstants;
-import frc.robot.lib.control.PIDVController;
+import frc.robot.lib.control.ControlConstants.*;
+import frc.robot.lib.control.*;
 import frc.robot.lib.trajectory.RedTrajectory;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
@@ -28,7 +28,7 @@ public class TrajectoryCommand extends Command {
 
     private final PIDVController xController;
     private final PIDVController yController;
-    private final PIDVController thetaController;
+    private final ProfiledPIDVController thetaController;
     private double accelConstant;
 
     private final RedTrajectory trajectory;
@@ -43,22 +43,22 @@ public class TrajectoryCommand extends Command {
             Drive.getInstance(), 
             trajectory, 
             TRANSLATION_CONSTANTS, 
-            ROTATION_CONSTANTS, 
+            PROFILED_ROTATION_CONSTANTS, 
             ACCELERATION_CONSTANT);
     }
     
     /**
      * A drive controller that works with 2 {@link PIDVController}s for translation and one {@link PIDVController} for rotation.
-     * @param translationConstants The {@link PIDFConstants} for the translation of the robot.
-     * @param rotationConstants The {@link PIDFConstants} for the rotation of the robot.
+     * @param translationConstants The {@link PIDVConstants} for the translation of the robot.
+     * @param rotationConstants The {@link PIDVConstants} for the rotation of the robot.
      * @param accelConstant The acceleration feedforwards (useful for traversing sharp turns on a trajectory).
      */
-    public TrajectoryCommand(Drive drive, RedTrajectory trajectory, PIDFConstants translationConstants, PIDFConstants rotationConstants, double accelConstant) {
+    public TrajectoryCommand(Drive drive, RedTrajectory trajectory, PIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants, double accelConstant) {
         this.drive = drive;
         this.trajectory = trajectory;
         xController = new PIDVController(translationConstants);
         yController = new PIDVController(translationConstants);
-        thetaController = new PIDVController(rotationConstants);
+        thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
         this.accelConstant = accelConstant;
 
@@ -68,6 +68,8 @@ public class TrajectoryCommand extends Command {
             .addStructPublisher("Debug/TrajectoryCommand", 
                 Pose3d.struct, () -> new Pose3d(
                     targetState.pose));
+        
+        tracker = new RMSTracker();
         setName(trajectory.name + " :Trajectory");
     }
 
@@ -81,6 +83,11 @@ public class TrajectoryCommand extends Command {
     public void execute() {
         setRobotState(
             drive.getPose(), drive.getFieldSpeeds());
+
+        // Advances along the trajectory
+        targetState = trajectory.advanceTo(timer.get());
+        
+        tracker.updateRmsError(timer, xController, yController, thetaController.getController());
         // updates the request
         request.withSpeeds(calculateSpeeds());
     }
@@ -94,9 +101,6 @@ public class TrajectoryCommand extends Command {
         if (trajectory == null || currentPose == null || currentSpeeds == null || trajectory.isDone()) {
             return new ChassisSpeeds(); // Safety
         }
-
-        // Advances along the trajectory
-        targetState = trajectory.advanceTo(timer.get());
 
         // gets the feedforwards for translation
         double vxFF = targetState.speeds.vxMetersPerSecond;
@@ -116,28 +120,25 @@ public class TrajectoryCommand extends Command {
         xAccelFF += -angularAccel * targetState.pose.getRotation().getSin();
         yAccelFF += angularAccel * targetState.pose.getRotation().getCos();
 
-        double vx = xController.setTarget(targetState.pose.getX())// Target setting        
-            .setFeedforward(vxFF) // Feedforward setting
+        double vx = xController.setTarget(targetState.pose.getX())// Target setting
             .setMeasurement(currentPose.getX(), currentSpeeds.vxMetersPerSecond) // Measurement setting
             .getOutput(); // Output getting
 
         // same thing but for vy and rotation instead
-        double vy = yController.setTarget(targetState.pose.getY())    
-            .setFeedforward(vyFF)
+        double vy = yController.setTarget(targetState.pose.getY())
             .setMeasurement(currentPose.getY(), currentSpeeds.vyMetersPerSecond)
             .getOutput();
 
         double rotation = thetaController.setTarget(targetState.pose.getRotation().getRadians())
-            .setFeedforward(targetState.speeds.omegaRadiansPerSecond)
             .setMeasurement(
                 currentPose.getRotation().getRadians(), 
                 currentSpeeds.omegaRadiansPerSecond)
             .getOutput();
 
         return new ChassisSpeeds(
-            vx + xAccelFF * accelConstant,
-            vy + yAccelFF * accelConstant,
-            rotation); // Finally
+            vx + vxFF + xAccelFF * accelConstant,
+            vy + vyFF + yAccelFF * accelConstant,
+            rotation + targetState.speeds.omegaRadiansPerSecond); // Finally
     }
 
     @Override
@@ -147,8 +148,11 @@ public class TrajectoryCommand extends Command {
         }
 
         if (trajectory.isDone()) {
-            System.out.println("Done with trajectory, error: " + 
-                Math.hypot(xController.getError(), yController.getError()));
+            System.out.printf(
+                "Done with trajectory, error: %.5f m, int error translation: %.5f m, rot: %.5f rad\n", 
+                Math.hypot(xController.getError(), yController.getError()),
+                tracker.getTranslationRmsError(),
+                tracker.getRotationRmsError());
             return true; // We are done guys
         }
 
@@ -165,4 +169,48 @@ public class TrajectoryCommand extends Command {
     public RedTrajectory getTrajectory() {
         return trajectory;
     }
+
+
+    private RMSTracker tracker;
+    /** Helper RMS error tracker to tune PID constants */
+    private static class RMSTracker {
+        private double translationErrorIntegralSq = 0.0;
+        private double rotationErrorIntegralSq = 0.0;
+        private double totalTime = 0.0;
+
+        private double lastTimestamp = 0.0;
+
+        private void updateRmsError(
+            Timer timer, 
+            PIDVController xController,
+            PIDVController yController,
+            PIDVController rotationController
+        ) {
+            double now = timer.get();
+            double dt = now - lastTimestamp;
+            lastTimestamp = now;
+            if (dt <= 0.0) {
+                return;
+            }
+            double translationError =
+                Math.hypot(
+                    xController.getError(),
+                    yController.getError());
+            translationErrorIntegralSq += translationError * translationError * dt;
+            double rotationError =
+                rotationController.getError();
+            rotationErrorIntegralSq += rotationError * rotationError * dt;
+            totalTime += dt;
+        }
+
+        public double getTranslationRmsError() {
+            if (totalTime <= 0.0) return 0.0;
+            return Math.sqrt(translationErrorIntegralSq / totalTime);
+        }
+        
+        public double getRotationRmsError() {
+            if (totalTime <= 0.0) return 0.0;
+            return Math.sqrt(rotationErrorIntegralSq / totalTime);
+        }
+    } 
 }

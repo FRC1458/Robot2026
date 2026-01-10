@@ -19,8 +19,9 @@ public final class AutoRoutines {
 
 	@Auto(name = "Trajectory Test")
 	public static Command testTrajectoryAuto() {
-		RedTrajectory traj = TrajectoryLoader.loadAutoTrajectory(TrajectoryType.PATHPLANNER, 
-			"testPath2").get();
+		RedTrajectory traj = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.CHOREO, 
+			"testPath3").get();
 		return new TrajectoryCommand(traj);
 	}
 }

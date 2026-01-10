@@ -2,166 +2,91 @@ package frc.robot.lib.control;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
-import frc.robot.lib.control.ControlConstants.*;
+import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
 
-/** Note: broken do not use rn */
 public class ProfiledPIDVController {
-	private final PIDFConstants constants;
-	private TrapezoidProfile.Constraints constraints;
-	private TrapezoidProfile profile;
+	final ProfiledPIDVConstants constants;
 
-	private TrapezoidProfile.State goal = new TrapezoidProfile.State();
-	private TrapezoidProfile.State setpoint = new TrapezoidProfile.State();
+	final PIDVController controller;
 
-	private double positionMeasurement = 0.0;
-	private double velocityMeasurement = 0.0;
-	private double feedforward = 0.0;
-	private boolean isFeedforwardSet = false;
-	private double integral = 0.0;
+	final TrapezoidProfile profile;
+	TrapezoidProfile.State goal = new TrapezoidProfile.State();
+	TrapezoidProfile.State setpoint = new TrapezoidProfile.State();
 
-	public double error = 0.0;
+	public ProfiledPIDVController(ProfiledPIDVConstants constants) {
+		this.constants = constants;
+		this.controller = new PIDVController(constants.getPIDVConstants());
+		profile = new TrapezoidProfile(constants.constraints);
+	}
 
-	private boolean isContinuous = false;
-	private double minRange = 0.0;
-	private double maxRange = 0.0;
-
-	private double positionTolerance = 0.01;
-	private double velocityTolerance = Double.POSITIVE_INFINITY;
-    /**
-	 * Creates a Profiled PIDV controller, which is a PID controller 
-	 * where the derivative is replaced by accurate velocity measurements,
-	 * and it's also profiled
-	 * @param constants The {@link ProfiledPIDFConstants}.
+	/**
+	 * Makes the controller continuous, which means that values repeat.
 	 */
-	public ProfiledPIDVController(ProfiledPIDFConstants constants) {
-		this.constants = new PIDFConstants(constants.kP, constants.kI, constants.kD, constants.kF);
-		this.constraints = constants.constraints;
-		this.profile = new TrapezoidProfile(constraints);
-	}
-
-    /**
-     * Makes the controller continuous, which means that values repeat.
-     * @param minInput The minimum value.
-     * @param maxInput The maximum value.
-     */
 	public ProfiledPIDVController enableContinuousInput(double minInput, double maxInput) {
-		isContinuous = true;
-		minRange = minInput;
-		maxRange = maxInput;
+		controller.enableContinuousInput(minInput, maxInput);
 		return this;
 	}
 
-    /** Makes the controller discontinuous */
+	/** Makes the controller discontinuous */
 	public ProfiledPIDVController disableContinuousInput() {
-		isContinuous = false;
+		controller.disableContinuousInput();
 		return this;
 	}
 
-	/** Sets the current position and velocity measurement. */
-    public ProfiledPIDVController setMeasurement(double positionMeasurement, double velocityMeasurement) {
-		this.positionMeasurement = positionMeasurement;
-		this.velocityMeasurement = velocityMeasurement;
+	public ProfiledPIDVController setTarget(double targetPosition) {
+		goal = new TrapezoidProfile.State(targetPosition, 0);
 		return this;
 	}
 
-	/** Sets the goal */
-    public ProfiledPIDVController setTarget(double target) {
-		this.goal = new TrapezoidProfile.State(target, 0.0);
+	public ProfiledPIDVController setTarget(double targetPosition, double targetSpeed) {
+		goal = new TrapezoidProfile.State(targetPosition, targetSpeed);
 		return this;
 	}
 
-	/** Sets the goal */
-    public void setTarget(double position, double velocity) {
-		this.goal = new TrapezoidProfile.State(position, velocity);
-	}
-
-	/** Sets the feedforward value. */
-    public ProfiledPIDVController setFeedforward(double feedforward) {
-		this.feedforward = feedforward;
-		isFeedforwardSet = true;
+	public ProfiledPIDVController setMeasurement(double position, double speed) {
+		controller.setMeasurement(position, speed);
 		return this;
 	}
 
 	public double getOutput() {
-		if (isContinuous) {
-			double errorBound = (maxRange - minRange) / 2.0;
-			double goalMinDistance = MathUtil.inputModulus(
-				goal.position - positionMeasurement, -errorBound, errorBound);
-			double setpointMinDistance = MathUtil.inputModulus(
-				setpoint.position - positionMeasurement, -errorBound, errorBound);
-			goal.position = goalMinDistance + positionMeasurement;
-			setpoint.position = setpointMinDistance + positionMeasurement;
+		if (controller.isContinuous) {
+			double errorBound = (controller.maxRange - controller.minRange) / 2.0;
+
+			double goalDelta =
+				MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
+			double setpointDelta =
+				MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
+
+			goal.position = goalDelta + controller.positionMeasurement;
+			setpoint.position = setpointDelta + controller.positionMeasurement;
 		}
 
+		// Advance profile by one timestep
 		setpoint = profile.calculate(Constants.DT, setpoint, goal);
 
-		double targetPosition = setpoint.position;
-		double targetVelocity = setpoint.velocity;
+		SmartDashboard.putNumber("Debug/Profile", setpoint.velocity);
 
-		error = targetPosition - positionMeasurement;
-		integral += error * Constants.DT;
-		double derivative = targetVelocity - velocityMeasurement;
-		
-		if (!isFeedforwardSet) {
-			feedforward = targetVelocity;
-		}
-		isFeedforwardSet = false;
-
-		return constants.kP * error
-			+ constants.kI * integral
-			+ constants.kD * derivative
-			+ constants.kF * feedforward;
-	}
-
-    /** Sets the integral value. */
-	public ProfiledPIDVController setIntegral(double integral) {
-		this.integral = integral;
-		return this;
-	}
-
-    /** Resets the controller. */
-	public ProfiledPIDVController reset() {
-		integral = 0.0;
-		feedforward = 0.0;
-		error = 0.0;
-		setpoint = new TrapezoidProfile.State(positionMeasurement, velocityMeasurement);
-		return this;
-	}
-
-	public TrapezoidProfile.State getSetpoint() {
-		return setpoint;
-	}
-
-	public TrapezoidProfile.State getGoal() {
-		return goal;
+		// Use profiled position & velocity as setpoints
+		return controller.setTarget(setpoint.position, setpoint.velocity).getOutput();
 	}
 
 	public double getError() {
-		return error;
+		return MathUtil.inputModulus(
+			goal.position - controller.positionMeasurement, 
+			controller.minRange, 
+			controller.maxRange);
 	}
 
-	public ProfiledPIDVController setConstraints(TrapezoidProfile.Constraints constraints) {
-		this.constraints = constraints;
-		this.profile = new TrapezoidProfile(constraints);
+	/** Resets the controller. */
+	public ProfiledPIDVController reset(double pos, double vel) {
+		controller.reset();
+		setpoint = new TrapezoidProfile.State(pos, vel);
 		return this;
-	}
-
-	public ProfiledPIDVController setTolerance(double positionTolerance, double velocityTolerance) {
-		this.positionTolerance = positionTolerance;
-		this.velocityTolerance = velocityTolerance;
-		return this;
-	}
-
-	public ProfiledPIDVController setTolerance(double positionTolerance) {
-		return setTolerance(positionTolerance, Double.POSITIVE_INFINITY);
-	}
-
-	public boolean atSetpoint() {
-		return Math.abs(error) < positionTolerance && Math.abs(setpoint.velocity) < velocityTolerance;
-	}
-
-	public boolean atGoal() {
-		return atSetpoint() && goal.equals(setpoint);
+	}	
+	
+	public PIDVController getController() {
+		return controller;
 	}
 }
