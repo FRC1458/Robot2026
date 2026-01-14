@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import frc.robot.lib.localization.FieldLayout;
 import frc.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -9,11 +8,11 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.Constants.Limelight.VisionDeviceConstants;
+import frc.robot.lib.field.FieldLayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;

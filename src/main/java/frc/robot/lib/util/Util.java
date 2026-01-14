@@ -130,6 +130,19 @@ public class Util {
 		return Math.signum(deadbandedValue) * ((Math.abs(deadbandedValue) - stickDeadband) / (1.0 - stickDeadband)); //joystick max is always 1.0
 	}
 
+	// dc 12.15.25, apply radial deadband instead of axis-based ones
+	public static double[] applyRadialDeadband(double x, double y, double deadband) {
+		double mag = Math.hypot(x, y);
+		if (mag <= deadband) return new double[] {0.0, 0.0};
+	  
+		// Rescale so output reaches 1.0 when mag==1.0
+		double scaledMag = (mag - deadband) / (1.0 - deadband);
+		double ux = x / mag;
+		double uy = y / mag;
+		return new double[] {ux * scaledMag, uy * scaledMag};
+	}
+	  
+
 	public static Rotation2d robotToFieldRelative(Rotation2d rot, boolean is_red_alliance) {
 		if (is_red_alliance) {
 			return rot.rotateBy(Rotation2d.fromDegrees(180.0));
@@ -250,5 +263,44 @@ public class Util {
 
 	public static ChassisSpeeds fromTwist2d(Twist2d t) {
 		return new ChassisSpeeds(t.dx, t.dy, t.dtheta);
+	}
+
+	public static double trapezoidProfileTimeToTarget(
+        double currentPosition, double currentSpeed,
+        double target, double maxSpeed, double maxAccel
+	) {
+		double delta = target - currentPosition;
+		double distance = Math.abs(delta);
+		double direction = Math.signum(delta);
+		double v0 = currentSpeed * direction;
+		// Decelerating line
+		double stopDist = (v0 * v0) / (2 * maxAccel);
+		if (distance < stopDist) {
+			// Triangle
+			return v0 / maxAccel; // time to stop
+		}
+		double accelDist = (maxSpeed * maxSpeed - v0 * v0) / (2 * maxAccel);
+		if (accelDist < 0) accelDist = 0; 
+		double decelDist = (maxSpeed * maxSpeed) / (2 * maxAccel);
+		double minDistance = accelDist + decelDist;
+
+		// Triangle
+		if (distance < minDistance) {
+			// Solve for peak velocity vp
+			double vp = Math.sqrt((2 * maxAccel * distance + v0 * v0) / 2);
+
+			double accelTime = (vp - v0) / maxAccel;
+			double decelTime = vp / maxAccel;
+
+			return accelTime + decelTime;
+		}
+
+		// Trapezoid
+		double accelTime = (maxSpeed - v0) / maxAccel;
+		double cruiseDist = distance - minDistance;
+		double cruiseTime = cruiseDist / maxSpeed;
+		double decelTime = maxSpeed / maxAccel;
+
+		return accelTime + cruiseTime + decelTime;
 	}
 }

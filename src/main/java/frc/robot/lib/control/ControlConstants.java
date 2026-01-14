@@ -7,13 +7,13 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  */
 public class ControlConstants {
     /**
-     * Constants used for a {@link PIDController}
+     * Constants used for a {@link PIDVController}
      */
-    public static class PIDConstants {
+    public static class PIDVConstants {
         public final double kP;
         public final double kI;
         public final double kD;
-        public PIDConstants(double p, double i, double d) {
+        public PIDVConstants(double p, double i, double d) {
             this.kP = p;
             this.kI = i;
             this.kD = d;
@@ -21,42 +21,26 @@ public class ControlConstants {
     }
 
     /**
-     * Constants used for a {@link PIDFController}
+     * Constants used for a {@link ProfiledPIDVController}
      */
-    public static class PIDFConstants {
+    public static class ProfiledPIDVConstants {
         public final double kP;
         public final double kI;
         public final double kD;
-        public final double kF;
-        public PIDFConstants(double p, double i, double d, double f) {
-            this.kP = p;
-            this.kI = i;
-            this.kD = d;
-            this.kF = f;
-        }
-        public PIDFConstants(PIDConstants constants) {
-            this(constants.kP, constants.kI, constants.kD, 0);
-        }
-    }
-    
-    /**
-     * Constants used for a {@link ProfiledPIDFController}
-     */
-    public static class ProfiledPIDFConstants {
-        public final double kP;
-        public final double kI;
-        public final double kD;
-        public final double kF;
         public final TrapezoidProfile.Constraints constraints;
-        public ProfiledPIDFConstants(double p, double i, double d, double f, TrapezoidProfile.Constraints constraints) {
+        public ProfiledPIDVConstants(double p, double i, double d, TrapezoidProfile.Constraints constraints) {
             this.kP = p;
             this.kI = i;
             this.kD = d;
-            this.kF = f;
             this.constraints = constraints;
         }
-        public ProfiledPIDFConstants(PIDConstants constants, TrapezoidProfile.Constraints constraints) {
-            this(constants.kP, constants.kI, constants.kD, 0, constraints);
+
+        public ProfiledPIDVConstants(PIDVConstants constants, TrapezoidProfile.Constraints constraints) {
+            this(constants.kP, constants.kI, constants.kD, constraints);
+        }
+
+        public PIDVConstants getPIDVConstants() {
+            return new PIDVConstants(kP, kI, kD);
         }
     }
 }
