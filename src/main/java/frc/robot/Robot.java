@@ -4,6 +4,11 @@ import frc.robot.auto.AutoSelector;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.epilogue.Logged;
@@ -60,6 +65,9 @@ public class Robot extends TimedRobot {
 		  System.out.println("Log/USB mounts NOT OK");
 		}
 		DriverStation.startDataLog(DataLogManager.getLog());
+
+			
+
 	}
 
 	/**
