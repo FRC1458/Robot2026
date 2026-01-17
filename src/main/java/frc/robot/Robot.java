@@ -2,6 +2,12 @@ package frc.robot;
 
 import frc.robot.auto.AutoSelector;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.hal.AllianceStationID;
@@ -14,13 +20,21 @@ import frc.robot.Constants.Controllers;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.VisionDeviceManager;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
-public class Robot extends TimedRobot {
+
+ 
+
+public class Robot extends LoggedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	public AutoSelector autoChooser;
 	private Command autoCommand;
@@ -50,6 +64,28 @@ public class Robot extends TimedRobot {
 		FollowPathCommand.warmupCommand().schedule();;
 
 		autoChooser = new AutoSelector();
+
+		Logger.recordMetadata("Newlog", "CurrentLog"); // Set a metadata value
+
+		if (isReal()) {
+			Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+    		Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+		} else {
+    		setUseTiming(false); // Run as fast as possible
+    		String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+    		Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+    		Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+}
+
+		Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+
+		Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    	// ...
+
+    	Logger.start();
+
+
+
 	}
 
 	/**
@@ -139,4 +175,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void simulationPeriodic() {
 	}
+
+	
 }
