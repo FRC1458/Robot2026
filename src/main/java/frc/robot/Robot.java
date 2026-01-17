@@ -2,6 +2,7 @@ package frc.robot;
 
 import frc.robot.auto.AutoSelector;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -13,6 +14,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.ADXL345_I2C.Axes;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -176,5 +178,10 @@ public class Robot extends LoggedRobot {
 	public void simulationPeriodic() {
 	}
 
-	
+	@AutoLogOutput
+	public double getAxisAdjusted() {
+		double axis = hid.getAxisAdjusted(axis:0);
+		return Math.copySign((axis - 0.1) * axis, axis);
+
+	}
 }
