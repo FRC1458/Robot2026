@@ -87,19 +87,56 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    /** Gets whether the intake laser detects a coral */
+	public Command spinUp()
+	{
+		ShooterConstants.SHOOT_SPEED_BOTTOM = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
+        ShooterConstants.SHOOT_SPEED_TOP = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
+	}
+
+    public Command spinDown()
+    {
+		ShooterConstants.SHOOT_SPEED_BOTTOM = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
+        ShooterConstants.SHOOT_SPEED_TOP = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
+    }
+
+    /** Gets whether the shooter laser detects the "fuel" (balls) */
     private boolean getShooterLaser() {
         return getMeasurementShooter() < 100;
     }
 
-    public Command shoot() {
+    public Command topShoot() {
         return runOnce(() -> setRequest(
-            new VelocityVoltage(ShooterConstants.SHOOT_SPEED))
+            new VelocityVoltage(ShooterConstants.SHOOT_SPEED_TOP))
+        ).andThen(
+            Commands.waitUntil(() -> !inRangeShooter), 
+            Commands.waitSeconds(0.15),
+            stop()
+        ).withName("Top Shooting");
+    }
+
+    public Command bottomShoot() {
+        return runOnce(() -> setRequest(
+            new VelocityVoltage(ShooterConstants.SHOOT_SPEED_BOTTOM))
+        ).andThen(
+            Commands.waitUntil(() -> !inRangeShooter), 
+            Commands.waitSeconds(0.15),
+            stop()
+        ).withName("Bottom Shooting");
+    }
+
+    public Command shoot()
+    {
+
+        topShoot();
+        bottomShoot();
+        
+        return runOnce(() -> setRequest(request)
         ).andThen(
             Commands.waitUntil(() -> !inRangeShooter), 
             Commands.waitSeconds(0.15),
             stop()
         ).withName("Shooting");
+
     }
 
     @Override
