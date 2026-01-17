@@ -25,14 +25,14 @@ public class Shooter extends SubsystemBase {
 		return ShooterInstance;
 	}
 
-    private final TalonFX leftMotor;
-	private final TalonFX rightMotor;
+    private final TalonFX topMotor;
+	private final TalonFX bottomMotor;
 
     private final LaserCan shooterLaser;
 
     private final Debouncer shooterDebouncer;
 
-    private boolean inRangeShooter; 
+    private boolean inRangeShooter;
 
 	private double lastReadSpeed;
 	private ControlRequest request = new NeutralOut();
@@ -40,17 +40,17 @@ public class Shooter extends SubsystemBase {
     private Shooter() {
         super();
 
-        leftMotor = new TalonFX(ShooterConstants.Motors.LEFT.id);
-		rightMotor = new TalonFX(ShooterConstants.Motors.RIGHT.id);
+        topMotor = new TalonFX(ShooterConstants.Motors.TOP.id);
+		bottomMotor = new TalonFX(ShooterConstants.Motors.BOTTOM.id);
 
         shooterLaser = new LaserCan(ShooterConstants.Lasers.FRONT.id);
 
-		leftMotor.getConfigurator().apply(ShooterConstants.getConfig());
-		rightMotor.getConfigurator().apply(ShooterConstants.getConfig());
-		leftMotor.setNeutralMode(NeutralModeValue.Brake);
-		rightMotor.setNeutralMode(NeutralModeValue.Brake);
-		rightMotor.setControl(
-			new Follower(leftMotor.getDeviceID(), true));
+		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
+		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
+		topMotor.setNeutralMode(NeutralModeValue.Brake);
+		bottomMotor.setNeutralMode(NeutralModeValue.Brake);
+		bottomMotor.setControl(
+			new Follower(topMotor.getDeviceID(), true));
         
         shooterDebouncer = new Debouncer(0.06, DebounceType.kBoth);
 
@@ -62,9 +62,9 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         // Read inputs
-        lastReadSpeed = leftMotor.getVelocity().getValueAsDouble();
+        lastReadSpeed = topMotor.getVelocity().getValueAsDouble();
         inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
-        leftMotor.setControl(request);
+        bottomMotor.setControl(request);
     }
 
     /** Replaces the request */
@@ -109,7 +109,7 @@ public class Shooter extends SubsystemBase {
             "/Speed", 
             () -> lastReadSpeed, 
             null);
-		TelemetryManager.makeSendableTalonFX("/Left", leftMotor, builder);
-		TelemetryManager.makeSendableTalonFX("/Right", rightMotor, builder);
+		TelemetryManager.makeSendableTalonFX("/Top", topMotor, builder);
+		TelemetryManager.makeSendableTalonFX("/Bottom", bottomMotor, builder);
 	}
 }
