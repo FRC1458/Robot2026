@@ -182,6 +182,6 @@ public class Robot extends LoggedRobot {
 	public double getAxisAdjusted() {
 		double axis = hid.getAxisAdjusted(axis:0);
 		return Math.copySign((axis - 0.1) * axis, axis);
-
+  
 	}
 }
