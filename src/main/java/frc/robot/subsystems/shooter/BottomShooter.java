@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -16,16 +15,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.TelemetryManager;
 
-public class Shooter extends SubsystemBase {
-    private static Shooter ShooterInstance;
-	public static Shooter getInstance() {
+public class BottomShooter extends SubsystemBase {
+    private static BottomShooter ShooterInstance;
+	public static BottomShooter getInstance() {
 		if (ShooterInstance == null) {
-			ShooterInstance = new Shooter();
+			ShooterInstance = new BottomShooter();
 		}
 		return ShooterInstance;
 	}
 
-    private final TalonFX topMotor;
 	private final TalonFX bottomMotor;
 
     private final LaserCan shooterLaser;
@@ -37,20 +35,15 @@ public class Shooter extends SubsystemBase {
 	private double lastReadSpeed;
 	private ControlRequest request = new NeutralOut();
 
-    private Shooter() {
+    private BottomShooter() {
         super();
 
-        topMotor = new TalonFX(ShooterConstants.Motors.TOP.id);
 		bottomMotor = new TalonFX(ShooterConstants.Motors.BOTTOM.id);
 
         shooterLaser = new LaserCan(ShooterConstants.Lasers.FRONT.id);
 
-		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
-		topMotor.setNeutralMode(NeutralModeValue.Brake);
 		bottomMotor.setNeutralMode(NeutralModeValue.Brake);
-		bottomMotor.setControl(
-			new Follower(topMotor.getDeviceID(), true));
         
         shooterDebouncer = new Debouncer(0.06, DebounceType.kBoth);
 
@@ -62,9 +55,8 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         // Read inputs
-        lastReadSpeed = topMotor.getVelocity().getValueAsDouble();
+        lastReadSpeed = bottomMotor.getVelocity().getValueAsDouble();
         inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
-        bottomMotor.setControl(request);
     }
 
     /** Replaces the request */
@@ -89,14 +81,20 @@ public class Shooter extends SubsystemBase {
 
 	public Command spinUp()
 	{
-		ShooterConstants.SHOOT_SPEED_BOTTOM = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
-        ShooterConstants.SHOOT_SPEED_TOP = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
+        ShooterConstants.SHOOT_SPEED_BOTTOM = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
+        return runOnce(() -> setRequest(request)
+        ).andThen(
+            stop()
+        ).withName("Increase Bottom Motor Speed");
 	}
 
     public Command spinDown()
     {
-		ShooterConstants.SHOOT_SPEED_BOTTOM = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
-        ShooterConstants.SHOOT_SPEED_TOP = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
+        ShooterConstants.SHOOT_SPEED_BOTTOM = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
+        return runOnce(() -> setRequest(request)
+        ).andThen(
+            stop()
+        ).withName("Lower Bottom Motor Speed");
     }
 
     /** Gets whether the shooter laser detects the "fuel" (balls) */
@@ -104,17 +102,7 @@ public class Shooter extends SubsystemBase {
         return getMeasurementShooter() < 100;
     }
 
-    public Command topShoot() {
-        return runOnce(() -> setRequest(
-            new VelocityVoltage(ShooterConstants.SHOOT_SPEED_TOP))
-        ).andThen(
-            Commands.waitUntil(() -> !inRangeShooter), 
-            Commands.waitSeconds(0.15),
-            stop()
-        ).withName("Top Shooting");
-    }
-
-    public Command bottomShoot() {
+    public Command BottomShoot() {
         return runOnce(() -> setRequest(
             new VelocityVoltage(ShooterConstants.SHOOT_SPEED_BOTTOM))
         ).andThen(
@@ -124,21 +112,6 @@ public class Shooter extends SubsystemBase {
         ).withName("Bottom Shooting");
     }
 
-    public Command shoot()
-    {
-
-        topShoot();
-        bottomShoot();
-        
-        return runOnce(() -> setRequest(request)
-        ).andThen(
-            Commands.waitUntil(() -> !inRangeShooter), 
-            Commands.waitSeconds(0.15),
-            stop()
-        ).withName("Shooting");
-
-    }
-
     @Override
 	public void initSendable(SendableBuilder builder) {
 		super.initSendable(builder);
@@ -146,7 +119,6 @@ public class Shooter extends SubsystemBase {
             "/Speed", 
             () -> lastReadSpeed, 
             null);
-		TelemetryManager.makeSendableTalonFX("/Top", topMotor, builder);
 		TelemetryManager.makeSendableTalonFX("/Bottom", bottomMotor, builder);
 	}
 }
