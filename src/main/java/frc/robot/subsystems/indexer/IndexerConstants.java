@@ -1,6 +1,10 @@
-/* intake -> storage -> indexer */
+package frc.robot.subsystems.indexer;
+
 public class IndexerConstants {
-    int shooterFuel = 3; /* something that detects the # of fuel in shooter */
-    int shooterMax = 5; /* max capacity of shooter */
-    int shooterSpace = 0; /* space left */
+
+    public static final int MOTOR_ID = 0;
+    public static final int LASER_ID = 0;
+    public static final boolean ActiveSpeed = 0;
+    public static final boolean InactiveSpeed = 0;
+ 
 }
