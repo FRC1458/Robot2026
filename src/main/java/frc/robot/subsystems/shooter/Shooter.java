@@ -15,16 +15,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.TelemetryManager;
 
-public class BottomShooter extends SubsystemBase {
-    private static BottomShooter ShooterInstance;
-	public static BottomShooter getInstance() {
+public class Shooter extends SubsystemBase {
+    private static Shooter ShooterInstance;
+	public static Shooter getInstance() {
 		if (ShooterInstance == null) {
-			ShooterInstance = new BottomShooter();
+			ShooterInstance = new Shooter();
 		}
 		return ShooterInstance;
 	}
 
-	private final TalonFX bottomMotor;
+    private final TalonFX topMotor;
+
+    private final TalonFX bottomMotor;
 
     private final LaserCan shooterLaser;
 
@@ -32,10 +34,11 @@ public class BottomShooter extends SubsystemBase {
 
     private boolean inRangeShooter;
 
-	private double lastReadSpeed;
+	private double lastReadSpeedTop;
+    private double lastReadSpeedBottom;
 	private ControlRequest request = new NeutralOut();
 
-    private BottomShooter() {
+    private Shooter() {
         super();
 
 		bottomMotor = new TalonFX(ShooterConstants.Motors.BOTTOM.id);
@@ -44,6 +47,11 @@ public class BottomShooter extends SubsystemBase {
 
 		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		bottomMotor.setNeutralMode(NeutralModeValue.Brake);
+
+        topMotor = new TalonFX(ShooterConstants.Motors.TOP.id);
+
+		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
+		topMotor.setNeutralMode(NeutralModeValue.Brake);
         
         shooterDebouncer = new Debouncer(0.06, DebounceType.kBoth);
 
@@ -55,7 +63,8 @@ public class BottomShooter extends SubsystemBase {
     @Override
     public void periodic() {
         // Read inputs
-        lastReadSpeed = bottomMotor.getVelocity().getValueAsDouble();
+        lastReadSpeedTop = topMotor.getVelocity().getValueAsDouble();
+        lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
         inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
     }
 
@@ -79,32 +88,24 @@ public class BottomShooter extends SubsystemBase {
         }
     }
 
-	public Command spinUp()
-	{
-        ShooterConstants.SHOOT_SPEED_BOTTOM = 25 + ShooterConstants.SHOOT_SPEED_INCREMENT;
-        return runOnce(() -> setRequest(request)
-        ).andThen(
-            stop()
-        ).withName("Increase Bottom Motor Speed");
-	}
-
-    public Command spinDown()
-    {
-        ShooterConstants.SHOOT_SPEED_BOTTOM = 25 - ShooterConstants.SHOOT_SPEED_INCREMENT;
-        return runOnce(() -> setRequest(request)
-        ).andThen(
-            stop()
-        ).withName("Lower Bottom Motor Speed");
-    }
-
-    /** Gets whether the shooter laser detects the "fuel" (balls) */
+    /* Gets whether the shooter laser detects the "fuel" (balls) */
     private boolean getShooterLaser() {
         return getMeasurementShooter() < 100;
     }
 
-    public Command BottomShoot() {
+    public Command topShoot(int targetSpeed) {
         return runOnce(() -> setRequest(
-            new VelocityVoltage(ShooterConstants.SHOOT_SPEED_BOTTOM))
+            new VelocityVoltage(targetSpeed))
+        ).andThen(
+            Commands.waitUntil(() -> !inRangeShooter), 
+            Commands.waitSeconds(0.15),
+            stop()
+        ).withName("Top Shooting");
+    }
+
+    public Command BottomShoot(int targetSpeed) {
+        return runOnce(() -> setRequest(
+            new VelocityVoltage(targetSpeed))
         ).andThen(
             Commands.waitUntil(() -> !inRangeShooter), 
             Commands.waitSeconds(0.15),
@@ -115,10 +116,18 @@ public class BottomShooter extends SubsystemBase {
     @Override
 	public void initSendable(SendableBuilder builder) {
 		super.initSendable(builder);
+
         builder.addDoubleProperty(
             "/Speed", 
-            () -> lastReadSpeed, 
+            () -> lastReadSpeedTop, 
+            null);
+		TelemetryManager.makeSendableTalonFX("/Top", topMotor, builder);
+
+        builder.addDoubleProperty(
+            "/Speed", 
+            () -> lastReadSpeedBottom, 
             null);
 		TelemetryManager.makeSendableTalonFX("/Bottom", bottomMotor, builder);
+
 	}
 }

@@ -6,9 +6,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
 public final class ShooterConstants {		
-    public static double SHOOT_SPEED_TOP = 25; // rotations per second
-    public static double SHOOT_SPEED_BOTTOM = 25; // rotations per second
-
     public static final double SHOOT_SPEED_INCREMENT = 5; // rotation per second
 
     /** Motor ids */
