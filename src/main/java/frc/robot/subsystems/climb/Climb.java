@@ -75,8 +75,8 @@ public class Climb extends SubsystemBase {
 		this.request = request;
 	}
 
-	private Command moveToScoringHeight(Heights height) {
-		return moveToTarget(height.height).withName(height.name() + ": Unsafe, Moving");
+	public Command moveToScoringHeight(Heights height) {
+		return moveToTarget(height.height).withName(height.name() + ": Move To Height");
 	}
 
 	/** Attempts to move the end effector to a height, in meters */
@@ -128,24 +128,6 @@ public class Climb extends SubsystemBase {
 				return sysIdRoutine.quasistatic(direction);
 			}
 		});
-	}
-
-	public double estimateTimeToTarget(Heights height) {
-		return estimateTimeToTarget(height.height);
-	}
-
-	public double estimateTimeToTarget(double targetHeight) {
-		return Util.trapezoidProfileTimeToTarget(
-			lastReadHeight, lastReadSpeed, 
-			targetHeight, MAX_SPEED, MAX_ACCEL) 
-			+ 0.3; // Jerk offset
-	}
-
-	public double estimateTimeRemaining() {
-		return Util.trapezoidProfileTimeToTarget(
-			lastReadHeight, lastReadSpeed, targetHeight, 
-			MAX_SPEED, MAX_ACCEL) 
-			+ 0.16; // Jerk offset
 	}
 
 	/** Checks if the end effector is within 1 cm of the target */
