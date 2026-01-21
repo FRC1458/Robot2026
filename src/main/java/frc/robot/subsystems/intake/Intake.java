@@ -29,47 +29,45 @@ public class Intake extends SubsystemBase {
     return intakeInstance;
     }
 
-    private final TalonFX WheelMotor;
-    private final TalonFX BarMotor;
-
-    //private final Debouncer intakeDebouncer;
+    private final TalonFX wheelMotor;
+    private final TalonFX barMotor;
+    private double wheelSpeed;
+    private double barPosition;
 
     private ControlRequest wheelRequest = new NeutralOut();
     private ControlRequest barRequest = new NeutralOut();
 
-    //private boolean inRangeIntake;
-
     private Intake() {
         super();
-        WheelMotor = new TalonFX(IntakeConstants.Motors.WHEEL.id);
-        BarMotor = new TalonFX(IntakeConstants.Motors.BAR.id);
-        WheelMotor.getConfigurator().apply(IntakeConstants.getWheelConfig());
-		BarMotor.getConfigurator().apply(IntakeConstants.getBarConfig());
-        WheelMotor.setNeutralMode(NeutralModeValue.Brake);
-		BarMotor.setNeutralMode(NeutralModeValue.Brake); //?
-		
-        TelemetryManager.getInstance().addSendable(this);
-        //setDefaultCommand();
+        wheelMotor = new TalonFX(IntakeConstants.Motors.WHEEL.id);
+        barMotor = new TalonFX(IntakeConstants.Motors.BAR.id);
+        wheelMotor.getConfigurator().apply(IntakeConstants.getWheelConfig());
+		barMotor.getConfigurator().apply(IntakeConstants.getBarConfig());
+        wheelMotor.setNeutralMode(NeutralModeValue.Brake);
+		barMotor.setNeutralMode(NeutralModeValue.Brake); //?
 
+        TelemetryManager.getInstance().addSendable(this);
     }
 
 
     @Override
     public void periodic(){
-        //
-
-        BarMotor.setControl(barRequest);
-        WheelMotor.setControl(wheelRequest);
+        wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
+        barPosition = barMotor.getPosition().getValueAsDouble();
+        barMotor.setControl(barRequest);
+        wheelMotor.setControl(wheelRequest);
     }
     
+    //---------------stop----------------
     public Command stopWheel() {
         return runOnce(() -> setRequestWheel(new NeutralOut())).withName("Stopped");
     }
 
     public Command stopBar() {
-        return runOnce(() -> setRequestBar(new NeutralOut())).withName("Stopped"); // should be voltage for upright bar?
+        return runOnce(() -> setRequestBar(new PositionVoltage(barPosition))).withName("Stopped"); //needs testing
     }
 
+    //----------------set request---------------
     private void setRequestWheel(ControlRequest request) {
         this.wheelRequest = request;
     }
@@ -78,6 +76,7 @@ public class Intake extends SubsystemBase {
         this.barRequest = request;
     }
 
+    //----------------wheel----------------
     public Command setWheelIntaking() {
         return setWheelSpeed(IntakeConstants.INTAKE_SPEED);
     }
@@ -93,7 +92,7 @@ public class Intake extends SubsystemBase {
     }
 
 
-    //---------BAR-----------
+    //---------bar-----------
 
 
     public Command setBarDown() {
