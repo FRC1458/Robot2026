@@ -165,7 +165,9 @@ public class Drive extends SubsystemBase {
 	}
 
 	public Command headingLock(Supplier<Rotation2d> rotationSupplier) {
-		SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle();
+		SwerveRequest.FieldCentricFacingAngle request = 
+			new SwerveRequest.FieldCentricFacingAngle()
+				.withHeadingPID(ROTATION_CONSTANTS.kP, ROTATION_CONSTANTS.kI, ROTATION_CONSTANTS.kD);
 
 		return runOnce(() -> setSwerveRequest(request)).andThen(
 			run(() -> {
@@ -185,7 +187,7 @@ public class Drive extends SubsystemBase {
 
 	public Command headingLockToPose(Pose2d pose) {
 		return headingLock(() -> 
-			pose.getTranslation().minus(pose.getTranslation()).getAngle());
+			getPose().getTranslation().minus(pose.getTranslation()).getAngle());
 	}
 
 	/** 

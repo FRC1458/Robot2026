@@ -55,17 +55,17 @@ public class ProfiledPIDVController {
 	}
 
 	public double getOutput() {
-		// if (controller.isContinuous) {
-		// 	double errorBound = (controller.maxRange - controller.minRange) / 2.0;
+		if (controller.isContinuous) {
+			double errorBound = (controller.maxRange - controller.minRange) / 2.0;
 
-		// 	double goalDelta =
-		// 		MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
-		// 	double setpointDelta =
-		// 		MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
+			double goalDelta =
+				MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
+			double setpointDelta =
+				MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
 
-		// 	goal.position = goalDelta + controller.positionMeasurement;
-		// 	setpoint.position = setpointDelta + controller.positionMeasurement;
-		// }
+			goal.position = goalDelta + controller.positionMeasurement;
+			setpoint.position = setpointDelta + controller.positionMeasurement;
+		}
 
 		// Advance profile by one timestep
 		setpoint = profile.calculate(Constants.DT, setpoint, goal);

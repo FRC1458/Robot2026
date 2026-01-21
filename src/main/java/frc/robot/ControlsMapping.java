@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,7 +21,7 @@ public class ControlsMapping {
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 
-		controller.b().whileTrue(Drive.getInstance().headingLockToPose(new Pose2d()));
+		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.HUB.pose));
 		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
 		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
