@@ -26,7 +26,7 @@ public class Intake extends SubsystemBase {
         if (intakeInstance == null) {
             intakeInstance = new Intake(); 
         }
-    return intakeInstance;
+        return intakeInstance;
     }
 
     private final TalonFX wheelMotor;
@@ -88,7 +88,7 @@ public class Intake extends SubsystemBase {
     public Command setWheelSpeed(double speed) {
         return runOnce(() -> setRequestWheel (
             new VelocityVoltage(speed))
-        ).withName("");
+        ).withName("wheel speed set");
     }
 
 
@@ -107,8 +107,6 @@ public class Intake extends SubsystemBase {
         double checkedPos = MathUtil.clamp(position, IntakeConstants.BAR_POS_MIN, IntakeConstants.BAR_POS_MAX);
         return runOnce(() -> setRequestBar(
             new PositionVoltage(checkedPos))
-        ).withName("");
+        ).withName("bar pos set");
     }
-
-
 }
