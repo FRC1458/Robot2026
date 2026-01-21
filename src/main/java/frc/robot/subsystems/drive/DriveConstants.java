@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -51,4 +52,12 @@ public final class DriveConstants {
                 MAX_ROTATION_SPEED, 
                 MAX_ROTATION_ACCEL));
     public static final double ACCELERATION_CONSTANT = 0.1;
+
+    public static enum FieldPoses {
+        HUB(new Pose2d());
+        public Pose2d pose;
+        private FieldPoses(Pose2d pose) {
+            this.pose = pose;
+        }
+    }
 }
