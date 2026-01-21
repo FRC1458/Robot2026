@@ -16,7 +16,7 @@ public class Indexer extends SubsystemBase {
     private TalonFX motor;
     private LaserCan lc;
 
-    private double getDistanceMm() {
+    private double getDistanceMm() /* command to sense distance from camera */ {
         LaserCan.Measurement measurement = lc.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
             return measurement.distance_mm;
@@ -25,13 +25,13 @@ public class Indexer extends SubsystemBase {
         }
     }
 
-    private boolean hasBall; 
+    private boolean hasBall; /* boolean that's modified by checkForBall() */
 
-    private boolean hasBall() {
+    private boolean hasBall() /* setup formatting for boolean hasBall so it can be used in activateIndexer().either */ {
         return hasBall;
     }
 
-    private void checkForBall() {
+    private void checkForBall() /* command that modifies hasBall */ {
         double x = getDistanceMm();
         if (x == IndexerConstants.LaserCan_DefaultMeasurement) {
             boolean hasBall = false;
@@ -40,7 +40,7 @@ public class Indexer extends SubsystemBase {
         }
     }
 
-    private Indexer() {
+    private Indexer() /* setup, adding motor and laser */ {
         motor = new TalonFX(IndexerConstants.MOTOR_ID);
 
         lc = new LaserCan(IndexerConstants.LASER_ID);
@@ -54,18 +54,18 @@ public class Indexer extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public void periodic() /* check for balls and makes sure motor is constantly running at desired speed */ {
         motor.setControl(request);
         checkForBall();
-    };
+    }
 
-    public void setRequest(ControlRequest request) {
+    public void setRequest(ControlRequest request) /* type conversion/abstraction    */ {
         this.request = request;
-    };
+    }
 
     public  Command setSpeed(double speed) {
         return runOnce(() -> setRequest(new VelocityVoltage(speed)));
-    };
+    }
     
     public Command activateIndexer() {
         return Commands.either (
@@ -77,5 +77,5 @@ public class Indexer extends SubsystemBase {
 
     public Command deactivateIndexer() {
         return setSpeed(IndexerConstants.InactiveSpeed);
-    };
+    }
 }
