@@ -6,7 +6,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import au.grapplerobotics.LaserCan;
+//import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase {
 
     private final TalonFX bottomMotor;
 
-    private final LaserCan shooterLaser;
+    //private final LaserCan shooterLaser;
 
     private final Debouncer shooterDebouncer;
 
@@ -43,7 +43,7 @@ public class Shooter extends SubsystemBase {
 
 		bottomMotor = new TalonFX(ShooterConstants.Motors.BOTTOM.id);
 
-        shooterLaser = new LaserCan(ShooterConstants.Lasers.FRONT.id);
+        //shooterLaser = new LaserCan(ShooterConstants.Lasers.FRONT.id);
 
 		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		bottomMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -55,7 +55,7 @@ public class Shooter extends SubsystemBase {
         
         shooterDebouncer = new Debouncer(0.06, DebounceType.kBoth);
 
-        inRangeShooter = false;
+        //inRangeShooter = false;
 
 		TelemetryManager.getInstance().addSendable(this);
     }
@@ -65,7 +65,7 @@ public class Shooter extends SubsystemBase {
         // Read inputs
         lastReadSpeedTop = topMotor.getVelocity().getValueAsDouble();
         lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
-        inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
+        //inRangeShooter = shooterDebouncer.calculate(getShooterLaser());
     }
 
     /** Replaces the request */
@@ -78,7 +78,8 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> setRequest(new NeutralOut())).withName("Stopped");
     }
 
-    /** Gets the intake laser measurement */
+    /** Gets the shooter laser measurement (Not needed as of now) */
+    /*
     private double getMeasurementShooter() {
         var measurement = shooterLaser.getMeasurement();
         if (measurement != null) {
@@ -87,11 +88,13 @@ public class Shooter extends SubsystemBase {
             return Double.POSITIVE_INFINITY;
         }
     }
+    */
 
-    /* Gets whether the shooter laser detects the "fuel" (balls) */
+    /* Gets whether the shooter laser detects the "fuel" (balls) not needed right now
     private boolean getShooterLaser() {
         return getMeasurementShooter() < 100;
     }
+    */
 
     public Command topShoot(int targetSpeed) {
         return runOnce(() -> setRequest(
