@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
 
+import org.littletonrobotics.junction.Logger;
+
 public class VisionDeviceManager extends SubsystemBase {
     public static boolean enabled;
 	public static VisionDeviceManager visionDeviceManagerInstance;
@@ -48,6 +50,8 @@ public class VisionDeviceManager extends SubsystemBase {
 	public void periodic() {
 		cameras.forEach(VisionDevice::periodic);
 		movingAvgRead = headingAvg.getAverage();
+		Logger.recordOutput("Vision heading moving avg", getMovingAvgRead());
+		Logger.recordOutput("vision disabled", visionDisabled());
 		SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
 		SmartDashboard.putBoolean("vision disabled", visionDisabled());
 	}
