@@ -26,11 +26,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
+import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
+import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 
@@ -51,12 +53,16 @@ public class Drive extends SubsystemBase {
 	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(MAX_SPEED);
 	@SuppressWarnings("unused") 
 	private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
+	
+	private final LocalADStarWrapper pathfinder;
 
 	private Drive() {
 		lastReadState = drivetrain.getState();
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
 		}));
+
+		pathfinder = new LocalADStarWrapper();
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
@@ -215,6 +221,22 @@ public class Drive extends SubsystemBase {
 			APTarget pose = FieldLayout.getNearestTarget(getPose(), left);
 			return new AutopilotCommand(pose);
 		}).withName("Autopilot Align");
+	}
+
+	public Command pathFindToThisRandomPlaceIdk() {
+		return runOnce(() -> {
+			pathfinder.setInitialPose(getPose()); 
+			pathfinder.setFinalPose(new Pose2d(8, 5, Rotation2d.k180deg));
+		}).andThen(
+			Commands.race(
+				Commands.waitUntil(() -> pathfinder.hasPath()),
+				Commands.waitSeconds(0.3)
+			),
+			Commands.either(
+				defer(() -> new TrajectoryCommand(pathfinder.getPath()).withPIDToPoseAtEnd()),
+				Commands.print("Pathfinding failed"),
+				() -> pathfinder.hasPath())
+		);
 	}
 
 	/** Adds a vision update */

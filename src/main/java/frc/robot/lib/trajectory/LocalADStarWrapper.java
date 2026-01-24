@@ -26,6 +26,10 @@ public class LocalADStarWrapper {
         finalRotation = pose.getRotation();
     }
 
+    public boolean hasPath() {
+        return a.isNewPathAvailable();
+    }
+
     public RedTrajectory getPath() {
         return new RedTrajectory(
             a.getCurrentPath(
@@ -34,6 +38,7 @@ public class LocalADStarWrapper {
             ).generateTrajectory(
                 Drive.getInstance().getFieldSpeeds(), initialRotation, 
                 Constants.Pathplanner.config),  
-                false);
+                false
+            );
     }
 }
