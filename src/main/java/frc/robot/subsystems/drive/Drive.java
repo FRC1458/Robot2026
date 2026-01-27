@@ -172,7 +172,6 @@ public class Drive extends SubsystemBase {
 			int pov = Robot.controller.getHID().getPOV();		
             double xDesiredRaw = Math.cos(pov * Math.PI / 180.0);
             double yDesiredRaw = - Math.sin(pov * Math.PI / 180.0);
-            double rotDesiredRaw = 0;
 
             double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double xFancy = xy[0];
@@ -181,8 +180,7 @@ public class Drive extends SubsystemBase {
 
 			teleopRequest
 				.withVelocityX(xFancy * 0.4)
-				.withVelocityY(yFancy * 0.4)
-				.withRotationalRate(rotFancy * 0);        
+				.withVelocityY(yFancy * 0.4);        
 		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Nudge");
 	}
 
