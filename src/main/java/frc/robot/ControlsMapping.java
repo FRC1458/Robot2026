@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
@@ -21,6 +22,7 @@ public class ControlsMapping {
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		new Trigger(() -> controller.getHID().getPOV() != -1).whileTrue(Drive.getInstance().nudgeCommand());
 	}
 
 	public static void mapSysId() {
