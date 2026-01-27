@@ -31,6 +31,7 @@ import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
+import frc.robot.subsystems.vision.VisionConstants;
 
 public class Drive extends SubsystemBase {
 	private static Drive driveInstance;
@@ -42,17 +43,23 @@ public class Drive extends SubsystemBase {
 	}
 
 	private SwerveDriveState lastReadState;
-	public static final SwerveRequest.FieldCentric teleopRequest = new SwerveRequest.FieldCentric();
-	public SwerveRequest driveRequest = teleopRequest;
+	public final SwerveRequest.FieldCentric teleopRequest;
+	public SwerveRequest driveRequest;
 
-	private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
-	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(MAX_SPEED);
+	private final CtreDrive drivetrain;   
+	private final CtreDriveTelemetry telemetry;
 	@SuppressWarnings("unused") 
 	private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
 
 	Autopilot ap;
 
 	private Drive() {
+		drivetrain = CtreDriveConstants.createDrivetrain();  
+		drivetrain.setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+		drivetrain.setStateStdDevs(VisionConstants.STATE_STD_DEVS);
+		telemetry = new CtreDriveTelemetry(MAX_SPEED);  
+		teleopRequest = new SwerveRequest.FieldCentric();
+		driveRequest = teleopRequest;
 		lastReadState = drivetrain.getState();
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
@@ -60,29 +67,29 @@ public class Drive extends SubsystemBase {
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
-		TelemetryManager.getInstance().addStructPublisher("Drive/TargetSpeeds", ChassisSpeeds.struct,
-			() -> {
-				try {
-					if (driveRequest instanceof SwerveRequest.ApplyFieldSpeeds) {
-						return ChassisSpeeds.fromFieldRelativeSpeeds(
-							((SwerveRequest.ApplyFieldSpeeds) driveRequest).Speeds, 
-							lastReadState.Pose.getRotation());
-					} else if (driveRequest instanceof SwerveRequest.ApplyRobotSpeeds) {
-						return ((SwerveRequest.ApplyRobotSpeeds) driveRequest).Speeds;
-					} else if (driveRequest instanceof SwerveRequest.FieldCentric) {
-						var req = ((SwerveRequest.FieldCentric) driveRequest);
-						return ChassisSpeeds.fromFieldRelativeSpeeds(
-							req.VelocityX, 
-							req.VelocityY, 
-							req.RotationalRate,
-							lastReadState.Pose.getRotation());
-					} else if (driveRequest instanceof SwerveRequest.RobotCentric) {
-						var req = ((SwerveRequest.RobotCentric) driveRequest);
-						return new ChassisSpeeds(req.VelocityX, req.VelocityY, req.RotationalRate);
-					}
-				} finally {}
-				return lastReadState.Speeds;
-			});
+		// TelemetryManager.getInstance().addStructPublisher("Drive/TargetSpeeds", ChassisSpeeds.struct,
+		// 	() -> {
+		// 		try {
+		// 			if (driveRequest instanceof SwerveRequest.ApplyFieldSpeeds) {
+		// 				return ChassisSpeeds.fromFieldRelativeSpeeds(
+		// 					((SwerveRequest.ApplyFieldSpeeds) driveRequest).Speeds, 
+		// 					lastReadState.Pose.getRotation());
+		// 			} else if (driveRequest instanceof SwerveRequest.ApplyRobotSpeeds) {
+		// 				return ((SwerveRequest.ApplyRobotSpeeds) driveRequest).Speeds;
+		// 			} else if (driveRequest instanceof SwerveRequest.FieldCentric) {
+		// 				var req = ((SwerveRequest.FieldCentric) driveRequest);
+		// 				return ChassisSpeeds.fromFieldRelativeSpeeds(
+		// 					req.VelocityX, 
+		// 					req.VelocityY, 
+		// 					req.RotationalRate,
+		// 					lastReadState.Pose.getRotation());
+		// 			} else if (driveRequest instanceof SwerveRequest.RobotCentric) {
+		// 				var req = ((SwerveRequest.RobotCentric) driveRequest);
+		// 				return new ChassisSpeeds(req.VelocityX, req.VelocityY, req.RotationalRate);
+		// 			}
+		// 		} finally {}
+		// 		return lastReadState.Speeds;
+		// 	});
 		TelemetryManager.getInstance().addSendable(this);
 	}
 
@@ -192,13 +199,13 @@ public class Drive extends SubsystemBase {
 	}
 
 	/** Adds a vision update */
-	public void addVisionUpdate(Pose2d pose, Time timestamp) {
-		getCtreDrive().addVisionMeasurement(pose, timestamp.in(Units.Seconds));
+	public void addVisionUpdate(Pose2d pose, double timestamp) {
+		getCtreDrive().addVisionMeasurement(pose, timestamp);
 	}
 
 	/** Adds a vision update with standard deviations */
-	public void addVisionUpdate(Pose2d pose, Time timestamp, Matrix<N3, N1> stdDevs) {
-		getCtreDrive().addVisionMeasurement(pose, timestamp.in(Units.Seconds), stdDevs);
+	public void addVisionUpdate(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
+		getCtreDrive().addVisionMeasurement(pose, timestamp, stdDevs);
 	}
 
 	/** Resets pose estimator to a pose */

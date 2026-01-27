@@ -1,82 +1,120 @@
 package frc.robot.subsystems.vision;
 
 import frc.robot.subsystems.drive.Drive;
-import edu.wpi.first.math.MathUtil;
+import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import frc.robot.Constants.Limelight.VisionDeviceConstants;
+import static frc.robot.subsystems.vision.VisionConstants.*;
+
+import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
 
 public class VisionDevice {
-	private final VisionDeviceConstants mConstants;
-	private PeriodicIO mPeriodicIO = new PeriodicIO();
+	private final VisionDeviceConstants constants;
 
 	public Field2d robotField;
-	public PhotonCamera mCamera;
-	public PhotonPoseEstimator mPoseEstimator;
+	public PhotonCamera camera;
+	// public PhotonPoseEstimator poseEstimator;
 	private boolean inSnapRange;
 	private boolean hasTarget;
 
 	public Pose2d botPose;
 
+	// private double cameraExposure = 20;
+	// private boolean cameraAutoExposure = false;
+	// private double cameraGain = 10;
+
+	// private long fps = -1;
+	private double latestTimestamp = 0.0;
+	// private List<VisionFrame> frames = new ArrayList<VisionFrame>();
+	private boolean isConnected;
+	private PhotonCameraSim sim;
+
+
 	public VisionDevice(VisionDeviceConstants constants) {
 		robotField = new Field2d();
 		SmartDashboard.putData("VisionDevice/" + constants.tableName, robotField);
 
-		mCamera = new PhotonCamera(constants.tableName);
-		mPoseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
+		camera = new PhotonCamera(constants.tableName);
 
-		mConstants = constants;
 
-		inSnapRange = false;
+		if (Robot.isSimulation()) {
+			SimCameraProperties cameraProp = new SimCameraProperties();
+			// A 640 x 480 camera with a 100 degree diagonal FOV.
+			cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(100));
+			// Approximate detection noise with average and standard deviation error in pixels.
+			cameraProp.setCalibError(0.25, 0.08);
+			// Set the camera image capture framerate (Note: this is limited by robot loop rate).
+			cameraProp.setFPS(20);
+			// The average and standard deviation in milliseconds of image data latency.
+			cameraProp.setAvgLatencyMs(35);
+			cameraProp.setLatencyStdDevMs(5);
+
+			sim = new PhotonCameraSim(camera, cameraProp);
+		}
+
+		// poseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
+
+		this.constants = constants;
+
 		hasTarget = false;
 	}
 
 	private void processFrames() {
-		var result = mCamera.getLatestResult();
+		var result = camera.getLatestResult();
 		hasTarget = result.hasTargets();
 
 		if (!hasTarget) {
 			return; 
 		} else {
 			var target = result.getBestTarget();
-			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), FieldLayout.APRILTAG_MAP.getTagPose(target.getFiducialId()).get(), mConstants.robotToCamera.inverse());
-			var estimatedPose = mPoseEstimator.update(result);
+			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
+				target.getBestCameraToTarget(), 
+				FieldLayout.APRILTAG_MAP.getTagPose(
+					target.getFiducialId()).get(), 
+					constants.robotToCamera.inverse());
+			// var estimatedPose = poseEstimator.update(result);
 
-			if (estimatedPose.isEmpty()) botPose = initBotPose.toPose2d();
-			else botPose = estimatedPose.get().estimatedPose.toPose2d();
+			// if (estimatedPose.isEmpty()) {
+			// 	botPose = initBotPose.toPose2d();
+			// } else {
+			// 	botPose = estimatedPose.get().estimatedPose.toPose2d();
+			// }
 
-			Drive.getInstance().getCtreDrive().addVisionMeasurement(botPose, result.getTimestampSeconds());
-			mPoseEstimator.setReferencePose(Drive.getInstance().getPose());
+			botPose = initBotPose.toPose2d();
+			if (Robot.isReal()) {
+				if (result.hasTargets()) {
+					Drive.getInstance().addVisionUpdate(botPose, result.getTimestampSeconds());
+				}
+			}
+			
+			if (result.hasTargets()) {
+				robotField.setRobotPose(botPose);
+			} else {
+				robotField.setRobotPose(Pose2d.kZero);
+			}
+			// poseEstimator.setReferencePose(Drive.getInstance().getPose());
 
-			robotField.setRobotPose(botPose);
-			SmartDashboard.putData("VisionDevice/" + mConstants.tableName, robotField);
 		};
 
-		int[] validIds = { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 };
+		// int[] validIds = { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 };
 
-		if (result.getBestTarget().getAlternateCameraToTarget().getTranslation().getNorm() < 3
-				&& MathUtil.inputModulus(result.getBestTarget().getAlternateCameraToTarget().getRotation().toRotation2d().getDegrees() + 15, -180, 180) < 30
-				&& Arrays.stream(validIds).anyMatch(n -> n == (int) result.getBestTarget().getFiducialId())) {
-			inSnapRange = true;
-		} else {
-			inSnapRange = false;
-		}
-	}
-
-	public boolean inSnapRange() {
-		return inSnapRange;
+		// if (result.getBestTarget().getAlternateCameraToTarget().getTranslation().getNorm() < 3
+		// 		&& MathUtil.inputModulus(result.getBestTarget().getAlternateCameraToTarget().getRotation().toRotation2d().getDegrees() + 15, -180, 180) < 30
+		// 		&& Arrays.stream(validIds).anyMatch(n -> n == (int) result.getBestTarget().getFiducialId())) {
+		// 	inSnapRange = true;
+		// } else {
+		// 	inSnapRange = false;
+		// }
 	}
 
 	public boolean hasTarget() {
@@ -84,39 +122,34 @@ public class VisionDevice {
 	}
 
 	public void periodic() {
-		mPeriodicIO.is_connected = !(Timer.getFPGATimestamp() - mPeriodicIO.latest_timestamp > 1.0);
+		isConnected = !(Timer.getFPGATimestamp() - latestTimestamp > 1.0);
 
 		processFrames();
 
 		SmartDashboard.putNumber(
-				"Vision " + mConstants.tableName + "/Last Update Timestamp Timestamp", mPeriodicIO.latest_timestamp);
-		SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", mPeriodicIO.frames.size());
-		SmartDashboard.putBoolean("Vision " + mConstants.tableName + "/is Connnected", mPeriodicIO.is_connected);
+				"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
+		// SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
+		SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
 	}
 
 	public boolean isConnected() {
-		return mPeriodicIO.is_connected;
+		return isConnected;
 	}
 
-	public static class PeriodicIO {
-		// inputs
-		double camera_exposure = 20;
-		boolean camera_auto_exposure = false;
-		double camera_gain = 10;
+	// private static class VisionFrame implements Comparable<VisionFrame> {
+	// 	double timestamp;
 
-		// Outputs
-		long fps = -1;
-		double latest_timestamp = 0.0;
-		List<VisionFrame> frames = new ArrayList<VisionFrame>();
-		boolean is_connected;
+	// 	@Override
+	// 	public int compareTo(VisionFrame o) {
+	// 		return Double.compare(timestamp, o.timestamp);
+	// 	}
+	// }
+
+	public VisionDeviceConstants getConstants() {
+		return constants;
 	}
 
-	private static class VisionFrame implements Comparable<VisionFrame> {
-		double timestamp;
-
-		@Override
-		public int compareTo(VisionFrame o) {
-			return Double.compare(timestamp, o.timestamp);
-		}
+	public PhotonCameraSim getSimulation() {
+		return sim;
 	}
 }

@@ -42,9 +42,8 @@ public class Robot extends TimedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		if (Robot.isReal()) {
-			VisionDeviceManager.getInstance();
-		}
+		VisionDeviceManager.getInstance();
+		
 		Drive.getInstance();
 		TelemetryManager.getInstance();
 		FollowPathCommand.warmupCommand().schedule();
