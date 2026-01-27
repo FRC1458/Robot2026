@@ -170,8 +170,8 @@ public class Drive extends SubsystemBase {
             setSwerveRequest(teleopRequest);
         }).andThen(run(() -> {
 			int pov = Robot.controller.getHID().getPOV();		
-            double xDesiredRaw = Math.sin(pov * Math.PI / 180.0);
-            double yDesiredRaw = Math.cos(pov * Math.PI / 180.0);
+            double xDesiredRaw = Math.cos(pov * Math.PI / 180.0);
+            double yDesiredRaw = - Math.sin(pov * Math.PI / 180.0);
             double rotDesiredRaw = 0;
 
             double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
@@ -179,15 +179,11 @@ public class Drive extends SubsystemBase {
             double yFancy = xy[1];
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
-			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
-
 			teleopRequest
 				.withVelocityX(xFancy * 0.4)
 				.withVelocityY(yFancy * 0.4)
 				.withRotationalRate(rotFancy * 0);        
-		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
+		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Nudge");
 	}
 
 	/** 
