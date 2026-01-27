@@ -52,6 +52,9 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
+    //class field
+    private double m_lastAppliedVolts = 0.0;
+
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -59,12 +62,23 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
-        ),
+            // state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
+            null        
+            ),
         new SysIdRoutine.Mechanism(
-            output -> setControl(m_translationCharacterization.withVolts(output)),
-            null,
-            this
+            output -> {
+                m_lastAppliedVolts = output.in(Volts);
+                setControl(m_translationCharacterization.withVolts(output));
+            },
+            log -> {
+                var s = getStateCopy();
+                log.motor("drive")
+                   .voltage(Volts.of(m_lastAppliedVolts))
+                   .linearPosition(Meters.of(s.Pose.getTranslation().getX())) // or avg wheel distance
+                   .linearVelocity(MetersPerSecond.of(getKinematics()
+                             .toChassisSpeeds(s.ModuleStates).vxMetersPerSecond));
+              },
+              this
         )
     );
 
@@ -97,17 +111,33 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(Math.PI),
             null, // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+            //state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+            null
         ),
         new SysIdRoutine.Mechanism(
             output -> {
-                /* output is actually radians per second, but SysId only supports "volts" */
-                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+                System.out.println("sysid/rotation routine called.");
+                m_lastAppliedVolts = output.in(Volts);
+                setControl(m_rotationCharacterization.withRotationalRate(m_lastAppliedVolts));
             },
-            null,
-            this
+            log -> {
+                var s = getStateCopy();
+                log.motor("yaw")
+                   .voltage(Volts.of(m_lastAppliedVolts))
+                   .angularPosition(Radians.of(s.Pose.getRotation().getRadians())) // get rotation position
+                   .angularVelocity(RadiansPerSecond.of(getKinematics()
+                             .toChassisSpeeds(s.ModuleStates).omegaRadiansPerSecond));
+              },
+              this
+           
+            // output -> {
+            //     /* output is actually radians per second, but SysId only supports "volts" */
+            //     setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+            //     /* also log the requested output for SysId */
+            //     SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+            // },
+            // null,
+            // this
         )
     );
 
@@ -208,12 +238,18 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
         switch(type) {
             case ROTATION:
                 m_sysIdRoutineToApply = m_sysIdRoutineRotation;
+                System.out.println("SysID/Rotation routine set");
+
                 break;
             case STEER:
                 m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+                System.out.println("SysID/Steer routine set");
+
                 break;
             case TRANSLATION:
                 m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+                System.out.println("SysID/Translation routine set");
+
                 break;
             default:
                 break;

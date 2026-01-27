@@ -10,8 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
-// import frc.robot.RobotState;
-import frc.robot.lib.localization.FieldUtil;
+import frc.robot.lib.field.FieldUtil;
 
 public class RedTrajectory {
     public TrajectoryType type;
@@ -58,7 +57,9 @@ public class RedTrajectory {
                 ChassisAccels.estimate(
                     state.fieldSpeeds, 
                     nextState.fieldSpeeds, 
-                    MathUtil.clamp(nextState.timeSeconds - state.timeSeconds, 0.1, Double.POSITIVE_INFINITY)));
+                    MathUtil.clamp(
+                        nextState.timeSeconds - state.timeSeconds, 
+                        Constants.DT, Double.POSITIVE_INFINITY)));
         }
 
         /**
@@ -82,8 +83,7 @@ public class RedTrajectory {
                 sample.t,
                 new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading)),
                 new ChassisSpeeds(sample.vx, sample.vy, sample.omega),
-                new ChassisAccels(sample.ax, sample.ay, sample.alpha)  
-            );
+                new ChassisAccels(sample.ax, sample.ay, sample.alpha)  );
         }
 
         /**
