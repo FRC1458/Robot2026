@@ -170,8 +170,8 @@ public class Drive extends SubsystemBase {
             setSwerveRequest(teleopRequest);
         }).andThen(run(() -> {
 			int pov = Robot.controller.getHID().getPOV();		
-            double xDesiredRaw = Math.sin(pov) * Math.PI / 180.0;
-            double yDesiredRaw = Math.cos(pov) * Math.PI / 180.0;
+            double xDesiredRaw = Math.sin(pov * Math.PI / 180.0);
+            double yDesiredRaw = Math.cos(pov * Math.PI / 180.0);
             double rotDesiredRaw = 0;
 
             double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
