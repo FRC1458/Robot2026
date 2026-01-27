@@ -67,7 +67,7 @@ public class Indexer extends SubsystemBase {
         return setSpeed(IndexerConstants.InactiveSpeed);
     }
 
-    /** command to sense distance from camera; used to sense if bol */
+    /** command to sense distance from LaserCAN; used to sense if bol */
     private double getDistanceMm() {
         LaserCan.Measurement measurement = lc.getMeasurement();
         if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
@@ -85,9 +85,9 @@ public class Indexer extends SubsystemBase {
     /** command that modifies hasBall, uses getDistanceMm() */
     private void checkForBall() {
         double x = getDistanceMm();
-        if (x == IndexerConstants.LaserCan_DefaultMeasurement) {
+        if (x >= IndexerConstants.LaserCan_DefaultMeasurement) {
             hasBall = false;
-        } else {
+        } else if (x != -1) { /* (x != -1) is checking that the camera isn't just returning an error as ball sensed */
             hasBall = true;
         }
     }
