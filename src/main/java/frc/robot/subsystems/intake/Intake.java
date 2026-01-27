@@ -72,7 +72,8 @@ public class Intake extends SubsystemBase {
      * sends position voltage request that attempts to keep bar in place
      */
     public Command stopBar() {
-        return runOnce(() -> setRequestBar(new PositionVoltage(barPosition))).withName("Stopped"); //needs testing
+        return runOnce(() -> setRequestBar(new PositionVoltage(barPosition)))
+            .withName("Stopped"); //needs testing
     }
 
     //----------------set request---------------
