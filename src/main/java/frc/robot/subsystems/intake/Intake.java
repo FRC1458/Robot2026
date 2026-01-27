@@ -59,10 +59,18 @@ public class Intake extends SubsystemBase {
     }
     
     //---------------stop----------------
+
+    /**
+     * sends neutral request to wheel 
+     */
+     
     public Command stopWheel() {
         return runOnce(() -> setRequestWheel(new NeutralOut())).withName("Stopped");
     }
 
+    /**
+     * sends position voltage request that attempts to keep bar in place
+     */
     public Command stopBar() {
         return runOnce(() -> setRequestBar(new PositionVoltage(barPosition))).withName("Stopped"); //needs testing
     }
@@ -77,13 +85,19 @@ public class Intake extends SubsystemBase {
     }
 
     //----------------wheel----------------
+
+    /**
+     * sets wheel speed to intake speed
+     */
+
     public Command setWheelIntaking() {
         return setWheelSpeed(IntakeConstants.INTAKE_SPEED);
     }
 
-    public Command setWheelStop() {
-        return runOnce(() -> setRequestWheel(new NeutralOut())); 
-    }
+    /**
+     * sets the wheel speed (in rotations per second)
+     * @return
+     */
 
     public Command setWheelSpeed(double speed) {
         return runOnce(() -> setRequestWheel (
@@ -94,15 +108,27 @@ public class Intake extends SubsystemBase {
 
     //---------bar-----------
 
-
+    /**
+     * sets request to the bar down voltage
+     * @return
+     */
     public Command setBarDown() {
         return setBarPosition(IntakeConstants.BAR_POSITION_DOWN);
     }
 
+    /**
+     * sets request to the bar up voltage
+     * @return
+     */
     public Command setBarUp() {
         return setBarPosition(IntakeConstants.BAR_POSITION_UP);
     }
     
+    /**
+     * sets position request within limits and then requests that position (in rotations)
+     * @param position
+     * @return
+     */
     public Command setBarPosition(double position) {
         double checkedPos = MathUtil.clamp(position, IntakeConstants.BAR_POS_MIN, IntakeConstants.BAR_POS_MAX);
         return runOnce(() -> setRequestBar(
