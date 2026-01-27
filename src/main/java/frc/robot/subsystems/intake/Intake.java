@@ -88,7 +88,7 @@ public class Intake extends SubsystemBase {
     public Command setWheelSpeed(double speed) {
         return runOnce(() -> setRequestWheel (
             new VelocityVoltage(speed))
-        ).withName("wheel speed set");
+        ).withName("wheel speed set " + (speed));
     }
 
 
@@ -107,6 +107,6 @@ public class Intake extends SubsystemBase {
         double checkedPos = MathUtil.clamp(position, IntakeConstants.BAR_POS_MIN, IntakeConstants.BAR_POS_MAX);
         return runOnce(() -> setRequestBar(
             new PositionVoltage(checkedPos))
-        ).withName("bar pos set");
+        ).withName("bar pos set" + (checkedPos));
     }
 }
