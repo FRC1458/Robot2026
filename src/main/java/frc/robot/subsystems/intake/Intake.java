@@ -94,7 +94,13 @@ public class Intake extends SubsystemBase {
     public Command setWheelIntaking() {
         return setWheelSpeed(IntakeConstants.INTAKE_SPEED);
     }
-
+    /**
+     * sets wheel speed to the negative of intake speed (for outtaking)
+     * @return
+     */
+    public Command setWheelOutaking() {
+        return setWheelSpeed(-IntakeConstants.INTAKE_SPEED);
+    }
     /**
      * sets the wheel speed (in rotations per second)
      * @return
