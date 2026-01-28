@@ -16,6 +16,7 @@ public class ClimbConstants {
     public static final double SPROCKET_RADIUS = 0.0412; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
+    public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters // CHANGE THIS
     public static final double METERS_PER_ROTATION = 0.028776; // Approximated using measurement
     public static final double CARRIAGE_WEIGHT = 7.55; // kg
 
