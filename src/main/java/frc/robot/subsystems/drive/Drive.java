@@ -176,7 +176,6 @@ public class Drive extends SubsystemBase {
             double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double xFancy = xy[0];
             double yFancy = xy[1];
-            double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
 			teleopRequest
 				.withVelocityX(xFancy * 0.4)
