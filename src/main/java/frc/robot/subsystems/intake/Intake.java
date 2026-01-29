@@ -1,24 +1,23 @@
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.TelemetryManager;
-
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.subsystems.TelemetryManager;;
 public class Intake extends SubsystemBase {
     private static Intake intakeInstance;
 
@@ -37,6 +36,7 @@ public class Intake extends SubsystemBase {
     private ControlRequest wheelRequest = new NeutralOut();
     private ControlRequest barRequest = new NeutralOut();
 
+    private DCMotor pl = DCMotor.getKrakenX60(1);
     private Intake() {
         super();
         wheelMotor = new TalonFX(IntakeConstants.Motors.WHEEL.id);
@@ -45,17 +45,34 @@ public class Intake extends SubsystemBase {
 		barMotor.getConfigurator().apply(IntakeConstants.getBarConfig());
         wheelMotor.setNeutralMode(NeutralModeValue.Brake);
 		barMotor.setNeutralMode(NeutralModeValue.Brake); //?
-
-        TelemetryManager.getInstance().addSendable(this);
+        SmartDashboard.putData("123123", mech2d);
+        //TelemetryManager.getInstance().addSendable(this);
+        mech2droot.append(mech2dpivot);
     }
 
-
+    private final Mechanism2d mech2d = new Mechanism2d(20, 20);
+    private final MechanismRoot2d mech2droot = mech2d.getRoot("Bar Root",  10, 1);
+    private final MechanismLigament2d mech2dpivot = new MechanismLigament2d("Pivot", 10, 0
+    );
+    
+    final SingleJointedArmSim sim = new SingleJointedArmSim(
+        pl,
+        2.0,
+        1.0,
+        1.0,
+        IntakeConstants.BAR_POS_MIN,
+        IntakeConstants.BAR_POS_MAX,
+        true,
+        0.0,
+        0.0, 0.0
+    );
     @Override
     public void periodic(){
         wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
         barPosition = barMotor.getPosition().getValueAsDouble();
         barMotor.setControl(barRequest);
         wheelMotor.setControl(wheelRequest);
+        mech2dpivot.setAngle(barPosition);
     }
     
     //---------------stop----------------
@@ -94,6 +111,7 @@ public class Intake extends SubsystemBase {
     public Command setWheelIntaking() {
         return setWheelSpeed(IntakeConstants.INTAKE_SPEED);
     }
+
     /**
      * sets wheel speed to the negative of intake speed (for outtaking)
      * @return
@@ -101,6 +119,7 @@ public class Intake extends SubsystemBase {
     public Command setWheelOutaking() {
         return setWheelSpeed(-IntakeConstants.INTAKE_SPEED);
     }
+
     /**
      * sets the wheel speed (in rotations per second)
      * @return
@@ -141,5 +160,13 @@ public class Intake extends SubsystemBase {
         return runOnce(() -> setRequestBar(
             new PositionVoltage(checkedPos))
         ).withName("bar pos set" + (checkedPos));
+    }
+
+    
+
+    public void simulationPeriodic() {
+        sim.setInput(1.0);
+        sim.update(0.020);
+        System.out.println("simulationperiodic");
     }
 }
