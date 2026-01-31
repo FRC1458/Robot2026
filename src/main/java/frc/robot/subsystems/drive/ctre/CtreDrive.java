@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -297,6 +299,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        Logger.recordOutput("Voltage",m_lastAppliedVolts);
     }
 
     private void startSimThread() {
