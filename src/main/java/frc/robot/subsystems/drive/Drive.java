@@ -2,14 +2,16 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.therekrab.autopilot.APTarget;
-import com.therekrab.autopilot.Autopilot;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -24,11 +26,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
+import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
+import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -50,8 +54,8 @@ public class Drive extends SubsystemBase {
 	private final CtreDriveTelemetry telemetry;
 	@SuppressWarnings("unused") 
 	private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
-
-	Autopilot ap;
+	
+	private final LocalADStarWrapper pathfinder;
 
 	private Drive() {
 		drivetrain = CtreDriveConstants.createDrivetrain();  
@@ -64,6 +68,8 @@ public class Drive extends SubsystemBase {
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
 		}));
+
+		pathfinder = new LocalADStarWrapper();
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
@@ -146,7 +152,7 @@ public class Drive extends SubsystemBase {
 	}
 
 	/** Open loop during teleop */
-    public Command teleopCommand() {
+    public Command openLoopControl() {
         return runOnce(() -> {
             teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
             setSwerveRequest(teleopRequest);
@@ -169,6 +175,32 @@ public class Drive extends SubsystemBase {
 				.withVelocityY(yFancy * MAX_SPEED)
 				.withRotationalRate(rotFancy * MAX_ROTATION_SPEED);        
 		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
+	}
+
+	public Command headingLock(Supplier<Rotation2d> rotationSupplier) {
+		SwerveRequest.FieldCentricFacingAngle request = 
+			new SwerveRequest.FieldCentricFacingAngle()
+				.withHeadingPID(ROTATION_CONSTANTS.kP, ROTATION_CONSTANTS.kI, ROTATION_CONSTANTS.kD);
+
+		return runOnce(() -> setSwerveRequest(request)).andThen(
+			run(() -> {
+				double xDesiredRaw = -Robot.controller.getLeftY();
+				double yDesiredRaw = -Robot.controller.getLeftX();
+	
+				double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+				double xFancy = xy[0];
+				double yFancy = xy[1];
+	
+				request
+					.withVelocityX(xFancy * MAX_SPEED)
+					.withVelocityY(yFancy * MAX_SPEED)
+					.withTargetDirection(rotationSupplier.get());        
+			}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Heading Lock");
+	}
+
+	public Command headingLockToPose(Pose2d pose) {
+		return headingLock(() -> 
+			getPose().getTranslation().minus(pose.getTranslation()).getAngle());
 	}
 
 	/** 
@@ -196,6 +228,22 @@ public class Drive extends SubsystemBase {
 			APTarget pose = FieldLayout.getNearestTarget(getPose(), left);
 			return new AutopilotCommand(pose);
 		}).withName("Autopilot Align");
+	}
+
+	public Command pathFindToThisRandomPlaceIdk() {
+		return runOnce(() -> {
+			pathfinder.setInitialPose(getPose()); 
+			pathfinder.setFinalPose(new Pose2d(8, 5, Rotation2d.k180deg));
+		}).andThen(
+			Commands.race(
+				Commands.waitUntil(() -> pathfinder.hasPath()),
+				Commands.waitSeconds(0.3)
+			),
+			Commands.either(
+				defer(() -> new TrajectoryCommand(pathfinder.getPath()).withPIDToPoseAtEnd()),
+				Commands.print("Pathfinding failed"),
+				() -> pathfinder.hasPath())
+		);
 	}
 
 	/** Adds a vision update */

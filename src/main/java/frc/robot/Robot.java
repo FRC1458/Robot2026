@@ -115,7 +115,7 @@ public class Robot extends TimedRobot {
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		Drive.getInstance().setDefaultCommand(Drive.getInstance().openLoopControl());
 		
 		ControlsMapping.mapTeleopCommand();
 	}
