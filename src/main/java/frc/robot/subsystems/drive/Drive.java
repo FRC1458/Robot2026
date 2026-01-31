@@ -4,6 +4,7 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.therekrab.autopilot.APTarget;
 import com.therekrab.autopilot.Autopilot;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -42,7 +43,8 @@ public class Drive extends SubsystemBase {
 	}
 
 	private SwerveDriveState lastReadState;
-	public static final SwerveRequest.FieldCentric teleopRequest = new SwerveRequest.FieldCentric();
+	public static final SwerveRequest.FieldCentric teleopRequest = 
+		new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.Velocity);	//close_loop control for drive motors
 	public SwerveRequest driveRequest = teleopRequest;
 
 	private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
@@ -151,11 +153,13 @@ public class Drive extends SubsystemBase {
             double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double xFancy = xy[0];
             double yFancy = xy[1];
+            // double xFancy = Util.applyJoystickDeadband(xDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+            // double yFancy = Util.applyJoystickDeadband(yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
-			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
 
 			teleopRequest
 				.withVelocityX(xFancy * MAX_SPEED)
