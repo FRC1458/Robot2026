@@ -6,12 +6,15 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
 
 public class Shooter extends SubsystemBase {
@@ -30,6 +33,9 @@ public class Shooter extends SubsystemBase {
 	private ControlRequest topRequest = new NeutralOut();
 	private ControlRequest bottomRequest = new NeutralOut();
 
+    private FlywheelSim topSim;
+    private FlywheelSim bottomSim;
+
     private Shooter() {
         super();
 
@@ -40,6 +46,21 @@ public class Shooter extends SubsystemBase {
         topMotor = new TalonFX(ShooterConstants.Motors.TOP.id);
 		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		topMotor.setNeutralMode(NeutralModeValue.Brake);
+        
+        if (Robot.isSimulation()) {
+            topSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX60(1),
+                    0.000489000861,
+                    1
+                ), DCMotor.getKrakenX60(1), 0.0);
+            bottomSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX60(1),
+                    0.000489000861,
+                    1
+                ), DCMotor.getKrakenX60(1), 0.0);
+        }
 		TelemetryManager.getInstance().addSendable(this);
     }
 
@@ -50,6 +71,25 @@ public class Shooter extends SubsystemBase {
         lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
         topMotor.setControl(topRequest);
         bottomMotor.setControl(bottomRequest);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+		topMotor.getSimState()
+            .setRotorVelocity(topSim.getAngularVelocityRPM() / 60.0);
+		topMotor.getSimState().setSupplyVoltage(12.0);
+        topSim.setInput(topMotor.getMotorVoltage().getValueAsDouble());
+        topSim.update(0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(topSim.getCurrentDrawAmps()));
+        
+		bottomMotor.getSimState()
+            .setRotorVelocity(bottomSim.getAngularVelocityRPM() / 60.0);
+		bottomMotor.getSimState().setSupplyVoltage(12.0);
+        bottomSim.setInput(bottomMotor.getMotorVoltage().getValueAsDouble());
+        bottomSim.update(0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(bottomSim.getCurrentDrawAmps()));
     }
 
     /** Replaces the request */

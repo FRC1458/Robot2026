@@ -6,7 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
 public final class ShooterConstants {		
-    public static final double SHOOT_SPEED_INCREMENT = 5; // rotation per second
+    public static final double GEAR_RATIO = 1;
 
     /** Motor ids */
     public static enum Motors {
@@ -17,17 +17,7 @@ public final class ShooterConstants {
             this.id = id;
         }
     }
-
-    /** Laser ids */
-    public static enum Lasers {
-        //BACK(30),
-        FRONT(31);
-        public final int id;
-        private Lasers(int id) {
-            this.id = id;
-        }
-    }
-
+    
     /** Config for shooter motors */
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
