@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.lib.control.ControlConstants.*;
+import frc.robot.lib.field.FieldLayout;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 
 public final class DriveConstants {		
@@ -58,7 +59,9 @@ public final class DriveConstants {
             new Pose3d(
                 Units.Inches.of(182.11), 
                 Units.Inches.of(158.84),
-                Units.Inches.of(72), Rotation3d.kZero));
+                Units.Inches.of(72), Rotation3d.kZero)),
+        TRENCH(
+            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero));
         public Pose2d pose;
         public Pose3d pose3d;
         private FieldPoses(Pose2d pose) {

@@ -200,7 +200,7 @@ public class Drive extends SubsystemBase {
 
 	public Command headingLockToPose(Pose2d pose) {
 		return headingLock(() -> 
-			getPose().getTranslation().minus(pose.getTranslation()).getAngle());
+			pose.getTranslation().minus(getPose().getTranslation()).getAngle());
 	}
 
 	/** 

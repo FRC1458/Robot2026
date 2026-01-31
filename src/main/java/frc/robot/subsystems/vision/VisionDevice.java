@@ -17,6 +17,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionDevice {
 	private final VisionDeviceConstants constants;
@@ -46,7 +47,6 @@ public class VisionDevice {
 
 		camera = new PhotonCamera(constants.tableName);
 
-
 		if (Robot.isSimulation()) {
 			SimCameraProperties cameraProp = new SimCameraProperties();
 			// A 640 x 480 camera with a 100 degree diagonal FOV.
@@ -70,13 +70,20 @@ public class VisionDevice {
 	}
 
 	private void processFrames() {
-		var result = camera.getLatestResult();
-		hasTarget = result.hasTargets();
+		// var results = camera.getAllUnreadResults();
+		// for (var result : results) {
+		// 	var multiTagResult = result.getMultiTagResult();
+		// 	if (multiTagResult.isPresent()) {
+		// 		var fieldToCamera = multiTagResult.get().estimatedPose.best;
+				
+		// 	}
+		// }
 
-		if (!hasTarget) {
-			return; 
-		} else {
+		
+		var result = camera.getLatestResult();
+		if (result.hasTargets()) {
 			var target = result.getBestTarget();
+
 			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
 				target.getBestCameraToTarget(), 
 				FieldLayout.APRILTAG_MAP.getTagPose(
