@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -32,6 +33,8 @@ import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
+import static frc.robot.Robot.controller;
+
 
 public class Drive extends SubsystemBase {
 	private static Drive driveInstance;
@@ -41,11 +44,19 @@ public class Drive extends SubsystemBase {
 		}
 		return driveInstance;
 	}
-
+	
 	private SwerveDriveState lastReadState;
-	public static final SwerveRequest.FieldCentric teleopRequest = 
-		new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.Velocity);	//close_loop control for drive motors
-	public SwerveRequest driveRequest = teleopRequest;
+	// the long-live SwerveRequest objects for drivetrain
+	private boolean prevTeleopIsRotation = false;  
+	public static final SwerveRequest.FieldCentricFacingAngle teleopRequestDrive = 
+		new SwerveRequest.FieldCentricFacingAngle()
+			.withDriveRequestType(DriveRequestType.Velocity)//close_loop control for drive motors
+			.withRotationalDeadband(Constants.Controllers.DRIVER_DEADBAND)   // joystick deadzone
+        	.withHeadingPID(8.0, 0.0, 0.0); // yaw PID;	
+	public SwerveRequest driveRequest = teleopRequestDrive;
+	public static final SwerveRequest.FieldCentric teleopRequestSteer = 
+		new SwerveRequest.FieldCentric()
+			.withDriveRequestType(DriveRequestType.Velocity);//close_loop control for drive motors
 
 	private final CtreDrive drivetrain = CtreDriveConstants.createDrivetrain();    
 	private final CtreDriveTelemetry telemetry = new CtreDriveTelemetry(MAX_SPEED);
@@ -143,8 +154,8 @@ public class Drive extends SubsystemBase {
 	/** Open loop during teleop */
     public Command teleopCommand() {
         return runOnce(() -> {
-            teleopRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
-            setSwerveRequest(teleopRequest);
+            teleopRequestDrive.withVelocityX(0).withVelocityY(0);//.withRotationalRate(0);
+            setSwerveRequest(teleopRequestDrive);
         }).andThen(run(() -> {
             double xDesiredRaw = -Robot.controller.getLeftY();
             double yDesiredRaw = -Robot.controller.getLeftX();
@@ -160,11 +171,26 @@ public class Drive extends SubsystemBase {
 			// SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
 			// SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
 			// SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
-
-			teleopRequest
-				.withVelocityX(xFancy * MAX_SPEED)
-				.withVelocityY(yFancy * MAX_SPEED)
-				.withRotationalRate(rotFancy * MAX_ROTATION_SPEED);        
+			if (Math.abs(rotDesiredRaw)< Constants.Controllers.DRIVER_DEADBAND){//drive with heading locked
+				if (prevTeleopIsRotation){
+					// lock heading on current angel  
+					Rotation2d currHeading = drivetrain.getState().Pose.getRotation();
+					teleopRequestDrive.withTargetDirection(currHeading);
+					prevTeleopIsRotation = false;
+				}
+				teleopRequestDrive
+					.withVelocityX(xFancy * MAX_SPEED)
+					.withVelocityY(yFancy * MAX_SPEED);
+					//.withRotationalRate(rotFancy * MAX_ROTATION_SPEED);
+				setSwerveRequest(teleopRequestDrive);        
+			}else{	// rotate heading 
+				teleopRequestSteer
+					// .withVelocityX(0)
+					// .withVelocityY(0)
+					.withRotationalRate (rotFancy*MAX_ROTATION_SPEED);
+				setSwerveRequest(teleopRequestSteer);
+				prevTeleopIsRotation = true; 
+			}
 		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
 	}
 

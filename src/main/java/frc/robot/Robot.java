@@ -43,7 +43,7 @@ public class Robot extends TimedRobot {
 	 */
 	public Robot() {
 		if (Robot.isReal()) {
-			VisionDeviceManager.getInstance();
+			// VisionDeviceManager.getInstance();
 		}
 		Drive.getInstance();
 		TelemetryManager.getInstance();
