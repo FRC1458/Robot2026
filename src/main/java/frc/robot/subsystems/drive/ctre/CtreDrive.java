@@ -4,7 +4,9 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -15,6 +17,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -52,8 +56,10 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
-    //class field
-    private double m_lastAppliedVolts = 0.0;
+    //class field for sysid uses
+    private double m_lastAppliedVolts =0.;
+    private StatusSignal<Angle> m_sysIDSteerPos=null;
+    private StatusSignal<AngularVelocity> m_sysIDSteerVel=null;     
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -89,12 +95,29 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(7), // Use dynamic voltage of 7 V
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
+            // state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
+            null
         ),
         new SysIdRoutine.Mechanism(
-            volts -> setControl(m_steerCharacterization.withVolts(volts)),
-            null,
-            this
+            output -> {
+                m_lastAppliedVolts = output.in(Volts);
+                setControl(m_steerCharacterization.withVolts(output));
+            },
+            log -> {
+                if (m_sysIDSteerPos!=null && m_sysIDSteerVel!=null){
+                    BaseStatusSignal.refreshAll(m_sysIDSteerPos, m_sysIDSteerVel);//ensure we get the "fresh" signals, reduce signal delay; sysid hates delayed signals
+                    double pos = m_sysIDSteerPos.getValueAsDouble() * 2*Math.PI;
+                    double vel = m_sysIDSteerVel.getValueAsDouble() * 2*Math.PI;
+                    //System.out.println("sysid/steer/pos" + pos + ", vel="+ vel);
+
+                    log.motor("steer0") //match module# selected 
+                        .voltage(Volts.of(m_lastAppliedVolts))
+                        .angularPosition(Radians.of(pos)) // or avg wheel distance
+                        .angularVelocity(RadiansPerSecond.of(vel));
+                }
+              },
+              this
+
         )
     );
 
@@ -244,7 +267,15 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             case STEER:
                 m_sysIdRoutineToApply = m_sysIdRoutineSteer;
                 System.out.println("SysID/Steer routine set");
-
+                //choose module and init two signals
+                {
+                    var mod = getModule(0); // or average multiple      
+                    m_sysIDSteerPos=mod.getSteerMotor().getPosition();
+                    m_sysIDSteerVel=mod.getSteerMotor().getVelocity();
+                    if ( m_sysIDSteerPos==null || m_sysIDSteerVel==null){
+                        System.out.println("sysid/steer/pos or vel is null");
+                    }
+                }
                 break;
             case TRANSLATION:
                 m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
