@@ -2,6 +2,8 @@ package frc.robot.subsystems.drive.commands;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
@@ -112,6 +114,9 @@ public class PIDToPoseCommand extends Command {
                 .getOutput(),
             -MAX_ROTATION_SPEED, MAX_ROTATION_SPEED);
 
+        Logger.recordOutput("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
+        Logger.recordOutput("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
+        Logger.recordOutput("Debug/PIDToPose/vrotation", rotation);
         SmartDashboard.putNumber("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
         SmartDashboard.putNumber("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
         SmartDashboard.putNumber("Debug/PIDToPose/vrotation", rotation);

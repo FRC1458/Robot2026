@@ -13,6 +13,8 @@ import frc.robot.lib.field.FieldLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
@@ -32,6 +34,8 @@ public class VisionDevice {
 
 	public VisionDevice(VisionDeviceConstants constants) {
 		robotField = new Field2d();
+
+		Logger.recordOutput("VisionDevice/" + constants.tableName, robotField.getRobotPose()); //use loggedRobotField
 		SmartDashboard.putData("VisionDevice/" + constants.tableName, robotField);
 
 		mCamera = new PhotonCamera(constants.tableName);
@@ -88,6 +92,10 @@ public class VisionDevice {
 
 		processFrames();
 
+		Logger.recordOutput(
+				"Vision " + mConstants.tableName + "/Last Update Timestamp Timestamp", mPeriodicIO.latest_timestamp);
+		Logger.recordOutput("Vision " + mConstants.tableName + "/N Queued Updates", mPeriodicIO.frames.size());
+		Logger.recordOutput("Vision " + mConstants.tableName + "/is Connnected", mPeriodicIO.is_connected);
 		SmartDashboard.putNumber(
 				"Vision " + mConstants.tableName + "/Last Update Timestamp Timestamp", mPeriodicIO.latest_timestamp);
 		SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", mPeriodicIO.frames.size());

@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.networktables.NetworkTableInstance;

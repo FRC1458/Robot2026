@@ -2,6 +2,8 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.therekrab.autopilot.APTarget;
@@ -153,6 +155,9 @@ public class Drive extends SubsystemBase {
             double yFancy = xy[1];
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
+			Logger.recordOutput("Sticks/vX", xDesiredRaw);
+			Logger.recordOutput("Sticks/vY", yDesiredRaw);
+			Logger.recordOutput("Sticks/vW", rotDesiredRaw);
 			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
 			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
 			SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
