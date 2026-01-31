@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.intake.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -32,15 +33,20 @@ public class ControlsMapping {
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.b().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
+		controller.b().whileTrue(hangCommand()); // TODO: Implement hang from armaaan
 		controller.leftTrigger().whileTrue(intakeCommand());
 		controller.rightTrigger().whileTrue(shooterCommand());
 	}
 
 	public static Command intakeCommand() {
-		return Commands.print("Intaking");
+		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelIntaking());
 	}
-	public static Command HangCommand() {
+
+	public static Command outtakeCommand() {
+		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelOutaking());
+	}
+	
+	public static Command hangCommand() {
 		return Commands.print("Hanging");
 	}
 	public static Command shooterCommand() {
