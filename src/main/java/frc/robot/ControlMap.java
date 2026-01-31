@@ -2,25 +2,35 @@ package frc.robot;
 
 import static frc.robot.Robot.controller;
 
+import java.lang.reflect.Method;
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.auto.AutoRoutines;
+import frc.robot.auto.AutoSelector.Auto;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-public class ControlsMapping {
-	CommandXboxController controller1;
+public class ControlMap {
+	public static void implement(String key) {
+		switch (key) {
+			case "mapTwo": mapTwo(); break;
+			default: standard();
+		}
+	}
     
-	public static void mapTeleopCommand() {
-		
-		
-		
+	public static void standard() {
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
@@ -33,6 +43,21 @@ public class ControlsMapping {
 		controller.b().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
 		controller.leftTrigger().whileTrue(intakeCommand());
 		controller.rightTrigger().whileTrue(shooterCommand());
+	}
+
+	public static void mapTwo() {
+		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
+		// run sysID functions
+		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
+		
+		controller.a().whileTrue(shooterCommand());
+		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		controller.y().whileTrue(intakeCommand());
+		controller.b().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.leftTrigger().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
+		controller.rightTrigger().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 	}
 
 	public static Command intakeCommand() {
