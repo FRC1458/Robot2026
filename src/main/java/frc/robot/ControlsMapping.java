@@ -21,7 +21,7 @@ public class ControlsMapping {
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 
-		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TRENCH.pose));
+		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TAG.pose));
 		controller.x().onTrue(Drive.getInstance().pathFindToThisRandomPlaceIdk());
 		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
 		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));

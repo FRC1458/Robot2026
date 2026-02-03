@@ -180,7 +180,7 @@ public class Drive extends SubsystemBase {
 	public Command headingLock(Supplier<Rotation2d> rotationSupplier) {
 		SwerveRequest.FieldCentricFacingAngle request = 
 			new SwerveRequest.FieldCentricFacingAngle()
-				.withHeadingPID(ROTATION_CONSTANTS.kP, ROTATION_CONSTANTS.kI, ROTATION_CONSTANTS.kD);
+				.withHeadingPID(6, 0, 0);
 
 		return runOnce(() -> setSwerveRequest(request)).andThen(
 			run(() -> {

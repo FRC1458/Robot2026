@@ -61,6 +61,8 @@ public final class DriveConstants {
                 Units.Inches.of(158.84),
                 Units.Inches.of(72), Rotation3d.kZero)),
         TRENCH(
+            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero)),
+        TAG(
             FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero));
         public Pose2d pose;
         public Pose3d pose3d;
