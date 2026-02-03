@@ -23,7 +23,7 @@ public final class ShooterConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(0.5)
+                .withKP(0.3 )
                 .withKI(0.001)
                 .withKD(0.0)
                 .withKA(0.1)

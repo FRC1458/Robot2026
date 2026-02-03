@@ -65,6 +65,7 @@ public class Shooter extends SubsystemBase {
                 ), DCMotor.getKrakenX60(1), 0.0);
         }
 		TelemetryManager.getInstance().addSendable(this);
+        setDefaultCommand(stop());
     }
 
     @Override
@@ -97,7 +98,6 @@ public class Shooter extends SubsystemBase {
             .setRotorVelocity(topSim.getAngularVelocityRPM() / 60.0);
         bottomMotor.getSimState().addRotorPosition(topSim.getAngularVelocityRPM() / 60.0 * 0.020);
 
-        setDefaultCommand(stop());
     }
 
     /** Replaces the request */
@@ -128,7 +128,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return shoot(3000 / 60.0, 3000 / 60.0);
+        return shoot(512, -512);
     }
 
     @Override
