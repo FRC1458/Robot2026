@@ -25,7 +25,7 @@ public class ControlsMapping {
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		controller.a().whileTrue(indexerCommand());
 		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
@@ -35,6 +35,9 @@ public class ControlsMapping {
 		controller.rightTrigger().whileTrue(shooterCommand());
 	}
 
+	public static Command indexerCommand() {
+		return Commands.print("Indexing");
+	}
 	public static Command intakeCommand() {
 		return Commands.print("Intaking");
 	}

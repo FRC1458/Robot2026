@@ -1,18 +1,26 @@
 package frc.robot.subsystems.indexer;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.core.CoreTalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.TelemetryManager;
 import au.grapplerobotics.LaserCan;
 import au.grapplerobotics.ConfigurationFailedException;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 
-// TODO (ethan): only activate if shooter ready
-// TODO (ethan): ask tommy setControl(request)
+//TODO: implement robot controller
 public class Indexer extends SubsystemBase {
     /** getInstance of indexer */
     private static Indexer instance;
@@ -31,17 +39,25 @@ public class Indexer extends SubsystemBase {
     /** boolean that's modified by checkForBall() */
     private boolean hasBall;
 
-    private boolean shooterReady = false;
+    /** boolean that's modified by shooter */
+    private boolean shooterReady = true;
     // COMMENTED OUT /** boolean that's modified by checkForBallTwo() */
     // private boolean hasBallTwo;
 
-    /** boolean that's modified by shooter */
+    /**/private final FlywheelSim motorPhysicsSim = new FlywheelSim(
+        LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.04, 1),
+        DCMotor.getKrakenX60(1),0
+    );
 
     /** setup, adding motor and laser */
     private Indexer() {
         super();
         motor = new TalonFX(IndexerConstants.MOTOR_ID);
         motorSim = motor.getSimState();
+        /**/if (edu.wpi.first.wpilibj.TimedRobot.isSimulation()) {
+            motorSim.setSupplyVoltage(12.0);
+        }
+
         lc = new LaserCan(IndexerConstants.LASER_ID);
         lcTwo = new LaserCan(IndexerConstants.LASER_ID_2);
 
@@ -60,8 +76,14 @@ public class Indexer extends SubsystemBase {
         } catch (ConfigurationFailedException e) {
             System.out.println("Configuration failed! " + e);
         }
-    }
 
+        TelemetryManager.getInstance().addSendable(this);
+
+        // new Trigger(() -> shooterReady).onTrue(activateIndexer()).onFalse(deactivateIndexer());
+
+        setDefaultCommand(defaultMode());
+    }
+//my name is laurence and i like pizza
     @Override
     /* check for balls and makes sure motor is constantly running at desired speed */
     public void periodic() {
@@ -69,9 +91,25 @@ public class Indexer extends SubsystemBase {
         
         checkForBall();
         // checkForBallTwo();
-        if (shooterReady = true) {
-            activateIndexer();
-        }
+        // if (shooterReady) {
+        //     activateIndexer();
+
+        // } else {
+        //     deactivateIndexer();
+        // }
+    }
+
+    /**/@Override
+    public void simulationPeriodic() {
+        motorSim.setSupplyVoltage(12);
+
+        motorPhysicsSim.setInput(motorSim.getMotorVoltage());
+        motorPhysicsSim.update(0.020);
+		motorSim
+            .setRotorVelocity(motorPhysicsSim.getAngularVelocityRPM() / 60.0);
+        motorSim.addRotorPosition(motorPhysicsSim.getAngularVelocityRPM() / 60.0 * 0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(motorPhysicsSim.getCurrentDrawAmps()));
     }
 
     /** type conversion/abstraction */
@@ -145,6 +183,12 @@ public class Indexer extends SubsystemBase {
     //     }
     // }
     
+    public Command defaultMode() {
+        return Commands.repeatingSequence(
+            Commands.either(activateIndexer(), deactivateIndexer(), () -> shooterReady)
+        );
+    }
+
     @Override
     // TODO: AdvantageKit!
     /** ????????? */

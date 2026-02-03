@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -52,6 +53,7 @@ public class Robot extends TimedRobot {
 		}
 		Drive.getInstance();
 		TelemetryManager.getInstance();
+		Indexer.getInstance();
 		FollowPathCommand.warmupCommand().schedule();
 		autoChooser = new AutoSelector();
 
