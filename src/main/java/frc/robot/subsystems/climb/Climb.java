@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
 import static frc.robot.subsystems.climb.ClimbConstants.END_EFFECTOR_HEIGHT;
 import static frc.robot.subsystems.climb.ClimbConstants.EPSILON;
+import static frc.robot.subsystems.climb.ClimbConstants.GEAR_RATIO;
 import static frc.robot.subsystems.climb.ClimbConstants.getConfig;
 import static frc.robot.subsystems.climb.ClimbConstants.metersToRotations;
 import static frc.robot.subsystems.climb.ClimbConstants.rotationsToMeters;
@@ -17,13 +18,16 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.TelemetryManager;
-import frc.robot.subsystems.climb.ClimbConstants.Heights;
+import frc.robot.subsystems.climb.ClimbConstants.Setpoint;
+
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class Climb extends SubsystemBase {
 	private static Climb climbInstance;
@@ -41,6 +45,18 @@ public class Climb extends SubsystemBase {
 
 	private double targetHeight = END_EFFECTOR_HEIGHT;
 	private ControlRequest request = new NeutralOut();
+
+	private final ElevatorSim sim = new edu.wpi.first.wpilibj.simulation.ElevatorSim(
+		DCMotor.getKrakenX60(1),
+		GEAR_RATIO,
+		1.13,
+		0.05,
+		Setpoint.BASE.height,
+		Setpoint.UP.height,
+		true,
+		0.0,
+		0.0,0.0
+	);
 
 	private Climb() {
 		super();
@@ -67,7 +83,7 @@ public class Climb extends SubsystemBase {
 		this.request = request;
 	}
 
-	public Command moveToScoringHeight(Heights height) {
+	public Command moveToScoringHeight(Setpoint height) {
 		return moveToTarget(height.height).withName(height.name() + ": Move To Height");
 	}
 

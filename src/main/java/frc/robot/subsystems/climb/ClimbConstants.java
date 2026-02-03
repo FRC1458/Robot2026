@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
@@ -27,11 +28,11 @@ public class ClimbConstants {
     
     public static final int CLIMB_MOTOR_ID = 67; // change this
 
-    public static enum Heights {
+    public static enum Setpoint {
         BASE(0.003), // small offset to prevent stalling (allegedly)
         UP(Units.inchesToMeters(27.0));
         public final double height;
-        private Heights(double height) {
+        private Setpoint(double height) {
             this.height = height;
         }
     }
