@@ -1,7 +1,7 @@
 package frc.robot.subsystems.indexer;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +25,7 @@ public class Indexer extends SubsystemBase {
     private ControlRequest request;
 
     private TalonFX motor;
+    private TalonFXSimState motorSim;
     private LaserCan lc, lcTwo;
 
     /** boolean that's modified by checkForBall() */
@@ -40,6 +41,7 @@ public class Indexer extends SubsystemBase {
     private Indexer() {
         super();
         motor = new TalonFX(IndexerConstants.MOTOR_ID);
+        motorSim = motor.getSimState();
         lc = new LaserCan(IndexerConstants.LASER_ID);
         lcTwo = new LaserCan(IndexerConstants.LASER_ID_2);
 
@@ -64,6 +66,7 @@ public class Indexer extends SubsystemBase {
     /* check for balls and makes sure motor is constantly running at desired speed */
     public void periodic() {
         motor.setControl(request);
+        
         checkForBall();
         // checkForBallTwo();
         if (shooterReady = true) {
