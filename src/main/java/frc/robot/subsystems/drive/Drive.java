@@ -2,16 +2,21 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.therekrab.autopilot.APTarget;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -27,6 +32,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
+import frc.robot.lib.util.TunableNumber;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
@@ -177,12 +183,20 @@ public class Drive extends SubsystemBase {
 		}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Teleop");
 	}
 
-	public Command headingLock(Supplier<Rotation2d> rotationSupplier) {
+	/** 
+	 * Locks the robot onto a pose. 
+	 * Utilizes feedforwards derived from the current chassis speeds
+	 */
+	public Command headingLockToPose(Pose2d pose) {
 		SwerveRequest.FieldCentricFacingAngle request = 
 			new SwerveRequest.FieldCentricFacingAngle()
-				.withHeadingPID(ROTATION_CONSTANTS.kP, ROTATION_CONSTANTS.kI, ROTATION_CONSTANTS.kD);
+				.withHeadingPID(25, 0, 0.01)
+				.withMaxAbsRotationalRate(MAX_ROTATION_SPEED);
 
-		return runOnce(() -> setSwerveRequest(request)).andThen(
+		return runOnce(() -> {
+			request.withVelocityX(0).withVelocityY(0).withTargetDirection(getPose().getRotation());
+			setSwerveRequest(request);
+		}).andThen(
 			run(() -> {
 				double xDesiredRaw = -Robot.controller.getLeftY();
 				double yDesiredRaw = -Robot.controller.getLeftX();
@@ -190,17 +204,74 @@ public class Drive extends SubsystemBase {
 				double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 				double xFancy = xy[0];
 				double yFancy = xy[1];
-	
+
+				var state = getState();
+				var delta = pose.getTranslation().minus(getPose().getTranslation());
+				var targetDirection = delta.getAngle();
+				var normSq = delta.getNorm() * delta.getNorm();
+				var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
+				var rotationalRate = normSq > 1e-4 ? 
+					(-delta.getX() * fieldSpeeds.vyMetersPerSecond
+					+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
+					/ (normSq) : 0.0;
+
+				SmartDashboard.putNumber("error tracking", 
+					MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
+				));
+
 				request
+					// .withHeadingPID(p.get(), i.get(), d.get())
 					.withVelocityX(xFancy * MAX_SPEED)
 					.withVelocityY(yFancy * MAX_SPEED)
-					.withTargetDirection(rotationSupplier.get());        
+					.withTargetDirection(targetDirection)
+					.withTargetRateFeedforward(rotationalRate * 1.5);
 			}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Heading Lock");
 	}
 
-	public Command headingLockToPose(Pose2d pose) {
-		return headingLock(() -> 
-			pose.getTranslation().minus(getPose().getTranslation()).getAngle());
+	/** 
+	 * Locks the robot onto a pose, with TOF Adjustment
+	 * Utilizes feedforwards derived from the current chassis speeds
+	 */
+	public Command headingLockToPoseWithTOFAdjustment(Pose2d pose, Function<Double, Double> tof, Consumer<Double> tofAcceptor) {
+		SwerveRequest.FieldCentricFacingAngle request = 
+			new SwerveRequest.FieldCentricFacingAngle()
+				.withHeadingPID(25, 0, 0.01)
+				.withMaxAbsRotationalRate(MAX_ROTATION_SPEED);
+
+		return runOnce(() -> {
+			request.withVelocityX(0).withVelocityY(0).withTargetDirection(getPose().getRotation());
+			setSwerveRequest(request);
+		}).andThen(
+			run(() -> {
+				double xDesiredRaw = -Robot.controller.getLeftY();
+				double yDesiredRaw = -Robot.controller.getLeftX();
+	
+				double[] xy = Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+				double xFancy = xy[0];
+				double yFancy = xy[1];
+
+				var state = getState();
+				var delta = pose.getTranslation().minus(getPose().getTranslation());
+				var targetDirection = delta.getAngle();
+				var normSq = delta.getSquaredNorm();
+				var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
+				var rotationalRate = normSq > 1e-4 ? 
+					(-delta.getX() * fieldSpeeds.vyMetersPerSecond
+					+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
+					/ (normSq) : 0.0;
+
+				SmartDashboard.putNumber("error tracking", 
+					MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
+				));
+
+				Translation2d speedVector = new Translation2d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
+				
+				request
+					.withVelocityX(xFancy * MAX_SPEED)
+					.withVelocityY(yFancy * MAX_SPEED)
+					.withTargetDirection(targetDirection)
+					.withTargetRateFeedforward(rotationalRate * 1.5);
+			}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Heading Lock");
 	}
 
 	/** 
@@ -223,9 +294,9 @@ public class Drive extends SubsystemBase {
 	 * Auto aligns to the nearest reef face
 	 * @param left chooses the left or right face
 	 */
-	public Command autopilotAlign(boolean left) {
+	public Command autopilotAlign() {
 		return defer(() -> {
-			APTarget pose = FieldLayout.getNearestTarget(getPose(), left);
+			APTarget pose = FieldLayout.getNearestTarget(getPose());
 			return new AutopilotCommand(pose);
 		}).withName("Autopilot Align");
 	}

@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
-
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
@@ -17,7 +15,6 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionDevice {
 	private final VisionDeviceConstants constants;
@@ -25,7 +22,6 @@ public class VisionDevice {
 	public Field2d robotField;
 	public PhotonCamera camera;
 	// public PhotonPoseEstimator poseEstimator;
-	private boolean inSnapRange;
 	private boolean hasTarget;
 
 	public Pose2d botPose;

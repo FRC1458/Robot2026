@@ -1,6 +1,5 @@
 package frc.robot.lib.field;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,13 +12,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.drive.DriveConstants;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are
@@ -45,8 +42,7 @@ public class FieldLayout {
 	public static final double APRITAG_WIDTH = Units.inchesToMeters(6.50);
 	public static AprilTagFieldLayout APRILTAG_MAP;
 
-	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_RIGHT = new HashMap<>();
-	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_LEFT = new HashMap<>();
+	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES = new HashMap<>();
 
 	public static final List<Pose2d> ALIGN_POSES_RIGHT = new ArrayList<>();
 	public static final List<Pose2d> ALIGN_POSES_LEFT = new ArrayList<>();
@@ -56,7 +52,7 @@ public class FieldLayout {
 			APRILTAG_MAP = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
 		} catch (Exception e) {
 			DriverStation.reportError(e.getMessage(), false);
-			APRILTAG_MAP = new AprilTagFieldLayout(List.of(), 0.0, 0.0);
+			APRILTAG_MAP = AprilTagLayoutGenerated.getLayout();
 		}
 		// APRILTAG_MAP = AprilTagLayoutGenerated.getLayout();
 		field = new Field2d();
@@ -81,8 +77,8 @@ public class FieldLayout {
 		return pose.nearest(left ? ALIGN_POSES_LEFT : ALIGN_POSES_RIGHT);
 	}
 
-	public static APTarget getNearestTarget(Pose2d pose, boolean left) {
-		var set = left ? ENTRY_ANGLES_LEFT : ENTRY_ANGLES_RIGHT;
+	public static APTarget getNearestTarget(Pose2d pose) {
+		var set = ENTRY_ANGLES;
 		var out = Collections.min(
 			set.keySet(),
 			Comparator.comparing(
