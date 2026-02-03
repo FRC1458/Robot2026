@@ -22,6 +22,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.subsystems.climb.*;
+import frc.robot.subsystems.climb.ClimbConstants.Setpoint;
+
 public class ControlMap {
 	public static void implement(String key) {
 		switch (key) {
@@ -64,11 +67,10 @@ public class ControlMap {
 		return Commands.print("Intaking");
 	}
 	public static Command HangCommand() {
-		return Commands.print("Hanging");
+		return Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.UP).andThen(Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.BASE));
 	}
 	public static Command shooterCommand() {
 		return Commands.print("Shooting");
-		
 	}
 	
 		//make a method that returns command, but it returns command.none, replace everything with new instance command with the command name.
