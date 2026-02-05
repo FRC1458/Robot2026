@@ -1,13 +1,20 @@
 package frc.robot.subsystems.vision;
 
+import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
@@ -118,6 +125,45 @@ public class VisionDevice {
 		// } else {
 		// 	inSnapRange = false;
 		// }
+	}
+
+	private void processFramesRigged(Matrix<N3, N1> riggedness) {
+		var result = camera.getLatestResult();
+		if (result.hasTargets()) {
+			var target = result.getBestTarget();
+
+			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
+				target.getBestCameraToTarget(), 
+				FieldLayout.APRILTAG_MAP.getTagPose(
+					target.getFiducialId()).get(), 
+					constants.robotToCamera.inverse());
+
+			botPose = initBotPose.toPose2d();
+			if (Robot.isReal()) {
+				if (result.hasTargets()) {
+					Drive.getInstance().addVisionUpdate(botPose, result.getTimestampSeconds(), riggedness);
+				}
+			}
+			
+			if (result.hasTargets()) {
+				robotField.setRobotPose(botPose);
+			} else {
+				robotField.setRobotPose(Pose2d.kZero);
+			}
+		};
+	}
+
+	public Command bootUpSequence() {
+		Matrix<N3, N1> riggedness = VecBuilder.fill(
+            Math.pow(0.02, 1), // vision
+            Math.pow(0.02, 1),
+            Math.pow(0.02, 1));
+		return Commands.run(() -> processFramesRigged(riggedness))
+			.withTimeout(3)
+			.andThen(() -> 
+				Drive.getInstance().getCtreDrive()
+				.setVisionMeasurementStdDevs(
+					VisionConstants.LOCAL_MEASUREMENT_STD_DEVS));
 	}
 
 	public boolean hasTarget() {

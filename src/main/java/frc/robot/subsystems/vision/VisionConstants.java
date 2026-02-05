@@ -13,14 +13,14 @@ public class VisionConstants {
     public static final int OBSERVATION_BUFFER_SIZE = 50;
     public static final Matrix<N3, N1> STATE_STD_DEVS = 
         VecBuilder.fill(
-            Math.pow(0.05, 1), 
-            Math.pow(0.05, 1),
-            Math.pow(0.05, 1)); // drive
+            Math.pow(0.02, 1), 
+            Math.pow(0.02, 1),
+            Math.pow(0.02, 1)); // drive
     public static final Matrix<N3, N1> LOCAL_MEASUREMENT_STD_DEVS =
         VecBuilder.fill(
-            Math.pow(0.02, 1), // vision
-            Math.pow(0.02, 1),
-            Math.pow(0.02, 1));
+            Math.pow(0.2, 1), // vision
+            Math.pow(0.2, 1),
+            Math.pow(Double.POSITIVE_INFINITY, 1));
         
     public static enum VisionDeviceConstants {
         FR_CONSTANTS (

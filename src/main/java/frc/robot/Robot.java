@@ -46,7 +46,8 @@ public class Robot extends TimedRobot {
 		
 		Drive.getInstance();
 		TelemetryManager.getInstance();
-		FollowPathCommand.warmupCommand().schedule();
+		commandScheduler.schedule(FollowPathCommand.warmupCommand());
+		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
 		//robot data loggers 
@@ -93,7 +94,7 @@ public class Robot extends TimedRobot {
 	public void autonomousInit() {
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
-			autoCommand.schedule();
+			commandScheduler.schedule(autoCommand);
 		} else {
 			DriverStation.reportWarning("Tried to schedule a null auto", false);
 		}

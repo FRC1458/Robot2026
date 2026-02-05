@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ControlsMapping {
@@ -25,6 +26,7 @@ public class ControlsMapping {
 		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
 	}
 
 	public static void mapSysId() {

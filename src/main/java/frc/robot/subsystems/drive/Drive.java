@@ -190,7 +190,7 @@ public class Drive extends SubsystemBase {
 	public Command headingLockToPose(Pose2d pose) {
 		SwerveRequest.FieldCentricFacingAngle request = 
 			new SwerveRequest.FieldCentricFacingAngle()
-				.withHeadingPID(25, 0, 0.01)
+				.withHeadingPID(8, 0, 0.00)
 				.withMaxAbsRotationalRate(MAX_ROTATION_SPEED);
 
 		return runOnce(() -> {
@@ -215,16 +215,16 @@ public class Drive extends SubsystemBase {
 					+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
 					/ (normSq) : 0.0;
 
-				SmartDashboard.putNumber("error tracking", 
-					MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
-				));
+				// SmartDashboard.putNumber("error tracking", 
+				// 	MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
+				// ));
 
 				request
 					// .withHeadingPID(p.get(), i.get(), d.get())
 					.withVelocityX(xFancy * MAX_SPEED)
 					.withVelocityY(yFancy * MAX_SPEED)
 					.withTargetDirection(targetDirection)
-					.withTargetRateFeedforward(rotationalRate * 1.5);
+					.withTargetRateFeedforward(rotationalRate * 1.0);
 			}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Heading Lock");
 	}
 

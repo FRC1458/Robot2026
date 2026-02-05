@@ -20,7 +20,7 @@ public final class DriveConstants {
     public static final double MAX_SPEED = Units.MetersPerSecond.of(4.5).in(Units.MetersPerSecond);
     public static final double MAX_ACCEL = Units.MetersPerSecondPerSecond.of(9.0).in(Units.MetersPerSecondPerSecond);
     public static final double MAX_ROTATION_SPEED = 
-        Units.RotationsPerSecond.of(4.0).in(Units.RadiansPerSecond);
+        Units.RotationsPerSecond.of(2.0).in(Units.RadiansPerSecond);
     public static final double MAX_ROTATION_ACCEL = 
         Units.RotationsPerSecondPerSecond.of(4.0).in(Units.RadiansPerSecondPerSecond);
 
