@@ -171,4 +171,10 @@ public class Climb extends SubsystemBase {
 			null);
 		TelemetryManager.makeSendableTalonFX("ClimbMotor", climbMotor, builder);
 	}
+
+	// command
+
+	public static Command HangCommand() {
+		return Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.UP).andThen(Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.BASE));
+	}
 }

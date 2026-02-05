@@ -67,7 +67,7 @@ public class ControlMap {
 		return Commands.print("Intaking");
 	}
 	public static Command HangCommand() {
-		return Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.UP).andThen(Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.BASE));
+		return Climb.HangCommand();
 	}
 	public static Command shooterCommand() {
 		return Commands.print("Shooting");
