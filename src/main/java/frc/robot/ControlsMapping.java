@@ -4,14 +4,26 @@ import static frc.robot.Robot.controller;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.intake.Intake;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ControlsMapping {
+	CommandXboxController controller1;
+    
 	public static void mapTeleopCommand() {
+		
+		
+		
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
@@ -21,7 +33,28 @@ public class ControlsMapping {
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.b().whileTrue(hangCommand()); // TODO: Implement hang from armaaan
+		controller.leftTrigger().whileTrue(intakeCommand());
+		controller.rightTrigger().whileTrue(shooterCommand());
 	}
+
+	public static Command intakeCommand() {
+		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelIntaking());
+	}
+
+	public static Command outtakeCommand() {
+		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelOutaking());
+	}
+	
+	public static Command hangCommand() {
+		return Commands.print("Hanging");
+	}
+	public static Command shooterCommand() {
+		return Commands.print("Shooting");
+		
+	}
+	
+		//make a method that returns command, but it returns command.none, replace everything with new instance command with the command name.
 
 	public static void mapSysId() {
 		// set up sysID routine type

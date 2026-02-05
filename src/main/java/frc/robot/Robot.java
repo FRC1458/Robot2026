@@ -4,6 +4,12 @@ import frc.robot.auto.AutoSelector;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.epilogue.Logged;
@@ -21,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -46,6 +53,9 @@ public class Robot extends TimedRobot {
 			VisionDeviceManager.getInstance();
 		}
 		Drive.getInstance();
+
+		Intake.getInstance();
+
 		TelemetryManager.getInstance();
 		FollowPathCommand.warmupCommand().schedule();
 		autoChooser = new AutoSelector();
@@ -61,6 +71,7 @@ public class Robot extends TimedRobot {
 		}
 		DriverStation.startDataLog(DataLogManager.getLog());
 	}
+
 
 	/**
 	 * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
