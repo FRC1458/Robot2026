@@ -63,15 +63,24 @@ public enum GameState {
         if (matchTime < 0) {
             return BOTH;
         }
-        double elapsed = 150 - matchTime;
-        if (elapsed < 30) {
+        if (matchTime > 135) {
             return BOTH;
         }
-        int cycle = (int) ((elapsed - 30) / 25.0);
-        if (cycle % 2 == 0) {
-            return wonAuto;
-        } else {
+        if (matchTime <= 30) {
+            return BOTH;
+        }
+        double teleopElapsed = 135 - matchTime;
+        if (teleopElapsed < 10) {
+            return BOTH;
+        }
+        int shift = (int)((teleopElapsed - 10) / 25.0);
+        if (shift < 0 || shift > 3) {
+            return BOTH;
+        }
+        if (shift % 2 == 0) {
             return wonAuto.getOppositeState();
+        } else {
+            return wonAuto;
         }
     }
 
