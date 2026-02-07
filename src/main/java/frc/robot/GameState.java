@@ -14,10 +14,20 @@ public enum GameState {
     
     public static volatile GameState wonAuto = BOTH;
 
-    public static Notifier startListenerThread() {
-        Notifier listenerThread = new Notifier(GameState::update);
-        listenerThread.setName("Game message listener");
-        listenerThread.startPeriodic(1.0);
+    public static Thread startListenerThread() {
+        Thread listenerThread = new Thread(
+            () -> {
+                while (wonAuto == BOTH) {
+                    try {
+                        update();
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        DriverStation.reportWarning("Sleep failed, how", false);
+                    }
+                }
+            }, "Game message listener");
+        listenerThread.setPriority(2);
+        listenerThread.start();
         return listenerThread;
     }
 
