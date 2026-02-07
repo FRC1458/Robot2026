@@ -12,7 +12,7 @@ public enum GameState {
     BLUE,
     BOTH;
     
-    public static GameState wonAuto;
+    public static volatile GameState wonAuto = BOTH;
 
     public static Notifier startListenerThread() {
         Notifier listenerThread = new Notifier(GameState::update);
@@ -41,20 +41,24 @@ public enum GameState {
     }
 
     private GameState getOppositeState() {
-        if (this == RED) {
-            return BLUE;
-        } else if (this == BLUE) {
-            return RED;
-        } else {
-            return BOTH;
+        switch (this) {
+            case RED: return BLUE;
+            case BLUE: return RED;
+            default: return BOTH;
         }
     }
 
     public static GameState getCurrentState() {
-        if (Timer.getFPGATimestamp() < 30) {
+        double matchTime = DriverStation.getMatchTime();
+        if (matchTime < 0) {
             return BOTH;
         }
-        if ((int) (Timer.getFPGATimestamp() / 15.0) % 2 == 0) {
+        double elapsed = 150 - matchTime;
+        if (elapsed < 30) {
+            return BOTH;
+        }
+        int cycle = (int) ((elapsed - 30) / 25.0);
+        if (cycle % 2 == 0) {
             return wonAuto;
         } else {
             return wonAuto.getOppositeState();
