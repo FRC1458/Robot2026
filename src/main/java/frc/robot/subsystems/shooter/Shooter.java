@@ -128,7 +128,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return shoot(512, -512);
+        return shoot(100, -100);
     }
 
     @Override

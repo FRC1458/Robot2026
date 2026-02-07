@@ -43,10 +43,10 @@ public class Robot extends TimedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		if (Robot.isReal()) {
-			VisionDeviceManager.getInstance();
-		}
-		Drive.getInstance();
+		// if (Robot.isReal()) {
+		// 	VisionDeviceManager.getInstance();
+		// }
+		// Drive.getInstance();
 		Shooter.getInstance();
 		TelemetryManager.getInstance();
 		FollowPathCommand.warmupCommand().schedule();
@@ -118,7 +118,7 @@ public class Robot extends TimedRobot {
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		// Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
 		
 		ControlsMapping.mapTeleopCommand();
 	}

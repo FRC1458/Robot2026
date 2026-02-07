@@ -13,15 +13,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
-		// run sysID functions
-		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
+		// Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
+		// // run sysID functions
+		// Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		// controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 
 		controller.rightTrigger().whileTrue(Shooter.getInstance().shoot());
 	}
