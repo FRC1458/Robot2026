@@ -57,6 +57,9 @@ public enum GameState {
     }
 
     public static GameState getCurrentState() {
+        if (!DriverStation.isTeleop()) {
+            return BOTH;
+        }
         double matchTime = DriverStation.getMatchTime();
         if (matchTime < 0) {
             return BOTH;
