@@ -60,6 +60,8 @@ public class Robot extends TimedRobot {
 		  System.out.println("Log/USB mounts NOT OK");
 		}
 		DriverStation.startDataLog(DataLogManager.getLog());
+
+		GameState.startListenerThread();
 	}
 
 	/**
