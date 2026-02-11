@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.intake.IntakeConstants.Motors;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -76,24 +77,24 @@ public class Intake extends SubsystemBase {
 
         if (Robot.isSimulation()) {
             sim = new SingleJointedArmSim(
-            LinearSystemId.createSingleJointedArmSystem(DCMotor.getKrakenX60(1),1, 2),
-            DCMotor.getKrakenX60(1),
-            2.0,
-            INTAKE_LENGTH,
-            BAR_POS_MIN,
-            BAR_POS_MAX,
-            true,
-            0.0,
-            0.0, 0.0
+                DCMotor.getKrakenX60(1),
+                BAR_GEAR_RATIO,
+                0.1756163, 
+                INTAKE_LENGTH,
+                BAR_POS_MIN,
+                BAR_POS_MAX,
+                true,
+                BAR_POSITION_UP,
+                0.0, 0.0
             );
+            barMotor.getSimState()
+                .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
         }
         
         TelemetryManager.getInstance().addSendable(this);
             
     }
 
-    
-    
     @Override
     public void periodic(){
         wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
@@ -101,6 +102,33 @@ public class Intake extends SubsystemBase {
         barMotor.setControl(barRequest);
         wheelMotor.setControl(wheelRequest);
         //ligament.setAngle(barPosition);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        barMotor.getSimState().setSupplyVoltage(12.0);
+        sim.setInput(barMotor.getSimState().getMotorVoltage());
+        sim.update(0.020);
+        barMotor.getSimState()
+            .setRotorVelocity(sim.getVelocityRadPerSec() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
+        barMotor.getSimState()
+            .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
+    }
+
+
+    public Command intake() {
+        return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN)
+            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
+    }
+
+    public Command outtake() {
+        return setSetpoint(-INTAKE_SPEED, BAR_POSITION_DOWN)
+            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
+    }
+
+    public Command stow() {
+        return setSetpoint(0.0, BAR_POSITION_UP)
+            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
     }
     
     //----------------set request---------------
@@ -116,9 +144,8 @@ public class Intake extends SubsystemBase {
     public Command setSetpoint(double wheelSpeed, double barPosition) {
         return 
             setWheelSpeed(wheelSpeed)
-            .andThen(setBarPosition(barPosition), 
-            Commands.print("something happen"))
-            .withName("Setpoint reached probably");
+            .andThen(setBarPosition(barPosition)) 
+            .withName("Setpoint: " + wheelSpeed + "rps, " + barPosition + "rot");
     }
 
 
@@ -147,15 +174,17 @@ public class Intake extends SubsystemBase {
      */
     public Command setBarPosition(double position) {
         double checkedPos = MathUtil.clamp(position, BAR_POS_MIN, BAR_POS_MAX);
+
+        var req = new PositionVoltage(checkedPos);
         return runOnce(() ->
-            setRequestBar(
-            new PositionVoltage(checkedPos))
+            setRequestBar(req)
         ).withName("bar pos set" + (checkedPos));
     }
 
     public Command setWheelSpeed(double speed) {
-        return runOnce(() -> setRequestWheel(
-            new VelocityVoltage(speed))
+        var req = new VelocityVoltage(speed);
+        return runOnce(
+            () -> setRequestWheel(req)
         ).withName("wheel speed set "+ (speed));
     }
 
@@ -166,38 +195,12 @@ public class Intake extends SubsystemBase {
     public Command waitUntilWheelIsAtSpeed(double target) {
         return Commands.waitUntil(() -> Math.abs(target - wheelSpeed) < WHEEL_EPSILON);
     }
-    @Override
-    public void simulationPeriodic() {
-        barMotor.getSimState().setSupplyVoltage(12.0);
-        sim.setInput(barMotor.getSimState().getMotorVoltage());
-        sim.update(0.020);
-        barMotor.getSimState()
-            .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
-        
-        
-        
-    }
 
+    @Override
     public void initSendable(SendableBuilder builder){ 
         super.initSendable(builder);
         builder.addDoubleProperty("Position", () -> barPosition, null);
-        TelemetryManager.makeSendableTalonFX("Intake123", barMotor, builder);
-
-    }
-
-
-    public Command intake() {
-        return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
-    }
-
-    public Command outtake() {
-        return setSetpoint(-INTAKE_SPEED, BAR_POSITION_DOWN)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
-    }
-
-    public Command stow() {
-        return setSetpoint(0.0, BAR_POSITION_UP)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
+        TelemetryManager.makeSendableTalonFX("Bar Motor", barMotor, builder);
+        TelemetryManager.makeSendableTalonFX("Wheel Motor", wheelMotor, builder);
     }
 }

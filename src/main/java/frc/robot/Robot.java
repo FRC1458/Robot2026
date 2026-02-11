@@ -143,7 +143,7 @@ public class Robot extends TimedRobot {
 		CommandScheduler.getInstance().cancelAll();
 
 		//map test commands
-		ControlsMapping.mapSysId();
+		// ControlsMapping.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */

@@ -65,7 +65,7 @@ public class CtreDriveConstants {
     private static final Slot0Configs driveGains = new Slot0Configs()
         .withKP(kP_ctre_drive)
         .withKI(0)
-        .withKD(kD_ctre_drive)
+        .withKD(0)
         .withKS(kS_ctre_drive)
         .withKV(kV_ctre_drive);
 

@@ -29,21 +29,21 @@ public class ControlsMapping {
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 		controller.b().whileTrue(hangCommand()); // TODO: Implement hang from armaaan
-		controller.leftTrigger().whileTrue(intakeCommand());
-		controller.rightTrigger().whileTrue(shooterCommand());
+		controller.leftBumper().whileTrue(intakeCommand());
+		controller.rightBumper().whileTrue(Intake.getInstance().stow());
 	}
 
 	public static Command intakeCommand() {
-		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelIntaking());
+		return Intake.getInstance().intake();
 	}
 
 	public static Command outtakeCommand() {
-		return Intake.getInstance().setBarDown().andThen(Intake.getInstance().setWheelOutaking());
+		return Intake.getInstance().outtake();
 	}
 	
 	public static Command hangCommand() {
