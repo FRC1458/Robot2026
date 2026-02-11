@@ -5,8 +5,14 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+
 public final class ShooterConstants {		
     public static final double GEAR_RATIO = 1;
+
+    public static final Transform3d OFFSET = new Transform3d();
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_SHOT_SPEED = new InterpolatingDoubleTreeMap();
 
     /** Motor ids */
     public static enum Motors {
