@@ -1,26 +1,19 @@
 package frc.robot;
 
-import frc.robot.auto.AutoSelector;
-
-import java.util.Optional;
-
 import com.pathplanner.lib.commands.FollowPathCommand;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
+import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
-import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -33,6 +26,9 @@ public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	private AutoSelector autoChooser;
 	private Command autoCommand;
+	private static final String standardMap = "standard";
+    private static final String mapTwo = "mapTwo";
+    private final SendableChooser<String> mapChooser = new SendableChooser<>();
 
 	public static final CommandXboxController controller =
 		new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
@@ -60,6 +56,10 @@ public class Robot extends TimedRobot {
 		  System.out.println("Log/USB mounts NOT OK");
 		}
 		DriverStation.startDataLog(DataLogManager.getLog());
+
+		mapChooser.setDefaultOption("Standard Keybinds", standardMap);
+    	mapChooser.addOption("Second Control Map", mapTwo);
+    	SmartDashboard.putData("Keybinds", mapChooser);
 	}
 
 	/**
@@ -118,7 +118,9 @@ public class Robot extends TimedRobot {
 		}
 		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
 		
-		ControlsMapping.mapTeleopCommand();
+		String selectedMap = mapChooser.getSelected();
+    	System.out.println("Keybind selected: " + selectedMap);
+		ControlMap.implement(selectedMap);
 	}
 
 	/** This function is called periodically during operator control. */
@@ -132,7 +134,7 @@ public class Robot extends TimedRobot {
 		CommandScheduler.getInstance().cancelAll();
 
 		//map test commands
-		ControlsMapping.mapSysId();
+		ControlMap.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */
