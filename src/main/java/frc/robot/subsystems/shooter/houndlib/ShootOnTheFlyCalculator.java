@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter.houndlib;
 
 import java.util.function.Function;
 
+import frc.robot.lib.trajectory.RedTrajectory.State.ChassisAccels;
 import frc.robot.subsystems.shooter.houndlib.BallPhysics.ShotSolution;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -161,7 +162,7 @@ public class ShootOnTheFlyCalculator {
     public static Pose3d calculateEffectiveTargetLocation(
             Pose2d robotPose, Pose3d targetPose,
             ChassisSpeeds fieldRelRobotVelocity,
-            ChassisAccelerations fieldRelRobotAcceleration,
+            ChassisAccels fieldRelRobotAcceleration,
             Function<Double, Double> xyDistanceToProjectileVelocity,
             double goalPositionIterations,
             double accelerationCompensationFactor) {
@@ -172,11 +173,11 @@ public class ShootOnTheFlyCalculator {
         for (int i = 0; i < goalPositionIterations; i++) {
             double virtualGoalX = targetPose.getX()
                     - shotTime * (fieldRelRobotVelocity.vxMetersPerSecond
-                            + fieldRelRobotAcceleration.axMetersPerSecondSquared
+                            + fieldRelRobotAcceleration.ax
                                     * accelerationCompensationFactor);
             double virtualGoalY = targetPose.getY()
                     - shotTime * (fieldRelRobotVelocity.vyMetersPerSecond
-                            + fieldRelRobotAcceleration.ayMetersPerSecondSquared
+                            + fieldRelRobotAcceleration.ay
                                     * accelerationCompensationFactor);
 
             correctedTargetPose = new Pose3d(virtualGoalX, virtualGoalY, targetPose.getZ(),
@@ -205,7 +206,7 @@ public class ShootOnTheFlyCalculator {
             Pose3d shooterPose,
             Pose3d targetPose,
             ChassisSpeeds fieldRelRobotVelocity,
-            ChassisAccelerations fieldRelRobotAcceleration,
+            ChassisAccels fieldRelRobotAcceleration,
             double targetSpeedRps,
             int maxIterations,
             double timeTolerance) {

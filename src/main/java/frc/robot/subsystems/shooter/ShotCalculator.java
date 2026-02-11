@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import frc.robot.subsystems.shooter.houndlib.ChassisAccelerations;
 import frc.robot.subsystems.shooter.houndlib.ShootOnTheFlyCalculator;
 import frc.robot.subsystems.shooter.houndlib.ShootOnTheFlyCalculator.InterceptSolution;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -8,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.lib.trajectory.RedTrajectory.State.ChassisAccels;
 import frc.robot.subsystems.drive.Drive;
 
 // stores current target and actively computes effective target
@@ -40,7 +40,7 @@ public class ShotCalculator extends SubsystemBase {
         Pose3d shooterPose = new Pose3d(drivetrainPose).plus(ShooterConstants.OFFSET);
 
         ChassisSpeeds drivetrainSpeeds = drivetrain.getFieldSpeeds();
-        ChassisAccelerations drivetrainAccelerations = new ChassisAccelerations(drivetrainSpeeds, drivetrain.getPrevFieldSpeeds(), Constants.DT);
+        ChassisAccels drivetrainAccelerations = ChassisAccels.estimate(drivetrainSpeeds, drivetrain.getPrevFieldSpeeds(), Constants.DT);
 
         currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(shooterPose, targetLocation,
                 drivetrainSpeeds, drivetrainAccelerations, targetSpeedRps,
