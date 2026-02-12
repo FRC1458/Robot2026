@@ -10,8 +10,10 @@ public final class ShooterConstants {
 
     /** Motor ids */
     public static enum Motors {
-        TOP(12),
-        BOTTOM(13);
+        TOPLEFT(12),
+        BOTTOMLEFT(13),
+        TOPRIGHT(12),
+        BOTTOMRIGHT(13);
         public final int id;
         private Motors(int id) {
             this.id = id;

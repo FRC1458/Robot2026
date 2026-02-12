@@ -21,14 +21,22 @@ import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
 
 public class Shooter extends SubsystemBase {
-    private static Shooter ShooterInstance;
-	public static Shooter getInstance() {
-		if (ShooterInstance == null) {
-			ShooterInstance = new Shooter();
+    private static Shooter shooterLeftInstance;
+    private static Shooter shooterRightInstance;
+	public static Shooter getLeftInstance() {
+		if (shooterLeftInstance == null) {
+			shooterLeftInstance = new Shooter(true);
 		}
-		return ShooterInstance;
+		return shooterLeftInstance;
 	}
 
+    
+	public static Shooter getRightInstance() {
+		if (shooterRightInstance == null) {
+			shooterRightInstance = new Shooter(false);
+		}
+		return shooterRightInstance;
+	}
     private final TalonFX topMotor;
     private final TalonFX bottomMotor;
 	private double lastReadSpeedTop;
@@ -39,14 +47,26 @@ public class Shooter extends SubsystemBase {
     private FlywheelSim topSim;
     private FlywheelSim bottomSim;
 
-    private Shooter() {
+    private Shooter(boolean left) {
         super();
 
-		bottomMotor = new TalonFX(ShooterConstants.Motors.BOTTOM.id);
+        int bottomID;
+        int topID;
+
+        if (left) {
+            bottomID = ShooterConstants.Motors.BOTTOMLEFT.id;
+            topID = ShooterConstants.Motors.TOPLEFT.id;
+        }
+        else {
+            bottomID = ShooterConstants.Motors.BOTTOMRIGHT.id;
+            topID = ShooterConstants.Motors.TOPRIGHT.id;
+        }
+
+		bottomMotor = new TalonFX(bottomID);
 		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		bottomMotor.setNeutralMode(NeutralModeValue.Coast);
 
-        topMotor = new TalonFX(ShooterConstants.Motors.TOP.id);
+        topMotor = new TalonFX(topID);
 		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
 		topMotor.setNeutralMode(NeutralModeValue.Coast);
         
