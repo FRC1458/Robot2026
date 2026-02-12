@@ -12,6 +12,15 @@ import frc.robot.subsystems.drive.Drive;
 
 // stores current target and actively computes effective target
 public class ShotCalculator extends SubsystemBase {
+    private static ShotCalculator calcInstance;
+   
+    public static ShotCalculator getInstance() {
+		if (calcInstance == null) {
+            calcInstance = new ShotCalculator();
+		}
+		return calcInstance;
+	}
+
     private final Drive drivetrain;
 
     private Pose3d currentEffectiveTargetPose = Pose3d.kZero;
@@ -26,7 +35,7 @@ public class ShotCalculator extends SubsystemBase {
 
     private double targetSpeedRps = 8;
 
-    public ShotCalculator() {
+    private ShotCalculator() {
         this.drivetrain = Drive.getInstance();
     }
 

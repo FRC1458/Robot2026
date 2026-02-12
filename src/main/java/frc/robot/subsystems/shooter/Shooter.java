@@ -6,11 +6,9 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -19,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.drive.Drive;
 
 public class Shooter extends SubsystemBase {
     private static Shooter ShooterInstance;
@@ -38,6 +37,8 @@ public class Shooter extends SubsystemBase {
 
     private FlywheelSim topSim;
     private FlywheelSim bottomSim;
+
+    private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
     private Shooter() {
         super();
@@ -128,7 +129,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return shoot(3000 / 60.0, 3000 / 60.0);
+        return Drive.getInstance()
+            .headingLockToPose(shotCalculator.getCurrentEffectiveTargetPose().toPose2d())
+            .andThen(shoot(3000 / 60.0, 3000 / 60.0));
     }
 
     @Override
