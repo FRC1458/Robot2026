@@ -83,7 +83,7 @@ public class Indexer extends SubsystemBase {
 
         setDefaultCommand(defaultMode());
     }
-//my name is laurence and i like pizza
+//my name is laurence (ethan :D) and i like pizza
     @Override
     /* check for balls and makes sure motor is constantly running at desired speed */
     public void periodic() {
