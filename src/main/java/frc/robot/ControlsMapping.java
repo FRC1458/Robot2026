@@ -17,10 +17,10 @@ public class ControlsMapping {
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 	}
 
 	public static void mapSysId() {
