@@ -168,39 +168,30 @@ public class Drive extends SubsystemBase {
 	 * Auto aligns to the nearest reef face
 	 * @param left chooses the left or right face
 	 */
-	public Command autoAlign(boolean left) {
-		return defer(() -> {
-			Pose2d pose;
-			if (left) {
-				pose = getPose().nearest(FieldLayout.ALIGN_POSES_LEFT);
-			} else {
-				pose = getPose().nearest(FieldLayout.ALIGN_POSES_RIGHT);
-			}
-			return new PIDToPoseCommand(pose);
-		}).withName("Auto Align");
-	}
+	// public Command autoAlign(boolean left) {
+	// 	return defer(() -> {
+	// 		Pose2d pose;
+	// 		if (left) {
+	// 			pose = getPose().nearest(FieldLayout.ALIGN_POSES_LEFT);
+	// 		} else {
+	// 			pose = getPose().nearest(FieldLayout.ALIGN_POSES_RIGHT);
+	// 		}
+	// 		return new PIDToPoseCommand(pose);
+	// 	}).withName("Auto Align");
+	// }
 
-	/** 
-	 * Auto aligns to the nearest reef face
-	 * @param left chooses the left or right face
-	 */
-	public Command autopilotAlign(boolean left) {
-		return defer(() -> {
-			APTarget pose = FieldLayout.getNearestTarget(getPose(), left);
-			return new AutopilotCommand(pose);
-		}).withName("Autopilot Align");
-	}
 
 	/**
-	 * Traverses
+	 * Traverses the trench
 	 */
 	public Command traverseTrench() {
 		return defer(() -> {
 			APTarget pose = FieldLayout.getTrenchEntry(getPose());
-			return new AutopilotCommand(pose).andThen(() -> {
-				APTarget pose = FieldLayout.getTrenchTarget(getPose());
-				return new AutopilotCommand(pose);
-			});
+			return new AutopilotCommand(pose).andThen(
+				defer(() -> {
+				APTarget pose2 = FieldLayout.getTrenchTarget(getPose());
+				return new AutopilotCommand(pose2);
+			}));
 		}).withName("Trench Traversal");
 	}
 
