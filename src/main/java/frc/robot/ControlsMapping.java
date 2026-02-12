@@ -9,8 +9,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
-import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -18,38 +19,20 @@ public class ControlsMapping {
 	CommandXboxController controller1;
     
 	public static void mapTeleopCommand() {
-		
-		
-		
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
+		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
-		controller.a().whileTrue(indexerCommand());
-		controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.b().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
-		controller.leftTrigger().whileTrue(intakeCommand());
-		controller.rightTrigger().whileTrue(shooterCommand());
-	}
+		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 
-	public static Command indexerCommand() {
-		return Commands.print("Indexing");
+		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TAG.pose));
+		controller.x().onTrue(Drive.getInstance().pathFindToThisRandomPlaceIdk());
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
 	}
-	public static Command intakeCommand() {
-		return Commands.print("Intaking");
-	}
-	public static Command HangCommand() {
-		return Commands.print("Hanging");
-	}
-	public static Command shooterCommand() {
-		return Commands.print("Shooting");
-		
-	}
-	
-		//make a method that returns command, but it returns command.none, replace everything with new instance command with the command name.
 
 	public static void mapSysId() {
 		// set up sysID routine type

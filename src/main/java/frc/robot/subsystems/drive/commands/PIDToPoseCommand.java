@@ -27,7 +27,7 @@ public class PIDToPoseCommand extends Command {
     private final SwerveRequest.ApplyFieldSpeeds request = 
         new SwerveRequest.ApplyFieldSpeeds();
 
-    private final ProfiledPIDVController translationController;
+    private final PIDVController translationController;
     private final ProfiledPIDVController thetaController;
 
     private final Pose2d target;
@@ -42,14 +42,14 @@ public class PIDToPoseCommand extends Command {
         this(
             Drive.getInstance(), 
             target,
-            PROFILED_TRANSLATION_CONSTANTS, 
+            TRANSLATION_CONSTANTS, 
             PROFILED_ROTATION_CONSTANTS);
     }
     
-    public PIDToPoseCommand(Drive drive, Pose2d target, ProfiledPIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants) {
+    public PIDToPoseCommand(Drive drive, Pose2d target, PIDVConstants translationConstants, ProfiledPIDVConstants rotationConstants) {
         this.drive = drive;
         this.target = target;
-        translationController = new ProfiledPIDVController(translationConstants);
+        translationController = new PIDVController(translationConstants);
         thetaController = new ProfiledPIDVController(rotationConstants);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
