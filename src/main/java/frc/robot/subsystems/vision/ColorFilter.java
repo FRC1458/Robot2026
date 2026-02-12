@@ -51,34 +51,37 @@ import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 import frc.robot.subsystems.vision.VisionConstants;
 public class ColorFilter {
     public ColorFilter() {
+
         // I really hope this works (it won't)
         //needs to get result of the density pipeline
 
         // var Lresult = VisionDeviceManager.getInstance().getFrontLVision().getResult();
         // var Rresult = VisionDeviceManager.getInstance().getFrontRVision().getResult();
         
-        //by some magic we obtain a point on the camera.
-
-        double xcoord = 0.0; //from [-1.0 to 1.0]
-        double ycoord = 0.0; //from [-1.0 to 1.0]
-        //we want to discord targets with a ycoord that would result in it
-        //going to the other team's side
-        double ylimit;
-        double desiredrotation = xcoord * VisionConstants.FOVHOR;
-        double distancefromtarget = 0.1; // should change with camera idk
-        Rotation2d m_angle = Drive.getInstance().getPose().getRotation();
-        Rotation2d desiredangle = Rotation2d.fromDegrees(desiredrotation).plus(m_angle);
-        double desiredx = Drive.getInstance().getPose().getX() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
-        double desiredy = Drive.getInstance().getPose().getY() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
     }
-    public Command angleToDesired() {
+
+    //by some magic we obtain a point on the camera.
+    double xcoord = 0.0; //from [-1.0 to 1.0]
+    double ycoord = 0.0; //from [-1.0 to 1.0]
+
+    //we want to discord targets with a ycoord that would result in it
+    //going to the other team's side
+    double ylimit;
+    double desiredrotation = xcoord * VisionConstants.FOVHOR;
+    double distancefromtarget = 0.1; // should change with camera idk
+    Rotation2d m_angle = Drive.getInstance().getPose().getRotation();
+    Rotation2d desiredangle = Rotation2d.fromDegrees(desiredrotation).plus(m_angle);
+    double desiredx = Drive.getInstance().getPose().getX() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
+    double desiredy = Drive.getInstance().getPose().getY() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
+    public Command goToDesired() {
+        //sequentialcommandgroup?  
         return runOnce(() -> {
-            SwerveRequest turnRequest
+            
+            Drive.setSwerveRequest(turnRequest
             .withVelocityX(0.0)
             .withVelocityY(0.0)
-            .withRotationalRate(DriveConstants.MAX_ROTATION_SPEED);
-            Drive.setSwerveRequest(turnRequest);
+            .withRotationalRate(DriveConstants.MAX_ROTATION_SPEED));
         }
-        );
+        ).withTimeout(desiredrotation * (Math.PI / 180) / DriveConstants.MAX_ROTATION_SPEED);
     }
 }
