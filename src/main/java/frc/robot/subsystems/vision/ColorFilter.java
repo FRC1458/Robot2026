@@ -73,15 +73,23 @@ public class ColorFilter {
     Rotation2d desiredangle = Rotation2d.fromDegrees(desiredrotation).plus(m_angle);
     double desiredx = Drive.getInstance().getPose().getX() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
     double desiredy = Drive.getInstance().getPose().getY() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
+    public SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
+
     public Command goToDesired() {
         //sequentialcommandgroup?  
-        return runOnce(() -> {
-            
-            Drive.setSwerveRequest(turnRequest
-            .withVelocityX(0.0)
-            .withVelocityY(0.0)
-            .withRotationalRate(DriveConstants.MAX_ROTATION_SPEED));
-        }
-        ).withTimeout(desiredrotation * (Math.PI / 180) / DriveConstants.MAX_ROTATION_SPEED);
+        
+        return Commands.runOnce(
+            () -> Drive.getInstance().setSwerveRequest(
+                request
+                    .withVelocityX(0.0)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(DriveConstants.MAX_ROTATION_SPEED))
+            ).until(() -> m_angle.equals(desiredangle))
+        .andThen(
+            () -> Drive.getInstance().setSwerveRequest(
+                request
+                    .withVelocityX(DriveConstants.MAX_SPEED)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0)));
+        };
     }
-}
