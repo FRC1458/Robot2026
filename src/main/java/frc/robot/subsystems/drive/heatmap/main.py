@@ -20,22 +20,23 @@ import ntcore
 
 inst = ntcore.NetworkTableInstance.getDefault()
 table = inst.getTable("SmartDashboard")
-pose_topic = table.getDoubleArrayTopic("RobotPose")
-subscriber = pose_topic.subscribe([0.0, 0.0, 0.0])
+pose_topic = table.getDoubleArrayTopic("Field/Robot")
+subscriber = pose_topic.subscribe([0.0, 0.0, 0.0]) # may debatably swap current x, y order
 
 inst.startClient4("Python-Client") #Python-Monitor
 inst.setServerTeam(1458)
 
 print("Waiting for connection...")
-while not inst.isConnected():
-    x = 0
+#while not inst.isConnected():
+ #   x = 0
 
 print("Connected! Streaming Pose:")
 
 try:
-    for i in range(10): #limit infinite loop for testing?
+    for i in range(10): # limit infinite loop for testing?
         pose = subscriber.get()
-        #print(pose[0], pose[1], pose[2])
+        #print(pose)
+        #print(pose[0], pose[1], pose[2]) # cleaner
 except KeyboardInterrupt:
     pass
 #============================================
@@ -475,8 +476,9 @@ def on_click(click_data, mode, data):
     if not click_data or "points" not in click_data or not click_data["points"]:
         return dash.no_update
     pt = click_data["points"][0]
-    r = int(pose[1]) #int(pt["y"])
-    c = int(pose[0]) #int(pt["x"])
+    r = int(pose[1]) # non-updating:    r = int(pt["y"])        |        c = int(pt["x"])
+    c = int(pose[0]) # int casting optional (still runs without error); float otherwise
+    #uselessRot = int(pose[2])
 
     model = GridModel(
         w=data["w"], h=data["h"],
