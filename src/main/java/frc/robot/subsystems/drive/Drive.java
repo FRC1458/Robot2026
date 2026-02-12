@@ -191,6 +191,19 @@ public class Drive extends SubsystemBase {
 		}).withName("Autopilot Align");
 	}
 
+	/**
+	 * Traverses
+	 */
+	public Command traverseTrench() {
+		return defer(() -> {
+			APTarget pose = FieldLayout.getTrenchEntry(getPose());
+			return new AutopilotCommand(pose).andThen(() -> {
+				APTarget pose = FieldLayout.getTrenchTarget(getPose());
+				return new AutopilotCommand(pose);
+			});
+		}).withName("Trench Traversal");
+	}
+
 	/** Adds a vision update */
 	public void addVisionUpdate(Pose2d pose, Time timestamp) {
 		getCtreDrive().addVisionMeasurement(pose, timestamp.in(Units.Seconds));

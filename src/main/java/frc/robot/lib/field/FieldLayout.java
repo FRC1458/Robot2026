@@ -44,50 +44,59 @@ public class FieldLayout {
 	public static final double APRITAG_WIDTH = Units.inchesToMeters(6.50);
 	public static final AprilTagFieldLayout APRILTAG_MAP;
 
-	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_RIGHT = new HashMap<>();
-	public static final HashMap<Pose2d, Rotation2d> ENTRY_ANGLES_LEFT = new HashMap<>();
+	public static final List<Pose2d> ENTRY_RIGHT_POSES = new ArrayList<>();
+	public static final List<Pose2d> ENTRY_LEFT_POSES = new ArrayList<>();
 
-	public static final List<Pose2d> ALIGN_POSES_RIGHT = new ArrayList<>();
-	public static final List<Pose2d> ALIGN_POSES_LEFT = new ArrayList<>();
-
+	public static final HashMap<Pose2d,Pose2d> TARGET_RIGHT_POSES = new HashMap<>();
+	public static final HashMap<Pose2d,Pose2d> TARGET_LEFT_POSES = new HashMap<>();
+	
 	static {
 		try {
 			APRILTAG_MAP = AprilTagFieldLayout.loadFromResource(AprilTagFields.kDefaultField.m_resourceFile);
 			field = new Field2d();
 			SmartDashboard.putData(field);
-			int[] reefIds = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
-			Transform2d leftReefTransform = new Transform2d(
-				DriveConstants.TRACK_WIDTH / 2 + Units.inchesToMeters(1.5), -Units.inchesToMeters(13.0 / 2), Rotation2d.kPi);
-			Transform2d rightReefTransform = new Transform2d(
-				DriveConstants.TRACK_WIDTH / 2 + Units.inchesToMeters(1.5), Units.inchesToMeters(13.0 / 2), Rotation2d.kPi);
-			for (int i : reefIds) {
+			int[] rightTrenchIds = {1,6,23,28};
+			int[] leftTrenchIds = {7,12,17,22};
+			Transform2d moveLeft = new Transform2d(
+				-Units.inchesToMeters(22.2)-DriveConstants.TRACK_WIDTH/2, 0, Rotation2d.kZero);
+			Transform2d moveRight = new Transform2d(
+				Units.inchesToMeters(22.2)+DriveConstants.TRACK_WIDTH/2,0,Rotation2d.kZero);
+			for (int i : rightTrenchIds) {
 				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
-				var right = tagPose.transformBy(rightReefTransform);
-				var left = tagPose.transformBy(leftReefTransform);
-				ALIGN_POSES_RIGHT.add(right);
-				ALIGN_POSES_LEFT.add(left);
-				ENTRY_ANGLES_RIGHT.put(right, tagPose.getRotation().plus(Rotation2d.k180deg));
-				ENTRY_ANGLES_LEFT.put(left, tagPose.getRotation().plus(Rotation2d.k180deg));
+				ENTRY_RIGHT_POSES.add(tagPose.transformBy(moveLeft));
+				TARGET_RIGHT_POSES.put(tagPose.transformBy(moveLeft),tagPose.transformBy(moveRight));
+			}
+			for (int i : leftTrenchIds) {
+				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
+				ENTRY_LEFT_POSES.add(tagPose.transformBy(moveRight));
+				TARGET_LEFT_POSES.put(tagPose.transformBy(moveRight),tagPose.transformBy(moveLeft));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static Pose2d getNearestPose(Pose2d pose, boolean left) {
-		return pose.nearest(left ? ALIGN_POSES_LEFT : ALIGN_POSES_RIGHT);
-	}
-
-	public static APTarget getNearestTarget(Pose2d pose, boolean left) {
-		var set = left ? ENTRY_ANGLES_LEFT : ENTRY_ANGLES_RIGHT;
+	public static APTarget getTrenchEntry(Pose2d pose) {
+		var set = isLeftOfTrench(pose) ? ENTRY_LEFT_POSES : ENTRY_RIGHT_POSES;
 		var out = Collections.min(
-			set.keySet(),
+			set,
 			Comparator.comparing(
 				(Pose2d other) -> pose.getTranslation().getDistance(other.getTranslation())
 			).thenComparing(
 				(Pose2d other) ->
 					Math.abs(pose.getRotation().minus(other.getRotation()).getRadians())));
-		return new APTarget(out).withEntryAngle(set.get(out));
+		return new APTarget(out).withEntryAngle(out.getRotation());
+	}
+
+	public static APTarget getTrenchTarget(Pose2d pose) {
+		var set = isLeftOfTrench(pose) ? TARGET_LEFT_POSES : TARGET_RIGHT_POSES;
+		var out = set.get(getTrenchEntry(pose).getReference());
+		return new APTarget(out).withEntryAngle(out.getRotation());
+	}
+
+	public static boolean isLeftOfTrench(Pose2d pose) {
+		double xFraction = pose.getX() / Units.inchesToMeters(650.12);
+		return (xFraction % 0.5) < 0.25;
 	}
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {
