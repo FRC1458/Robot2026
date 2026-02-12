@@ -75,7 +75,7 @@ public class ColorFilter {
     double desiredy = Drive.getInstance().getPose().getY() + distancefromtarget * Math.sin((Rotation2d.fromDegrees(desiredrotation).plus(m_angle)).getRadians());
     public Command goToDesired() {
         //sequentialcommandgroup?  
-        return runOnce(() -> {
+        return Commands.run(() -> {
             
             Drive.setSwerveRequest(turnRequest
             .withVelocityX(0.0)
