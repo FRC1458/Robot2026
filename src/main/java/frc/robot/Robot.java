@@ -28,6 +28,7 @@ import frc.robot.Constants.Controllers;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -52,6 +53,8 @@ public class Robot extends TimedRobot {
 		VisionDeviceManager.getInstance();
 		
 		Drive.getInstance();
+		Shooter.getLeftInstance();
+		Shooter.getRightInstance();
 
 		Intake.getInstance();
 
