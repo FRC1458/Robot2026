@@ -12,19 +12,16 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.commands.FollowPathCommand;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
+import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
@@ -41,6 +38,9 @@ public class Robot extends TimedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	private AutoSelector autoChooser;
 	private Command autoCommand;
+	private static final String standardMap = "standard";
+    private static final String mapTwo = "mapTwo";
+    private final SendableChooser<String> mapChooser = new SendableChooser<>();
 
 	public static final CommandXboxController controller =
 		new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
@@ -130,9 +130,6 @@ public class Robot extends TimedRobot {
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().openLoopControl());
-		
-		ControlsMapping.mapTeleopCommand();
 	}
 
 	/** This function is called periodically during operator control. */
@@ -146,7 +143,7 @@ public class Robot extends TimedRobot {
 		CommandScheduler.getInstance().cancelAll();
 
 		//map test commands
-		// ControlsMapping.mapSysId();
+		ControlsMapping.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */
