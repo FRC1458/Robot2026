@@ -12,6 +12,8 @@ public class VisionConstants {
     //TODO: this must be tuned to specific robot
     public static final double FOVHOR = 70; //degrees
     public static final double FOVVE = 48; //degrees
+    public static final double CAMHEIGHT = 0.5; //meters or whatever length
+    public static final double CAMANGLE = 0.0; //radians?
     public static final int OBSERVATION_BUFFER_SIZE = 50;
     public static final Matrix<N3, N1> STATE_STD_DEVS = 
         VecBuilder.fill(
