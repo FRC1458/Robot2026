@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
@@ -29,6 +30,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.lib.control.ControlConstants.PIDVConstants;
+import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
+import frc.robot.lib.control.PIDVController;
+import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
@@ -184,14 +189,25 @@ public class Drive extends SubsystemBase {
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
 	public Command headingLockToPose(Pose2d pose) {
-		SwerveRequest.FieldCentricFacingAngle request = 
-			new SwerveRequest.FieldCentricFacingAngle()
-				.withHeadingPID(8, 0, 0.00)
-				.withMaxAbsRotationalRate(MAX_ROTATION_SPEED);
+		SwerveRequest.FieldCentric request = 
+			new SwerveRequest.FieldCentric();
+		
+		ProfiledPIDVController thetaController = 
+			new ProfiledPIDVController(
+				new ProfiledPIDVConstants(
+					new PIDVConstants(10.0, 0.0, 1), 
+					new TrapezoidProfile.Constraints(Math.PI * 16, Math.PI * 5))
+			);
+		thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
 		return runOnce(() -> {
-			request.withVelocityX(0).withVelocityY(0).withTargetDirection(getPose().getRotation());
+			request.withVelocityX(0).withVelocityY(0)
+				.withRotationalRate(0);
 			setSwerveRequest(request);
+			
+			thetaController.setInitialSetpoint(
+				getPose().getRotation().getRadians(), 
+				getState().Speeds.omegaRadiansPerSecond);
 		}).andThen(
 			run(() -> {
 				double xDesiredRaw = -Robot.controller.getLeftY();
@@ -204,23 +220,29 @@ public class Drive extends SubsystemBase {
 				var state = getState();
 				var delta = pose.getTranslation().minus(getPose().getTranslation());
 				var targetDirection = delta.getAngle();
+				
+				
 				var normSq = delta.getNorm() * delta.getNorm();
 				var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
 				var rotationalRate = normSq > 1e-4 ? 
 					(-delta.getX() * fieldSpeeds.vyMetersPerSecond
 					+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
 					/ (normSq) : 0.0;
+				
+				var rotation = thetaController
+					.setTarget(targetDirection.getRadians(), rotationalRate)
+					.setMeasurement(state.Pose.getRotation().getRadians(), state.Speeds.omegaRadiansPerSecond)
+					.getOutput();
 
-				// SmartDashboard.putNumber("error tracking", 
-				// 	MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
-				// ));
+				SmartDashboard.putNumber("error tracking", 
+					MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
+				));
 
 				request
 					// .withHeadingPID(p.get(), i.get(), d.get())
 					.withVelocityX(xFancy * MAX_SPEED)
 					.withVelocityY(yFancy * MAX_SPEED)
-					.withTargetDirection(targetDirection)
-					.withTargetRateFeedforward(rotationalRate * 1.0);
+					.withRotationalRate(rotation);
 			}).handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric()))).withName("Heading Lock");
 	}
 
