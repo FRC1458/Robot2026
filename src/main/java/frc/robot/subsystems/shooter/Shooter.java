@@ -10,12 +10,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
@@ -49,6 +47,8 @@ public class Shooter extends SubsystemBase {
 
     private Shooter(boolean left) {
         super();
+
+        setName(this.getClass().getSimpleName() + (left ? "left" : "right"));
 
         int bottomID;
         int topID;
@@ -85,7 +85,6 @@ public class Shooter extends SubsystemBase {
                 ), DCMotor.getKrakenX60(1), 0.0);
         }
 		TelemetryManager.getInstance().addSendable(this);
-        setDefaultCommand(stop());
     }
 
     @Override
@@ -144,11 +143,11 @@ public class Shooter extends SubsystemBase {
         return runOnce(() -> {
             setTopRequest(new VelocityVoltage(topSpeed));
             setBottomRequest(new VelocityVoltage(bottomSpeed));
-        }).andThen(Commands.repeatingSequence(Commands.none())).withName("Shooting");
+        }).withName("Shooting");
     }
 
     public Command shoot() {
-        return shoot(512, -512);
+        return shoot(50, -50);
     }
 
     @Override

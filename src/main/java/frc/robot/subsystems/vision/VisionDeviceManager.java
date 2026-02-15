@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.photonvision.simulation.VisionSystemSim;
 
 public class VisionDeviceManager extends SubsystemBase {
@@ -58,6 +56,8 @@ public class VisionDeviceManager extends SubsystemBase {
 			visionSim.addAprilTags(FieldLayout.APRILTAG_MAP);
 			cameras.forEach((camera) -> visionSim.addCamera(camera.getSimulation(), camera.getConstants().robotToCamera));
 		}
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(LOCAL_MEASUREMENT_STD_DEVS);
+		Drive.getInstance().getCtreDrive().setStateStdDevs(STATE_STD_DEVS);
 		TelemetryManager.getInstance().addSendable(this);
 	}
 

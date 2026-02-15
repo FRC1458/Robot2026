@@ -4,34 +4,52 @@ import static frc.robot.Robot.controller;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.lib.field.FieldUtil;
+import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class ControlsMapping {
     
 	public static void mapTeleopCommand() {
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
-		// run sysID functions
-		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
+		Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+		controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
 
-		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TAG.pose));
-		controller.x().onTrue(Drive.getInstance().pathFindToThisRandomPlaceIdk());
-		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
+		controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
+		controller.b().whileTrue(Intake.getInstance().outtake());
+		controller.x().onTrue(Climb.getInstance().hangCommand());
+
+		controller.rightTrigger().debounce(0.1).onTrue(
+			Commands.parallel(
+				Shooter.getLeftInstance().shoot(),
+				Shooter.getRightInstance().shoot())
+			).onFalse(
+				Commands.parallel(
+					Shooter.getLeftInstance().stop(),
+					Shooter.getRightInstance().stop())
+		).whileTrue(
+			Commands.parallel(
+			Indexer.getLeftInstance().activateIndexer(),
+			Indexer.getRightInstance().activateIndexer())
+		);
+
+		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToPose(
+			DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 
+				DriveConstants.FieldPoses.HUB.pose :
+				FieldUtil.flipPose(DriveConstants.FieldPoses.HUB.pose)));
 	}
 
 	public static void mapSysId() {

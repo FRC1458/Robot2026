@@ -1,12 +1,12 @@
 package frc.robot.subsystems.climb;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
@@ -16,8 +16,10 @@ public class ClimbConstants {
 
     public static final double SPROCKET_RADIUS = 0.0412; // Effective pitch radius
     public static final double GEAR_RATIO = 9;
+    public static final double CONVERSION_FACTOR = 67;
+
     public static final double SPROCKET_CIRCUMFERENCE = SPROCKET_RADIUS * Constants.TAU;
-    public static final double END_EFFECTOR_HEIGHT = 0.54; // Meters // CHANGE THIS
+    public static final double END_EFFECTOR_HEIGHT = 0.0; // Meters // CHANGE THIS
     public static final double METERS_PER_ROTATION = 0.028776; // Approximated using measurement
     public static final double CARRIAGE_WEIGHT = 7.55; // kg
 
@@ -26,11 +28,11 @@ public class ClimbConstants {
     public static final double MAX_ACCEL = 1.5;
     public static final double MAX_SPEED = 1.0; // m/s
     
-    public static final int CLIMB_MOTOR_ID = 67; // change this
+    public static final int CLIMB_MOTOR_ID = 25; // change this
 
     public static enum Setpoint {
         BASE(0.003), // small offset to prevent stalling (allegedly)
-        UP(Units.inchesToMeters(27.0));
+        UP(Units.inchesToMeters(5.0));
         public final double height;
         private Setpoint(double height) {
             this.height = height;
@@ -47,25 +49,16 @@ public class ClimbConstants {
                 .withKD(0.05)
                 .withKG(0.375))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(metersToRotations(MAX_ACCEL)) // 1.0 m/s^2
-                .withMotionMagicCruiseVelocity(metersToRotations(MAX_SPEED))
+                .withMotionMagicAcceleration(MAX_ACCEL) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(MAX_SPEED)
                 .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(60)
                 .withSupplyCurrentLimit(60))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
-                .withPeakReverseVoltage(-12.0));
+                .withPeakReverseVoltage(-12.0))
+            .withFeedback(new FeedbackConfigs()
+                .withSensorToMechanismRatio(CONVERSION_FACTOR));
     }
-
-    /** Conversion utility */
-    public static double rotationsToMeters(double rotations) {
-        return rotations * METERS_PER_ROTATION;
-    }
-    
-    /** Conversion utility */
-    public static double metersToRotations(double meters) {
-        return meters / METERS_PER_ROTATION;
-    }
-
 }

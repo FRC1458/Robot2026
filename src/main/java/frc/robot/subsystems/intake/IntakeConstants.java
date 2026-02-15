@@ -25,8 +25,8 @@ public class IntakeConstants {
     //etc
 
     public static enum Motors { //TODO: set motor ids; use separate file for ports?
-        WHEEL(35),
-        BAR(36);
+        WHEEL(53),
+        BAR(52);
         public final int id;
         private Motors(int id) {
             this.id = id;
@@ -63,7 +63,7 @@ public class IntakeConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(25.0)
+                .withKP(1.0)
                 .withKI(0.0)
                 .withKD(0.0)
                 .withKG(0.1).withGravityType(GravityTypeValue.Arm_Cosine))

@@ -2,23 +2,16 @@ package frc.robot.subsystems.intake;
 
 import static frc.robot.subsystems.intake.IntakeConstants.*;
 
-import javax.lang.model.element.TypeElement;
-
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,6 +21,7 @@ import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.intake.IntakeConstants.Motors;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 
 
@@ -42,9 +36,7 @@ public class Intake extends SubsystemBase {
     }
 
     private final TalonFX wheelMotor;
-    private TalonFXSimState wheelMotorSim;
     private final TalonFX barMotor;
-    private final TalonFXSimState barMotorSim;
 
     private double wheelSpeed;
     private double barPosition;
@@ -53,6 +45,8 @@ public class Intake extends SubsystemBase {
     private ControlRequest barRequest = new NeutralOut();
 
     private SingleJointedArmSim sim;
+
+    private FlywheelSim wheelSim;
     /*
     private MechanismLigament2d ligament;   
 
@@ -63,9 +57,7 @@ public class Intake extends SubsystemBase {
     private Intake() {
         super();
         wheelMotor = new TalonFX(Motors.WHEEL.id);
-        wheelMotorSim = wheelMotor.getSimState();
         barMotor = new TalonFX(Motors.BAR.id);
-        barMotorSim = barMotor.getSimState();
         wheelMotor.getConfigurator().apply(getWheelConfig());
 		barMotor.getConfigurator().apply(getBarConfig());
         wheelMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -87,8 +79,18 @@ public class Intake extends SubsystemBase {
                 BAR_POSITION_UP,
                 0.0, 0.0
             );
+
             barMotor.getSimState()
                 .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
+
+            
+            wheelSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX44(1),
+                    0.000189000861,
+                    2), 
+                DCMotor.getKrakenX44(1), 
+                0.0);
         }
         
         TelemetryManager.getInstance().addSendable(this);
@@ -113,6 +115,19 @@ public class Intake extends SubsystemBase {
             .setRotorVelocity(sim.getVelocityRadPerSec() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
         barMotor.getSimState()
             .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
+
+
+        wheelMotor.getSimState().setSupplyVoltage(12);
+
+        wheelSim.setInput(wheelMotor.getSimState().getMotorVoltage());
+        wheelSim.update(0.020);
+		wheelMotor.getSimState()
+            .setRotorVelocity(wheelSim.getAngularVelocityRPM() / 60.0);
+        wheelMotor.getSimState().addRotorPosition(wheelSim.getAngularVelocityRPM() / 60.0 * 0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(wheelSim.getCurrentDrawAmps()));
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
     }
 
 

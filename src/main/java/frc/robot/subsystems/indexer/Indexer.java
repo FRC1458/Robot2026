@@ -4,12 +4,15 @@ import static frc.robot.subsystems.indexer.IndexerConstants.*;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
 import au.grapplerobotics.LaserCan;
 import au.grapplerobotics.ConfigurationFailedException;
@@ -26,7 +29,7 @@ public class Indexer extends SubsystemBase {
         return leftInstance;
     }
     private static Indexer rightInstance;
-    public static Indexer getrightInstance() {
+    public static Indexer getRightInstance() {
         if (rightInstance == null) {
             rightInstance = new Indexer(false);
         }
@@ -35,11 +38,12 @@ public class Indexer extends SubsystemBase {
     private ControlRequest request;
 
     private TalonFX motor;
-    private TalonFXSimState motorSim;
     private LaserCan lc;
 
     /** boolean that's modified by checkForBall() */
     private boolean hasBall;
+
+    private FlywheelSim wheelSim;
 
     // private boolean shooterReady = false;
     // COMMENTED OUT /** boolean that's modified by checkForBallTwo() */
@@ -53,11 +57,11 @@ public class Indexer extends SubsystemBase {
         setName("Indexer " + (isLeft ? "Left" : "Right"));
         motor = new TalonFX(isLeft ? L_MOTOR_ID : R_MOTOR_ID);
         motor.getConfigurator().apply(getConfig());
-        motorSim = motor.getSimState();
         lc = new LaserCan(isLeft ? L_LASER_ID : R_LASER_ID);
         // lcTwo = new LaserCan(LASER_ID_2);
 
         /* new laser configs */
+        if (Robot.isReal()) {
         for (int i = 0; i < 20; i++) {
             try {
                 lc.setRangingMode(LaserCan.RangingMode.SHORT);
@@ -67,6 +71,16 @@ public class Indexer extends SubsystemBase {
             } catch (ConfigurationFailedException e) {
                 System.out.println("Configuration failed! " + e);
             }
+        }}
+
+        if (Robot.isSimulation()) {
+            wheelSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX44(1),
+                    0.000189000861,
+                    2), 
+                DCMotor.getKrakenX44(1), 
+                0.0);
         }
         // try {
         //     lcTwo.setRangingMode(LaserCan.RangingMode.SHORT);
@@ -75,6 +89,8 @@ public class Indexer extends SubsystemBase {
         // } catch (ConfigurationFailedException e) {
         //     System.out.println("Configuration failed! " + e);
         // }
+
+        TelemetryManager.getInstance().addSendable(this);
         setDefaultCommand(loadIndexer());
     }
 
@@ -83,7 +99,7 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         motor.setControl(request);
         
-        checkForBall();
+        // checkForBall();
         // checkForBallTwo();
         // if (shooterReady == true) {
         //     activateIndexer();
@@ -93,6 +109,14 @@ public class Indexer extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         
+
+        motor.getSimState().setSupplyVoltage(12);
+
+        wheelSim.setInput(motor.getSimState().getMotorVoltage());
+        wheelSim.update(0.020);
+		motor.getSimState()
+            .setRotorVelocity(wheelSim.getAngularVelocityRPM() / 60.0);
+        motor.getSimState().addRotorPosition(wheelSim.getAngularVelocityRPM() / 60.0 * 0.020);
     }
 
     /** type conversion/abstraction */

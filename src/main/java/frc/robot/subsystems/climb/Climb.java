@@ -1,18 +1,11 @@
 package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
-import static frc.robot.subsystems.climb.ClimbConstants.END_EFFECTOR_HEIGHT;
-import static frc.robot.subsystems.climb.ClimbConstants.EPSILON;
-import static frc.robot.subsystems.climb.ClimbConstants.GEAR_RATIO;
-import static frc.robot.subsystems.climb.ClimbConstants.getConfig;
-import static frc.robot.subsystems.climb.ClimbConstants.metersToRotations;
-import static frc.robot.subsystems.climb.ClimbConstants.rotationsToMeters;
+import static frc.robot.subsystems.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -24,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.climb.ClimbConstants.Setpoint;
 
@@ -46,36 +41,48 @@ public class Climb extends SubsystemBase {
 	private double targetHeight = END_EFFECTOR_HEIGHT;
 	private ControlRequest request = new NeutralOut();
 
-	private final ElevatorSim sim = new edu.wpi.first.wpilibj.simulation.ElevatorSim(
-		DCMotor.getKrakenX60(1),
-		GEAR_RATIO,
-		1.13,
-		0.05,
-		Setpoint.BASE.height,
-		Setpoint.UP.height,
-		true,
-		0.0,
-		0.0,0.0
-	);
+	private ElevatorSim sim;
 
 	private Climb() {
 		super();
 		climbMotor = new TalonFX(CLIMB_MOTOR_ID);
 		climbMotor.getConfigurator().apply(getConfig());
 		climbMotor.setNeutralMode(NeutralModeValue.Brake);
+		if (Robot.isSimulation()) {
+			sim = new ElevatorSim(
+				DCMotor.getKrakenX60(1),
+				GEAR_RATIO,
+				1.13,
+				0.05,
+				0.0,
+				1,
+				true,
+				0.0,
+				0.0, 0.0
+			);
+		}
 		TelemetryManager.getInstance().addSendable(this);
-		setDefaultCommand(stop());
 	}
 
 	@Override
 	public void periodic() {
 		// Read the height from the motor encoder
-		lastReadHeight = rotationsToMeters(
-			climbMotor.getPosition().getValueAsDouble());
-		lastReadSpeed = rotationsToMeters(
-			climbMotor.getVelocity().getValueAsDouble());
+		lastReadHeight = 
+			climbMotor.getPosition().getValueAsDouble();
+		lastReadSpeed = 
+			climbMotor.getVelocity().getValueAsDouble();
 		// updates the motor
 		climbMotor.setControl(request);
+	}
+
+	@Override
+	public void simulationPeriodic() {
+		climbMotor.getSimState().setSupplyVoltage(12);
+		sim.setInput(climbMotor.getSimState().getMotorVoltage());
+		sim.update(0.020);
+		climbMotor.getSimState().setRawRotorPosition(sim.getPositionMeters() * CONVERSION_FACTOR * 1 / Constants.TAU);
+		climbMotor.getSimState().setRotorVelocity(
+			sim.getVelocityMetersPerSecond() * CONVERSION_FACTOR * 1 / Constants.TAU);
 	}
 
 	/** Swaps the control request */
@@ -93,8 +100,7 @@ public class Climb extends SubsystemBase {
 			() -> {
 				this.targetHeight = targetHeight;
 				setRequest(new MotionMagicVoltage(
-					metersToRotations(
-						targetHeight)));
+						targetHeight));
 			}
 		).andThen(
 			Commands.waitUntil(() -> isNearTarget())
@@ -105,8 +111,7 @@ public class Climb extends SubsystemBase {
 	public Command stop() {
 		return runOnce(
 			() -> setRequest(
-				new PositionVoltage(
-					metersToRotations(targetHeight))))
+				new NeutralOut()))
 			.withName("Stopped");
 	}
 
@@ -129,11 +134,10 @@ public class Climb extends SubsystemBase {
 							.voltage(Volts.of(request.Output))
 							.linearPosition(
 								Meters.of(
-									rotationsToMeters(
-										climbMotor.getPosition().getValueAsDouble())))
+									climbMotor.getPosition().getValueAsDouble()))
 							.linearVelocity(
 								MetersPerSecond.of(
-									rotationsToMeters(climbMotor.getVelocity().getValueAsDouble())));
+									climbMotor.getVelocity().getValueAsDouble()));
 					},
 					this
 				)
@@ -174,7 +178,8 @@ public class Climb extends SubsystemBase {
 
 	// command
 
-	public static Command HangCommand() {
-		return Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.UP).andThen(Climb.getInstance().moveToScoringHeight(ClimbConstants.Setpoint.BASE));
+	public Command hangCommand() {
+		return moveToScoringHeight(Setpoint.UP)
+			.andThen(Climb.getInstance().moveToScoringHeight(Setpoint.BASE));
 	}
 }

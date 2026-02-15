@@ -4,7 +4,6 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -16,7 +15,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+// import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -32,7 +31,6 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
-import frc.robot.lib.util.TunableNumber;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
@@ -41,7 +39,7 @@ import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
-import frc.robot.subsystems.vision.VisionConstants;
+// import frc.robot.subsystems.vision.VisionConstants;
 
 public class Drive extends SubsystemBase {
 	private static Drive driveInstance;
@@ -65,8 +63,6 @@ public class Drive extends SubsystemBase {
 
 	private Drive() {
 		drivetrain = CtreDriveConstants.createDrivetrain();  
-		drivetrain.setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
-		drivetrain.setStateStdDevs(VisionConstants.STATE_STD_DEVS);
 		telemetry = new CtreDriveTelemetry(MAX_SPEED);  
 		teleopRequest = new SwerveRequest.FieldCentric();
 		driveRequest = teleopRequest;
@@ -264,7 +260,7 @@ public class Drive extends SubsystemBase {
 					MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180
 				));
 
-				Translation2d speedVector = new Translation2d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
+				// Translation2d speedVector = new Translation2d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
 				
 				request
 					.withVelocityX(xFancy * MAX_SPEED)

@@ -23,8 +23,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
@@ -55,8 +58,11 @@ public class Robot extends TimedRobot {
 		Drive.getInstance();
 		Shooter.getLeftInstance();
 		Shooter.getRightInstance();
-
+		Indexer.getLeftInstance();
+		Indexer.getRightInstance();
 		Intake.getInstance();
+		Climb.getInstance();
+		Roller.getInstance();
 
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
@@ -126,6 +132,7 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
+		ControlsMapping.mapTeleopCommand();
 		// This makes sure that the autonomous stops running when teleop starts running. 
 		if (autoCommand != null) {
 			autoCommand.cancel();

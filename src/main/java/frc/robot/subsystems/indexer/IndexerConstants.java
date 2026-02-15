@@ -9,10 +9,10 @@ public class IndexerConstants {
 
     // TODO: Set IDs
     // TODO (Ethan): Set LaserCan_DefaultMeasurement
-    public static final int L_MOTOR_ID = 32;
-    public static final int L_LASER_ID = 36;
-    public static final int R_MOTOR_ID = 32;
-    public static final int R_LASER_ID = 36;
+    public static final int L_MOTOR_ID = 51;
+    public static final int L_LASER_ID = 50;
+    public static final int R_MOTOR_ID = 49;
+    public static final int R_LASER_ID = 48;
     // public static final int LASER_ID_2 = 0;
     public static final double ROLLING_SPEED = 10; // rps
     public static final double MAXIMUM_LASER_DIST = 100;
