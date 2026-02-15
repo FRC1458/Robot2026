@@ -58,9 +58,10 @@ public class FieldLayout {
 			int[] rightTrenchIds = {1,6,23,28};
 			int[] leftTrenchIds = {7,12,17,22};
 			Transform2d moveLeft = new Transform2d(
-				-Units.inchesToMeters(22.2)-DriveConstants.TRACK_WIDTH/2, 0, Rotation2d.kZero);
+				-Units.inchesToMeters(45), 0, Rotation2d.kZero);
 			Transform2d moveRight = new Transform2d(
-				Units.inchesToMeters(22.2)+DriveConstants.TRACK_WIDTH/2,0,Rotation2d.kZero);
+				Units.inchesToMeters(45),0,Rotation2d.kZero);
+			Transform2d turn = new Transform2d(0,0,Rotation2d.kPi);
 			for (int i : rightTrenchIds) {
 				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
 				ENTRY_RIGHT_POSES.add(tagPose.transformBy(moveLeft));
@@ -68,8 +69,8 @@ public class FieldLayout {
 			}
 			for (int i : leftTrenchIds) {
 				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
-				ENTRY_LEFT_POSES.add(tagPose.transformBy(moveRight));
-				TARGET_LEFT_POSES.put(tagPose.transformBy(moveRight),tagPose.transformBy(moveLeft));
+				ENTRY_LEFT_POSES.add(tagPose.transformBy(moveLeft));
+				TARGET_LEFT_POSES.put(tagPose.transformBy(moveLeft),tagPose.transformBy(moveRight));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -84,7 +85,7 @@ public class FieldLayout {
 				(Pose2d other) -> pose.getTranslation().getDistance(other.getTranslation())
 			).thenComparing(
 				(Pose2d other) ->
-					Math.abs(pose.getRotation().minus(other.getRotation()).getRadians())));
+				Math.abs(pose.getRotation().minus(other.getRotation()).getRadians())));
 		return new APTarget(out).withEntryAngle(out.getRotation());
 	}
 
@@ -95,8 +96,8 @@ public class FieldLayout {
 	}
 
 	public static boolean isLeftOfTrench(Pose2d pose) {
-		double xFraction = pose.getX() / Units.inchesToMeters(650.12);
-		return (xFraction % 0.5) < 0.25;
+		double x = pose.getX();
+		return x < 4.63 || (x > 8.3 && x < 11.95); //TODO: correct values
 	}
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {

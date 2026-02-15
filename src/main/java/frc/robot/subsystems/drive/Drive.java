@@ -186,7 +186,7 @@ public class Drive extends SubsystemBase {
 	 */
 	public Command traverseTrench() {
 		return defer(() -> {
-			APTarget pose = FieldLayout.getTrenchEntry(getPose());
+			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(2);
 			return new AutopilotCommand(pose).andThen(
 				defer(() -> {
 				APTarget pose2 = FieldLayout.getTrenchTarget(getPose());
