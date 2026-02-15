@@ -38,10 +38,10 @@ public class Indexer extends SubsystemBase {
     private ControlRequest request;
 
     private TalonFX motor;
-    private LaserCan lc;
+    // private LaserCan lc;
 
     /** boolean that's modified by checkForBall() */
-    private boolean hasBall;
+    // private boolean hasBall;
 
     private FlywheelSim wheelSim;
 
@@ -57,21 +57,21 @@ public class Indexer extends SubsystemBase {
         setName("Indexer " + (isLeft ? "Left" : "Right"));
         motor = new TalonFX(isLeft ? L_MOTOR_ID : R_MOTOR_ID);
         motor.getConfigurator().apply(getConfig());
-        lc = new LaserCan(isLeft ? L_LASER_ID : R_LASER_ID);
+        // lc = new LaserCan(isLeft ? L_LASER_ID : R_LASER_ID);
         // lcTwo = new LaserCan(LASER_ID_2);
 
         /* new laser configs */
-        if (Robot.isReal()) {
-        for (int i = 0; i < 20; i++) {
-            try {
-                lc.setRangingMode(LaserCan.RangingMode.SHORT);
-                lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-                lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
-                break;
-            } catch (ConfigurationFailedException e) {
-                System.out.println("Configuration failed! " + e);
-            }
-        }}
+        // if (Robot.isReal()) {
+        // for (int i = 0; i < 20; i++) {
+        //     try {
+        //         lc.setRangingMode(LaserCan.RangingMode.SHORT);
+        //         lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
+        //         lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+        //         break;
+        //     } catch (ConfigurationFailedException e) {
+        //         System.out.println("Configuration failed! " + e);
+        //     }
+        // }}
 
         if (Robot.isSimulation()) {
             wheelSim = new FlywheelSim(
@@ -91,7 +91,7 @@ public class Indexer extends SubsystemBase {
         // }
 
         TelemetryManager.getInstance().addSendable(this);
-        setDefaultCommand(loadIndexer());
+        setDefaultCommand(deactivateIndexer());
     }
 
     @Override
@@ -130,13 +130,13 @@ public class Indexer extends SubsystemBase {
     }
     
     /** moves motor to speed if sense ball */
-    public Command loadIndexer() {
-        return Commands.either(
-            deactivateIndexer(),
-            activateIndexer(),
-            this::hasBall
-        ).repeatedly();
-    }
+    // public Command loadIndexer() {
+    //     return Commands.either(
+    //         deactivateIndexer(),
+    //         activateIndexer(),
+    //         this::hasBall
+    //     ).repeatedly();
+    // }
 
     public Command activateIndexer() {
         return setSpeed(ROLLING_SPEED);
@@ -148,27 +148,27 @@ public class Indexer extends SubsystemBase {
     }
 
     /** command to sense distance from LaserCAN; used to sense if bol */
-    private double getDistanceMm() {
-        LaserCan.Measurement measurement = lc.getMeasurement();
-        if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-            return measurement.distance_mm;
-        } else {
-            return Double.POSITIVE_INFINITY;
-        }
-    }
+    // private double getDistanceMm() {
+    //     LaserCan.Measurement measurement = lc.getMeasurement();
+    //     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+    //         return measurement.distance_mm;
+    //     } else {
+    //         return Double.POSITIVE_INFINITY;
+    //     }
+    // }
 
     /** command that modifies hasBall, uses getDistanceMm() */
-    private void checkForBall() {
-        double x = getDistanceMm();
-        if (x <= MAXIMUM_LASER_DIST) {
-            hasBall = false;
-        }
-    }
+    // private void checkForBall() {
+    //     double x = getDistanceMm();
+    //     if (x <= MAXIMUM_LASER_DIST) {
+    //         hasBall = false;
+    //     }
+    // }
 
-    /** setup formatting for boolean hasBall so it can be used in activateIndexer().either */
-    private boolean hasBall() {
-        return hasBall;
-    }
+    // /** setup formatting for boolean hasBall so it can be used in activateIndexer().either */
+    // private boolean hasBall() {
+    //     return hasBall;
+    // }
     // COMMENTED OUT /** setup formatting for boolean hasBall so that it can be used to tell if shooter ready */
     // private boolean hasBallTwo() {
     //     return hasBallTwo;
@@ -197,7 +197,7 @@ public class Indexer extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
-        builder.addBooleanProperty("Has Ball", () -> hasBall, null);
+        // builder.addBooleanProperty("Has Ball", () -> hasBall, null);
         TelemetryManager.makeSendableTalonFX("Indexer Motor", motor, builder);
     }
 }
