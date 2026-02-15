@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -97,8 +98,35 @@ public class FieldLayout {
 
 	public static boolean isLeftOfTrench(Pose2d pose) {
 		double x = pose.getX();
-		return x < 4.63 || (x > 8.3 && x < 11.95); //TODO: correct values
+		return x < 4.7 || (x > 8.35 && x < 12);
 	}
+
+	// public static boolean isNearTrench(Pose2d pose) {
+	// 	for (Pose2d tag : ENTRY_LEFT_POSES) {
+	// 		Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
+	// 		if (Math.abs(difference.getY()) < 1.5 && difference.getX() < 0 && difference.getX() > -1.5) {
+	// 			return true;
+	// 		}
+	// 	}
+	// 	for (Pose2d tag : ENTRY_RIGHT_POSES) {
+	// 		Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
+	// 		if (Math.abs(difference.getY()) < 1.5 && difference.getX() > 0 && difference.getX() < 1.5) {
+	// 			return true;
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+
+	// public static boolean isMovingToTrench(Pose2d pose, ChassisSpeeds speeds) {
+	// 	double theta = Math.atan2(speeds.vyMetersPerSecond,speeds.vxMetersPerSecond);
+	// 	if (!isLeftOfTrench(pose) && !(theta > 5*Math.PI/6 && theta < 7*Math.PI/6)) {
+	// 		return false;
+	// 	}
+	// 	if (isLeftOfTrench(pose) && !(theta < Math.PI/6 || theta > 11*Math.PI/6)) {
+	// 		return false;
+	// 	}
+	// 	return true;
+	// }
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {
 		if (is_red_alliance) {

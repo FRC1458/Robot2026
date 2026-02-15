@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
@@ -31,6 +32,7 @@ import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
+import frc.robot.lib.field.FieldLayout;
 
 public class Drive extends SubsystemBase {
 	private static Drive driveInstance;
@@ -57,6 +59,10 @@ public class Drive extends SubsystemBase {
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
 		}));
+
+		// new Trigger(() -> 
+		// 	(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
+		// 		&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench());
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
@@ -189,7 +195,7 @@ public class Drive extends SubsystemBase {
 			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(2);
 			return new AutopilotCommand(pose).andThen(
 				defer(() -> {
-				APTarget pose2 = FieldLayout.getTrenchTarget(getPose());
+				APTarget pose2 = FieldLayout.getTrenchTarget(getPose())/*.withVelocity(3)*/;
 				return new AutopilotCommand(pose2);
 			}));
 		}).withName("Trench Traversal");
