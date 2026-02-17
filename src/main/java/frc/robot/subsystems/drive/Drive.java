@@ -53,8 +53,9 @@ public class Drive extends SubsystemBase {
 	}
 
 	private SwerveDriveState lastReadState;
-	public final SwerveRequest.FieldCentric teleopRequest;
-	public SwerveRequest driveRequest;
+	private SwerveDriveState prevReadState;
+	public static SwerveRequest.FieldCentric teleopRequest = new SwerveRequest.FieldCentric();
+	public SwerveRequest driveRequest = teleopRequest;
 
 	private final CtreDrive drivetrain;   
 	// private final CtreDriveTelemetry telemetry;
@@ -71,6 +72,7 @@ public class Drive extends SubsystemBase {
 		teleopRequest = new SwerveRequest.FieldCentric();
 		driveRequest = teleopRequest;
 		lastReadState = drivetrain.getState();
+		prevReadState = lastReadState;
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
 			return driveRequest;
 		}));
@@ -90,6 +92,7 @@ public class Drive extends SubsystemBase {
 
 	@Override
 	public void periodic() {
+		prevReadState = lastReadState;
 		lastReadState = drivetrain.getState();
 		outputTelemetry();
 	}
@@ -120,6 +123,10 @@ public class Drive extends SubsystemBase {
 	 */
 	public ChassisSpeeds getFieldSpeeds() {
 		return ChassisSpeeds.fromRobotRelativeSpeeds(lastReadState.Speeds, lastReadState.Pose.getRotation());
+	}
+	
+	public ChassisSpeeds getPrevFieldSpeeds() {
+		return ChassisSpeeds.fromRobotRelativeSpeeds(prevReadState.Speeds, prevReadState.Pose.getRotation());
 	}
 	
 	/**
