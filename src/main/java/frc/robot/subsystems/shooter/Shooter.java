@@ -9,14 +9,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.subsystems.TelemetryManager;
 
 public class Shooter extends SubsystemBase {
     private static Shooter shooterLeftInstance;
@@ -28,7 +26,6 @@ public class Shooter extends SubsystemBase {
 		return shooterLeftInstance;
 	}
 
-    
 	public static Shooter getRightInstance() {
 		if (shooterRightInstance == null) {
 			shooterRightInstance = new Shooter(false);
@@ -45,10 +42,12 @@ public class Shooter extends SubsystemBase {
     private FlywheelSim topSim;
     private FlywheelSim bottomSim;
 
+    private ShooterIO io;
+
     private Shooter(boolean left) {
         super();
 
-        setName(this.getClass().getSimpleName() + (left ? "left" : "right"));
+        setName(this.getClass().getSimpleName() + (left ? "Left" : "Right"));
 
         int bottomID;
         int topID;
@@ -84,7 +83,9 @@ public class Shooter extends SubsystemBase {
                     1
                 ), DCMotor.getKrakenX60(1), 0.0);
         }
-		TelemetryManager.getInstance().addSendable(this);
+
+        io = new ShooterIO(getName(), topMotor, bottomMotor);
+		// TelemetryManager.getInstance().addSendable(this);
     }
 
     @Override
@@ -94,6 +95,8 @@ public class Shooter extends SubsystemBase {
         lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
         topMotor.setControl(topRequest);
         bottomMotor.setControl(bottomRequest);
+        io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
+        io.process();
     }
 
     @Override
@@ -150,20 +153,21 @@ public class Shooter extends SubsystemBase {
         return shoot(50, -50);
     }
 
-    @Override
-	public void initSendable(SendableBuilder builder) {
-		super.initSendable(builder);
+    // @Override
+	// public void initSendable(SendableBuilder builder) {
+	// 	super.initSendable(builder);
 
-        builder.addDoubleProperty(
-            "TopSpeed", 
-            () -> lastReadSpeedTop, 
-            null);
-		TelemetryManager.makeSendableTalonFX("Top", topMotor, builder);
+    //     builder.addDoubleProperty(
+    //         "TopSpeed", 
+    //         () -> lastReadSpeedTop, 
+    //         null);
+	// 	TelemetryManager.makeSendableTalonFX("Top", topMotor, builder);
 
-        builder.addDoubleProperty(
-            "BottomSpeed", 
-            () -> lastReadSpeedBottom, 
-            null);
-		TelemetryManager.makeSendableTalonFX("Bottom", bottomMotor, builder);
-	}
+    //     builder.addDoubleProperty(
+    //         "BottomSpeed", 
+    //         () -> lastReadSpeedBottom, 
+    //         null);
+	// 	TelemetryManager.makeSendableTalonFX("Bottom", bottomMotor, builder);
+	// }
+
 }
