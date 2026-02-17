@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static frc.robot.subsystems.shooter.ShooterConstants.*;
+
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -14,7 +16,6 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.subsystems.drive.Drive;
 
 public class Shooter extends SubsystemBase {
     private static Shooter shooterLeftInstance;
@@ -55,20 +56,20 @@ public class Shooter extends SubsystemBase {
         int topID;
 
         if (left) {
-            bottomID = ShooterConstants.Motors.BOTTOMLEFT.id;
-            topID = ShooterConstants.Motors.TOPLEFT.id;
+            bottomID = Motors.BOTTOMLEFT.id;
+            topID = Motors.TOPLEFT.id;
         }
         else {
-            bottomID = ShooterConstants.Motors.BOTTOMRIGHT.id;
-            topID = ShooterConstants.Motors.TOPRIGHT.id;
+            bottomID = Motors.BOTTOMRIGHT.id;
+            topID = Motors.TOPRIGHT.id;
         }
 
 		bottomMotor = new TalonFX(bottomID);
-		bottomMotor.getConfigurator().apply(ShooterConstants.getConfig());
+		bottomMotor.getConfigurator().apply(getConfig());
 		bottomMotor.setNeutralMode(NeutralModeValue.Coast);
 
         topMotor = new TalonFX(topID);
-		topMotor.getConfigurator().apply(ShooterConstants.getConfig());
+		topMotor.getConfigurator().apply(getConfig());
 		topMotor.setNeutralMode(NeutralModeValue.Coast);
         
         if (Robot.isSimulation()) {
@@ -152,9 +153,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return Drive.getInstance()
-            .headingLockToPose(shotCalculator.getCurrentEffectiveTargetPose().toPose2d())
-            .andThen(shoot(3000 / 60.0, 3000 / 60.0));
+        return defer(() -> shoot(shotCalculator.getInterceptSolution().launchSpeed() - TOPSPIN_FACTOR, 
+            -shotCalculator.getInterceptSolution().launchSpeed() - TOPSPIN_FACTOR));
     }
 
     // @Override

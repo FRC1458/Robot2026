@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.houndlib;
+package frc.robot.lib.houndlib;
 
 public class BallConstants {
     public final double mass;

@@ -1,10 +1,9 @@
-package frc.robot.subsystems.shooter.houndlib;
+package frc.robot.lib.houndlib;
 
 import java.util.function.Function;
 
+import frc.robot.lib.houndlib.BallPhysics.ShotSolution;
 import frc.robot.lib.trajectory.RedTrajectory.State.ChassisAccels;
-import frc.robot.subsystems.shooter.houndlib.BallPhysics.ShotSolution;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -207,25 +206,25 @@ public class ShootOnTheFlyCalculator {
             Pose3d targetPose,
             ChassisSpeeds fieldRelRobotVelocity,
             ChassisAccels fieldRelRobotAcceleration,
-            double targetSpeedRps,
+            double incomingAngle,
             int maxIterations,
             double timeTolerance) {
 
         ShotSolution sol = BallPhysics.solveBallisticWithSpeed(
                 shooterPose,
                 targetPose,
-                targetSpeedRps);
+                incomingAngle);
 
         double t = sol.flightTimeSeconds();
         Pose3d effectiveTarget = targetPose;
 
         for (int i = 0; i < maxIterations; i++) {
 
-            double dx = fieldRelRobotVelocity.vxMetersPerSecond * t;
-            // + 0.5 * fieldRelRobotAcceleration.axMetersPerSecondSquared * t * t;
+            double dx = fieldRelRobotVelocity.vxMetersPerSecond * t
+                + 0.5 * fieldRelRobotAcceleration.ax * t * t;
 
-            double dy = fieldRelRobotVelocity.vyMetersPerSecond * t;
-            // + 0.5 * fieldRelRobotAcceleration.ayMetersPerSecondSquared * t * t;
+            double dy = fieldRelRobotVelocity.vyMetersPerSecond * t
+                + 0.5 * fieldRelRobotAcceleration.ay * t * t;
 
             effectiveTarget = new Pose3d(
                     targetPose.getX() - dx,
@@ -233,10 +232,10 @@ public class ShootOnTheFlyCalculator {
                     targetPose.getZ(),
                     targetPose.getRotation());
 
-            ShotSolution newSol = BallPhysics.solveBallisticWithSpeed(
+            ShotSolution newSol = BallPhysics.solveBallisticWithIncomingAngle(
                     shooterPose,
                     effectiveTarget,
-                    targetSpeedRps);
+                    incomingAngle);
 
             if (Math.abs(newSol.flightTimeSeconds() - t) < timeTolerance) {
                 return new InterceptSolution(

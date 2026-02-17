@@ -11,6 +11,8 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 public final class ShooterConstants {		
     public static final double GEAR_RATIO = 1;
 
+    public static final double TOPSPIN_FACTOR = 0;
+
     public static final Transform3d OFFSET = new Transform3d();
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_SHOT_SPEED = new InterpolatingDoubleTreeMap();
 

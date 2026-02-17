@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.houndlib;
+package frc.robot.lib.houndlib;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
