@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -33,8 +34,13 @@ public class DriveIO {
         public ChassisSpeeds fieldSpeeds = new ChassisSpeeds();
         public String driveRequest = "";
 
+        @AutoLogOutput
         public SwerveModuleState[] moduleStates = new SwerveModuleState[4];
+
+        @AutoLogOutput
         public SwerveModulePosition[] modulePositions = new SwerveModulePosition[4]; 
+        
+        @AutoLogOutput
         public SwerveModuleState[] moduleTargets = new SwerveModuleState[4];
 
         public String currentCommand = "";

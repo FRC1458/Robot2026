@@ -62,7 +62,16 @@ public class Robot extends LoggedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		boolean replay = false;
+		boolean replay = Logger.hasReplaySource();
+		//robot data loggers 
+		// boolean usbPresent = new java.io.File("/u").exists();
+		// if (usbPresent) {
+		//   DataLogManager.start("/u/logs");  // USB stick
+		//   System.out.println("Log/USB mounts OK");
+		// } else {
+		//   DataLogManager.start();           // falls back to /home/lvuser/logs
+		//   System.out.println("Log/USB mounts NOT OK");
+		// }
 
 		Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -117,15 +126,6 @@ public class Robot extends LoggedRobot {
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
-		//robot data loggers 
-		boolean usbPresent = new java.io.File("/u").exists();
-		if (usbPresent) {
-		  DataLogManager.start("/u/logs");  // USB stick
-		  System.out.println("Log/USB mounts OK");
-		} else {
-		  DataLogManager.start();           // falls back to /home/lvuser/logs
-		  System.out.println("Log/USB mounts NOT OK");
-		}
 		DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
