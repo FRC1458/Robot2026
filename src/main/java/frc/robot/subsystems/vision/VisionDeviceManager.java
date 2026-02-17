@@ -33,7 +33,7 @@ public class VisionDeviceManager extends SubsystemBase {
 	private VisionDevice frontrCamera;
 	private VisionDevice frontlCamera;
 
-	private List<VisionDevice> cameras;
+	public List<VisionDevice> cameras;
 
 	private static TunableNumber timestampOffset = new TunableNumber("VisionTimestampOffset", (0.1), false);
 
@@ -43,6 +43,8 @@ public class VisionDeviceManager extends SubsystemBase {
 	private static boolean visionDisabled = false;
 
 	public VisionSystemSim visionSim;
+
+	public VisionIO io;
 
 	public VisionDeviceManager() {
 		// leftCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.L_CONSTANTS);
@@ -58,7 +60,8 @@ public class VisionDeviceManager extends SubsystemBase {
 		}
 		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(LOCAL_MEASUREMENT_STD_DEVS);
 		Drive.getInstance().getCtreDrive().setStateStdDevs(STATE_STD_DEVS);
-		TelemetryManager.getInstance().addSendable(this);
+		io = new VisionIO(getName(), this);
+		// TelemetryManager.getInstance().addSendable(this);
 	}
 
 	@Override
@@ -68,8 +71,11 @@ public class VisionDeviceManager extends SubsystemBase {
 		}
 		cameras.forEach(VisionDevice::periodic);
 		movingAvgRead = headingAvg.getAverage();
-		SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
-		SmartDashboard.putBoolean("vision disabled", getVisionDisabled());
+
+		io.updateInputs(getCurrentCommand(), getDefaultCommand());
+		io.process();
+		// SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
+		// SmartDashboard.putBoolean("vision disabled", getVisionDisabled());
 	}
 
 	public double getMovingAvgRead() {

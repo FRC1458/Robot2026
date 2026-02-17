@@ -148,6 +148,7 @@ public class Robot extends LoggedRobot {
 		double now = Timer.getFPGATimestamp();
 		fpsTracker.add(1.0 / (now - lastTime));
 		Logger.recordOutput("FPS", fpsTracker.getAverage());
+		Logger.recordOutput("rawDtMs", 1000 * (now - lastTime));
 		lastTime = now;
 	}
 
