@@ -12,8 +12,6 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.subsystems.TelemetryManager;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -34,14 +32,8 @@ public class Roller extends SubsystemBase {
 
     private ControlRequest request = new NeutralOut();
 
-
     private FlywheelSim sim;
-    /*
-    private MechanismLigament2d ligament;   
-
-    private final Mechanism2d mech2d = new Mechanism2d(20, 20);
-    private final MechanismRoot2d mech2droot = mech2d.getRoot("Bar Root",  10, 1);
-    */
+    private RollerIO io;
 
     private Roller() {
         super();
@@ -58,13 +50,17 @@ public class Roller extends SubsystemBase {
                 DCMotor.getKrakenX44(1), 
                 0.0);
         }
-        TelemetryManager.getInstance().addSendable(this);
+
+        io = new RollerIO(getName(), motor);
+        // TelemetryManager.getInstance().addSendable(this);
     }
 
     @Override
     public void periodic(){
         speed = motor.getVelocity().getValueAsDouble();
         motor.setControl(request);
+        io.updateInputs(speed, getCurrentCommand(), getDefaultCommand());
+        io.process();
     }
 
     @Override
@@ -99,10 +95,12 @@ public class Roller extends SubsystemBase {
             .withName("Stop");
     }
 
-    @Override
-    public void initSendable(SendableBuilder builder){ 
-        super.initSendable(builder);
-        builder.addDoubleProperty("Speed", () -> speed, null);
-        TelemetryManager.makeSendableTalonFX("Roller Motor", motor, builder);
-    }
+    // @Override
+    // public void initSendable(SendableBuilder builder){ 
+    //     super.initSendable(builder);
+    //     builder.addDoubleProperty("Speed", () -> speed, null);
+    //     TelemetryManager.makeSendableTalonFX("Roller Motor", motor, builder);
+    // }
+
+
 }

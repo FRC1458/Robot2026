@@ -1,10 +1,13 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+import frc.robot.lib.util.MovingAverageDouble;
 
 import java.util.Optional;
 
 import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -14,7 +17,10 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,7 +43,7 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  * this project, you must also update the Main.java file in the project.
  */
 @SuppressWarnings("unused")
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	private AutoSelector autoChooser;
 	private Command autoCommand;
@@ -47,12 +53,63 @@ public class Robot extends TimedRobot {
 
 	public static final CommandXboxController controller =
 		new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
+
+	public double lastTime = -1.0;
+	public MovingAverageDouble fpsTracker = new MovingAverageDouble(60);
 		
 	/**
 	 * This function is run when the robot is first started up and should be used for any
 	 * initialization code.
 	 */
 	public Robot() {
+		boolean replay = Logger.hasReplaySource();
+		//robot data loggers 
+		// boolean usbPresent = new java.io.File("/u").exists();
+		// if (usbPresent) {
+		//   DataLogManager.start("/u/logs");  // USB stick
+		//   System.out.println("Log/USB mounts OK");
+		// } else {
+		//   DataLogManager.start();           // falls back to /home/lvuser/logs
+		//   System.out.println("Log/USB mounts NOT OK");
+		// }
+
+		Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+        Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+        Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+        Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+        Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+        switch (BuildConstants.DIRTY) {
+            case 0:
+                Logger.recordMetadata("GitDirty", "All changes committed");
+                break;
+            case 1:
+                Logger.recordMetadata("GitDirty", "Uncomitted changes");
+                break;
+            default:
+                Logger.recordMetadata("GitDirty", "Unknown");
+                break;
+        }
+
+        if (RobotBase.isReal()) {
+            Logger.addDataReceiver(new WPILOGWriter());
+            if (!DriverStation.isFMSAttached()) {
+                Logger.addDataReceiver(new NT4Publisher());
+            }
+        } else if (replay) {
+            setUseTiming(false);
+            String logPath = LogFileUtil.findReplayLog();
+            Logger.setReplaySource(new WPILOGReader(logPath));
+            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        } else if (RobotBase.isSimulation()) {
+            Logger.addDataReceiver(new NT4Publisher());
+            Logger.addDataReceiver(new WPILOGWriter());
+        }
+
+        Logger.start();
+        if (!Logger.hasReplaySource()) {
+            RobotController.setTimeSource(RobotController::getFPGATime);
+        }
+
 		VisionDeviceManager.getInstance();
 		
 		Drive.getInstance();
@@ -69,15 +126,6 @@ public class Robot extends TimedRobot {
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
-		//robot data loggers 
-		boolean usbPresent = new java.io.File("/u").exists();
-		if (usbPresent) {
-		  DataLogManager.start("/u/logs");  // USB stick
-		  System.out.println("Log/USB mounts OK");
-		} else {
-		  DataLogManager.start();           // falls back to /home/lvuser/logs
-		  System.out.println("Log/USB mounts NOT OK");
-		}
 		DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
@@ -95,7 +143,13 @@ public class Robot extends TimedRobot {
 		// commands, running already-scheduled commands, removing finished or interrupted commands,
 		// and running subsystem periodic() methods.  This must be called from the robot's periodic
 		// block in order for anything in the Command-based framework to work.
+
 		commandScheduler.run();
+		double now = Timer.getFPGATimestamp();
+		fpsTracker.add(1.0 / (now - lastTime));
+		Logger.recordOutput("FPS", fpsTracker.getAverage());
+		Logger.recordOutput("rawDtMs", 1000 * (now - lastTime));
+		lastTime = now;
 	}
 
 	/** This function is called once each time the robot enters Disabled mode. */

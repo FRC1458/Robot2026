@@ -80,6 +80,9 @@ public class VisionDevice {
 		// 	}
 		// }
 
+		// if (Robot.isSimulation()) {
+		// 	botPose = sim.process(0.01, constants.robotToCamera);
+		// }
 		
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
@@ -173,10 +176,10 @@ public class VisionDevice {
 
 		processFrames();
 
-		SmartDashboard.putNumber(
-				"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
-		// SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
-		SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
+		// SmartDashboard.putNumber(
+		// 		"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
+		// // SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
+		// SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
 	}
 
 	public boolean isConnected() {

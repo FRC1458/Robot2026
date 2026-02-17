@@ -17,9 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.intake.IntakeConstants.Motors;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -45,14 +43,9 @@ public class Intake extends SubsystemBase {
     private ControlRequest barRequest = new NeutralOut();
 
     private SingleJointedArmSim sim;
-
     private FlywheelSim wheelSim;
-    /*
-    private MechanismLigament2d ligament;   
 
-    private final Mechanism2d mech2d = new Mechanism2d(20, 20);
-    private final MechanismRoot2d mech2droot = mech2d.getRoot("Bar Root",  10, 1);
-    */
+    private IntakeIO io;
 
     private Intake() {
         super();
@@ -93,8 +86,8 @@ public class Intake extends SubsystemBase {
                 0.0);
         }
         
-        TelemetryManager.getInstance().addSendable(this);
-            
+        // TelemetryManager.getInstance().addSendable(this);
+        io = new IntakeIO(getName(), wheelMotor, barMotor);
     }
 
     @Override
@@ -103,7 +96,8 @@ public class Intake extends SubsystemBase {
         barPosition = barMotor.getPosition().getValueAsDouble();
         barMotor.setControl(barRequest);
         wheelMotor.setControl(wheelRequest);
-        //ligament.setAngle(barPosition);
+        io.updateInputs(wheelSpeed, barPosition, getCurrentCommand(), getDefaultCommand());
+        io.process();
     }
 
     @Override
@@ -211,11 +205,12 @@ public class Intake extends SubsystemBase {
         return Commands.waitUntil(() -> Math.abs(target - wheelSpeed) < WHEEL_EPSILON);
     }
 
-    @Override
-    public void initSendable(SendableBuilder builder){ 
-        super.initSendable(builder);
-        builder.addDoubleProperty("Position", () -> barPosition, null);
-        TelemetryManager.makeSendableTalonFX("Bar Motor", barMotor, builder);
-        TelemetryManager.makeSendableTalonFX("Wheel Motor", wheelMotor, builder);
-    }
+    // @Override
+    // public void initSendable(SendableBuilder builder){ 
+    //     super.initSendable(builder);
+    //     builder.addDoubleProperty("Position", () -> barPosition, null);
+    //     TelemetryManager.makeSendableTalonFX("Bar Motor", barMotor, builder);
+    //     TelemetryManager.makeSendableTalonFX("Wheel Motor", wheelMotor, builder);
+    // }
+
 }

@@ -1,21 +1,17 @@
 package frc.robot.subsystems.indexer;
 
 import static frc.robot.subsystems.indexer.IndexerConstants.*;
+
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
-import frc.robot.subsystems.TelemetryManager;
-import au.grapplerobotics.LaserCan;
-import au.grapplerobotics.ConfigurationFailedException;
 
 // TODO (ethan): only activate if shooter ready
 // TODO (ethan): ask tommy setControl(request)
@@ -50,6 +46,8 @@ public class Indexer extends SubsystemBase {
     // private boolean hasBallTwo;
 
     /** boolean that's modified by shooter */
+
+    private IndexerIO io;
 
     /** setup, adding motor and laser */
     private Indexer(boolean isLeft) {
@@ -90,7 +88,8 @@ public class Indexer extends SubsystemBase {
         //     System.out.println("Configuration failed! " + e);
         // }
 
-        TelemetryManager.getInstance().addSendable(this);
+        io = new IndexerIO(getName(), motor);
+        // TelemetryManager.getInstance().addSendable(this);
         setDefaultCommand(deactivateIndexer());
     }
 
@@ -104,6 +103,8 @@ public class Indexer extends SubsystemBase {
         // if (shooterReady == true) {
         //     activateIndexer();
         // }
+        io.updateInputs(motor.getVelocity().getValueAsDouble(), getCurrentCommand(), getDefaultCommand());
+        io.process();
     }
 
     @Override
@@ -194,10 +195,11 @@ public class Indexer extends SubsystemBase {
     
     // TODO: AdvantageKit!
     /** ????????? */
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        super.initSendable(builder);
-        // builder.addBooleanProperty("Has Ball", () -> hasBall, null);
-        TelemetryManager.makeSendableTalonFX("Indexer Motor", motor, builder);
-    }
+    // @Override
+    // public void initSendable(SendableBuilder builder) {
+    //     super.initSendable(builder);
+    //     // builder.addBooleanProperty("Has Ball", () -> hasBall, null);
+    //     TelemetryManager.makeSendableTalonFX("Indexer Motor", motor, builder);
+    // }
+
 }

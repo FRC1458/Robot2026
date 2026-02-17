@@ -23,7 +23,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -32,7 +31,6 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.lib.control.ControlConstants.PIDVConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
-import frc.robot.lib.control.PIDVController;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
@@ -43,8 +41,7 @@ import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
-import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
-// import frc.robot.subsystems.vision.VisionConstants;
+// import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 
 public class Drive extends SubsystemBase {
 	private static Drive driveInstance;
@@ -60,15 +57,17 @@ public class Drive extends SubsystemBase {
 	public SwerveRequest driveRequest;
 
 	private final CtreDrive drivetrain;   
-	private final CtreDriveTelemetry telemetry;
+	// private final CtreDriveTelemetry telemetry;
 	@SuppressWarnings("unused") 
 	private Time lastPoseResetTime = BaseUnits.TimeUnit.of(0.0); // Citrus what are you doing
 	
 	private final LocalADStarWrapper pathfinder;
 
+	private final DriveIO io;
+
 	private Drive() {
 		drivetrain = CtreDriveConstants.createDrivetrain();  
-		telemetry = new CtreDriveTelemetry(MAX_SPEED);  
+		// telemetry = new CtreDriveTelemetry(MAX_SPEED);  
 		teleopRequest = new SwerveRequest.FieldCentric();
 		driveRequest = teleopRequest;
 		lastReadState = drivetrain.getState();
@@ -80,30 +79,8 @@ public class Drive extends SubsystemBase {
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
-		// TelemetryManager.getInstance().addStructPublisher("Drive/TargetSpeeds", ChassisSpeeds.struct,
-		// 	() -> {
-		// 		try {
-		// 			if (driveRequest instanceof SwerveRequest.ApplyFieldSpeeds) {
-		// 				return ChassisSpeeds.fromFieldRelativeSpeeds(
-		// 					((SwerveRequest.ApplyFieldSpeeds) driveRequest).Speeds, 
-		// 					lastReadState.Pose.getRotation());
-		// 			} else if (driveRequest instanceof SwerveRequest.ApplyRobotSpeeds) {
-		// 				return ((SwerveRequest.ApplyRobotSpeeds) driveRequest).Speeds;
-		// 			} else if (driveRequest instanceof SwerveRequest.FieldCentric) {
-		// 				var req = ((SwerveRequest.FieldCentric) driveRequest);
-		// 				return ChassisSpeeds.fromFieldRelativeSpeeds(
-		// 					req.VelocityX, 
-		// 					req.VelocityY, 
-		// 					req.RotationalRate,
-		// 					lastReadState.Pose.getRotation());
-		// 			} else if (driveRequest instanceof SwerveRequest.RobotCentric) {
-		// 				var req = ((SwerveRequest.RobotCentric) driveRequest);
-		// 				return new ChassisSpeeds(req.VelocityX, req.VelocityY, req.RotationalRate);
-		// 			}
-		// 		} finally {}
-		// 		return lastReadState.Speeds;
-		// 	});
-		TelemetryManager.getInstance().addSendable(this);
+		io = new DriveIO(getName(), drivetrain);
+		// TelemetryManager.getInstance().addSendable(this);
 	}
 
 	/** @return the ctre generated drivetrain */
@@ -118,8 +95,10 @@ public class Drive extends SubsystemBase {
 	}
 
 	public void outputTelemetry() {
-		telemetry.telemeterize(lastReadState);
+		// telemetry.telemeterize(lastReadState);
 		FieldLayout.field.setRobotPose(getPose());
+		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
+		io.process();
 	}
 
 	/**
@@ -383,46 +362,46 @@ public class Drive extends SubsystemBase {
 			&& Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(MAX_ROTATION_SPEED_SCORING);
 	}
 
-	@Override
-	public void initSendable(SendableBuilder builder) {
-		super.initSendable(builder);
-		builder.addDoubleProperty(
-			"Pitch Velocity Degrees Per Second",
-			() -> drivetrain
-				.getPigeon2()
-				.getAngularVelocityYDevice()
-				.getValue()
-				.in(Units.DegreesPerSecond),
-			null);
-		builder.addDoubleProperty(
-			"Pitch Degrees",
-			() -> drivetrain.getPigeon2().getPitch().getValue().in(Units.Degrees),
-			null);
+	// @Override
+	// public void initSendable(SendableBuilder builder) {
+	// 	super.initSendable(builder);
+	// 	builder.addDoubleProperty(
+	// 		"Pitch Velocity Degrees Per Second",
+	// 		() -> drivetrain
+	// 			.getPigeon2()
+	// 			.getAngularVelocityYDevice()
+	// 			.getValue()
+	// 			.in(Units.DegreesPerSecond),
+	// 		null);
+	// 	builder.addDoubleProperty(
+	// 		"Pitch Degrees",
+	// 		() -> drivetrain.getPigeon2().getPitch().getValue().in(Units.Degrees),
+	// 		null);
 
-		builder.addDoubleProperty(
-			"Roll Velocity Degrees Per Second",
-			() -> drivetrain
-				.getPigeon2()
-				.getAngularVelocityXDevice()
-				.getValue()
-				.in(Units.DegreesPerSecond),
-			null);
-		builder.addDoubleProperty(
-			"Roll Degrees",
-			() -> drivetrain.getPigeon2().getRoll().getValue().in(Units.Degrees),
-			null);
+	// 	builder.addDoubleProperty(
+	// 		"Roll Velocity Degrees Per Second",
+	// 		() -> drivetrain
+	// 			.getPigeon2()
+	// 			.getAngularVelocityXDevice()
+	// 			.getValue()
+	// 			.in(Units.DegreesPerSecond),
+	// 		null);
+	// 	builder.addDoubleProperty(
+	// 		"Roll Degrees",
+	// 		() -> drivetrain.getPigeon2().getRoll().getValue().in(Units.Degrees),
+	// 		null);
 
-		addModuleToBuilder(builder, 0);
-		addModuleToBuilder(builder, 1);
-		addModuleToBuilder(builder, 2);
-		addModuleToBuilder(builder, 3);
-	}
+	// 	addModuleToBuilder(builder, 0);
+	// 	addModuleToBuilder(builder, 1);
+	// 	addModuleToBuilder(builder, 2);
+	// 	addModuleToBuilder(builder, 3);
+	// }
 
-	/** Telemeterizes a module */
-	private void addModuleToBuilder(SendableBuilder builder, int module) {
-		TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Drive", 
-			drivetrain.getModules()[module].getDriveMotor(), builder);
-		TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Angle", 
-			drivetrain.getModules()[module].getSteerMotor(), builder);
-	}
+	// /** Telemeterizes a module */
+	// private void addModuleToBuilder(SendableBuilder builder, int module) {
+	// 	TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Drive", 
+	// 		drivetrain.getModules()[module].getDriveMotor(), builder);
+	// 	TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Angle", 
+	// 		drivetrain.getModules()[module].getSteerMotor(), builder);
+	// }
 }
