@@ -232,14 +232,21 @@ public class Robot extends LoggedRobot {
 				Inches.of(-13), Inches.of(13), Inches.of(-21.5), Inches.of(-17.5));
 		fuelSim.start();
 		fuelSim.enableAirResistance();
+		timer.start();;
 
 	}
 
+	Timer timer = new Timer();
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
 		fuelSim.updateSim();
 		Logger.recordOutput("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
 		Logger.recordOutput("Red Score", FuelSim.Hub.RED_HUB.getScore());
+
+		if (timer.hasElapsed(5)) {
+			fuelSim.clearFuel();
+			timer.restart();
+		}
 	}
 }

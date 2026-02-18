@@ -167,7 +167,7 @@ public class Shooter extends SubsystemBase {
             setTopRequest(topReq);
             setBottomRequest(bottomReq);
         }).andThen(
-            runOnce(() -> {
+            run(() -> {
                 topReq.withVelocity(topSpeed.getAsDouble());
                 bottomReq.withVelocity(bottomSpeed.getAsDouble());
             })
