@@ -1,5 +1,8 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.Robot.controller;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -46,6 +49,16 @@ public class ControlsMapping {
 			Commands.parallel(
 				Indexer.getLeftInstance().activateIndexer(),
 				Indexer.getRightInstance().activateIndexer())
+		).whileTrue(
+			Commands.repeatingSequence(
+				Commands.runOnce(() -> Robot.fuelSim.launchFuel(
+					MetersPerSecond.of(
+						Shooter.getLeftInstance().getTopSpeed() * Constants.TAU * 0.0508),
+					Degrees.of(75),
+					Degrees.of(0),
+					Inches.of(19)
+				)).andThen(Commands.waitSeconds(0.1))
+			)
 		);
 
 		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub()

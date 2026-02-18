@@ -2,6 +2,8 @@ package frc.robot.subsystems.shooter;
 
 import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -15,7 +17,9 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.subsystems.shooter.ShooterConstants.Motors;
 
 public class Shooter extends SubsystemBase {
     private static Shooter shooterLeftInstance;
@@ -102,6 +106,10 @@ public class Shooter extends SubsystemBase {
         io.process();
     }
 
+    public double getTopSpeed() {
+        return lastReadSpeedTop;
+    }
+
     @Override
     public void simulationPeriodic() {
         topMotor.getSimState().setSupplyVoltage(12);
@@ -152,9 +160,24 @@ public class Shooter extends SubsystemBase {
         }).withName("Shooting");
     }
 
+    public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
+        var topReq = new VelocityVoltage(0.0);
+        var bottomReq = new VelocityVoltage(0.0);
+        return runOnce(() -> {
+            setTopRequest(topReq);
+            setBottomRequest(bottomReq);
+        }).andThen(
+            runOnce(() -> {
+                topReq.withVelocity(topSpeed.getAsDouble());
+                bottomReq.withVelocity(bottomSpeed.getAsDouble());
+            })
+        ).withName("Shooting");
+    }
+
+
     public Command shoot() {
-        return defer(() -> shoot(shotCalculator.getInterceptSolution().launchSpeed() - TOPSPIN_FACTOR, 
-            -shotCalculator.getInterceptSolution().launchSpeed() - TOPSPIN_FACTOR));
+        return shoot(() -> shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR, 
+            () -> -shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR);
     }
 
     // @Override

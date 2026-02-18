@@ -17,7 +17,6 @@ import frc.robot.subsystems.drive.Drive;
 // stores current target and actively computes effective target
 public class ShotCalculator extends SubsystemBase {
     private static ShotCalculator calcInstance;
-   
     public static ShotCalculator getInstance() {
 		if (calcInstance == null) {
             calcInstance = new ShotCalculator();
@@ -25,43 +24,39 @@ public class ShotCalculator extends SubsystemBase {
 		return calcInstance;
 	}
 
-    private final Drive drivetrain;
+    private final Drive drive;
 
     @AutoLogOutput
     private Pose3d currentEffectiveTargetPose = Pose3d.kZero;
-
     private double currentEffectiveYaw;
 
     @AutoLogOutput
     private InterceptSolution currentInterceptSolution;
-
     private Pose3d targetLocation = new Pose3d();
-
     private double targetDistance = 0.0;
-
     private double shooterAngle = 75 * Constants.TAU / 360;
 
     private ShotCalculator() {
-        this.drivetrain = Drive.getInstance();
+        this.drive = Drive.getInstance();
         AutoLogOutputManager.addObject(this);
     }
 
     @Override
     public void periodic() {
-        Pose2d drivetrainPose = drivetrain.getPose();
+        Pose2d drivePose = drive.getPose();
 
-        targetDistance = drivetrainPose.getTranslation().getDistance(targetLocation.toPose2d().getTranslation());
+        targetDistance = drivePose.getTranslation().getDistance(targetLocation.toPose2d().getTranslation());
 
-        Pose3d shooterPose = new Pose3d(drivetrainPose).plus(ShooterConstants.OFFSET);
+        Pose3d shooterPose = new Pose3d(drivePose).plus(ShooterConstants.OFFSET);
 
-        ChassisSpeeds drivetrainSpeeds = drivetrain.getFieldSpeeds();
-        ChassisAccels drivetrainAccelerations = ChassisAccels.estimate(drivetrainSpeeds, drivetrain.getPrevFieldSpeeds(), Constants.DT);
+        ChassisSpeeds driveSpeeds = drive.getFieldSpeeds();
+        ChassisAccels driveAccelerations = ChassisAccels.estimate(driveSpeeds, drive.getPrevFieldSpeeds(), Constants.DT);
 
         currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(
             shooterPose, 
             targetLocation,
-            drivetrainSpeeds, 
-            new ChassisAccels(), 
+            driveSpeeds, 
+            driveAccelerations, 
             -shooterAngle,
             5, 0.01);
 

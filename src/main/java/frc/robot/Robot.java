@@ -1,7 +1,10 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+import frc.robot.lib.sim.FuelSim;
 import frc.robot.lib.util.MovingAverageDouble;
+
+import static edu.wpi.first.units.Units.Inches;
 
 import java.util.Optional;
 
@@ -25,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.auto.AutoSelector;
@@ -212,13 +216,30 @@ public class Robot extends LoggedRobot {
 	public void testPeriodic() {
 	}
 
+	public static FuelSim fuelSim = new FuelSim();
+
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
+		// fuelSim.spawnStartingFuel();
+		fuelSim.registerRobot(
+			Inches.of(27),
+			Inches.of(27),
+			Inches.of(0.5),
+			() -> Drive.getInstance().getPose(),
+			() -> Drive.getInstance().getFieldSpeeds());
+		fuelSim.registerIntake(
+				Inches.of(-13), Inches.of(13), Inches.of(-21.5), Inches.of(-17.5));
+		fuelSim.start();
+		fuelSim.enableAirResistance();
+
 	}
 
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
+		fuelSim.updateSim();
+		Logger.recordOutput("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+		Logger.recordOutput("Red Score", FuelSim.Hub.RED_HUB.getScore());
 	}
 }
