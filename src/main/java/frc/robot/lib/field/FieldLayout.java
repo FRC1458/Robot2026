@@ -101,32 +101,37 @@ public class FieldLayout {
 		return x < 4.7 || (x > 8.35 && x < 12);
 	}
 
-	// public static boolean isNearTrench(Pose2d pose) {
-	// 	for (Pose2d tag : ENTRY_LEFT_POSES) {
-	// 		Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
-	// 		if (Math.abs(difference.getY()) < 1.5 && difference.getX() < 0 && difference.getX() > -1.5) {
-	// 			return true;
-	// 		}
-	// 	}
-	// 	for (Pose2d tag : ENTRY_RIGHT_POSES) {
-	// 		Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
-	// 		if (Math.abs(difference.getY()) < 1.5 && difference.getX() > 0 && difference.getX() < 1.5) {
-	// 			return true;
-	// 		}
-	// 	}
-	// 	return false;
-	// }
+	public static boolean isNearTrench(Pose2d pose) {
+		for (Pose2d tag : ENTRY_LEFT_POSES) {
+			Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
+			if (Math.abs(difference.getY()) < 1.25 && difference.getX() < 0 && difference.getX() > -1) { //TODO: tune
+				return true;
+			}
+		}
+		for (Pose2d tag : ENTRY_RIGHT_POSES) {
+			Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
+			if (Math.abs(difference.getY()) < 1.25 && difference.getX() > 0 && difference.getX() < 1) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-	// public static boolean isMovingToTrench(Pose2d pose, ChassisSpeeds speeds) {
-	// 	double theta = Math.atan2(speeds.vyMetersPerSecond,speeds.vxMetersPerSecond);
-	// 	if (!isLeftOfTrench(pose) && !(theta > 5*Math.PI/6 && theta < 7*Math.PI/6)) {
-	// 		return false;
-	// 	}
-	// 	if (isLeftOfTrench(pose) && !(theta < Math.PI/6 || theta > 11*Math.PI/6)) {
-	// 		return false;
-	// 	}
-	// 	return true;
-	// }
+	public static boolean isMovingToTrench(Pose2d pose, ChassisSpeeds speeds) {
+		for (double theta : new double[] {
+				Math.atan2(speeds.vyMetersPerSecond,speeds.vxMetersPerSecond),
+				pose.getRotation().getRadians()
+		}) {
+			if (!isLeftOfTrench(pose) && !(theta > 5*Math.PI/6 || theta < -5*Math.PI/6)) { //TODO: tune
+				return false;
+			}
+			if (isLeftOfTrench(pose) && !(theta < Math.PI/6 && theta > -Math.PI/6)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {
 		if (is_red_alliance) {

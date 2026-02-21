@@ -60,9 +60,9 @@ public class Drive extends SubsystemBase {
 			return driveRequest;
 		}));
 
-		// new Trigger(() -> 
-		// 	(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
-		// 		&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench());
+		new Trigger(() -> 
+			(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
+				&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench());
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
