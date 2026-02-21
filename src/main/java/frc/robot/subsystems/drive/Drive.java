@@ -54,6 +54,8 @@ public class Drive extends SubsystemBase {
 
 	Autopilot ap;
 
+	boolean autoTrench = false;
+
 	private Drive() {
 		lastReadState = drivetrain.getState();
 		drivetrain.setDefaultCommand(drivetrain.applyRequest(() -> {
@@ -62,7 +64,7 @@ public class Drive extends SubsystemBase {
 
 		new Trigger(() -> 
 			(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
-				&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench());
+				&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench()); autoTrench = true;
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
@@ -188,11 +190,12 @@ public class Drive extends SubsystemBase {
 
 
 	/**
-	 * Traverses the trench
+	 * Traverses the nearest trench
 	 */
 	public Command traverseTrench() {
+		double entranceVelocity = autoTrench ? getFieldSpeeds().vxMetersPerSecond : 2; //TODO: tune
 		return defer(() -> {
-			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(2);
+			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(entranceVelocity);
 			return new AutopilotCommand(pose).andThen(
 				defer(() -> {
 				APTarget pose2 = FieldLayout.getTrenchTarget(getPose())/*.withVelocity(3)*/;

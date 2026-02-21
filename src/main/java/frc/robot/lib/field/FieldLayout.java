@@ -104,13 +104,13 @@ public class FieldLayout {
 	public static boolean isNearTrench(Pose2d pose) {
 		for (Pose2d tag : ENTRY_LEFT_POSES) {
 			Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
-			if (Math.abs(difference.getY()) < 1.25 && difference.getX() < 0 && difference.getX() > -1) { //TODO: tune
+			if (Math.abs(difference.getY()) < 1.25 && difference.getX() < 0 && difference.getX() > -0.75) { //TODO: tune
 				return true;
 			}
 		}
 		for (Pose2d tag : ENTRY_RIGHT_POSES) {
 			Translation2d difference = pose.getTranslation().minus(tag.getTranslation()); 
-			if (Math.abs(difference.getY()) < 1.25 && difference.getX() > 0 && difference.getX() < 1) {
+			if (Math.abs(difference.getY()) < 1.25 && difference.getX() > 0 && difference.getX() < 0.75) {
 				return true;
 			}
 		}
@@ -122,10 +122,10 @@ public class FieldLayout {
 				Math.atan2(speeds.vyMetersPerSecond,speeds.vxMetersPerSecond),
 				pose.getRotation().getRadians()
 		}) {
-			if (!isLeftOfTrench(pose) && !(theta > 5*Math.PI/6 || theta < -5*Math.PI/6)) { //TODO: tune
+			if (!isLeftOfTrench(pose) && !(theta > 2*Math.PI/3 || theta < -2*Math.PI/3)) { //TODO: tune
 				return false;
 			}
-			if (isLeftOfTrench(pose) && !(theta < Math.PI/6 && theta > -Math.PI/6)) {
+			if (isLeftOfTrench(pose) && !(theta < Math.PI/3 && theta > -Math.PI/3)) {
 				return false;
 			}
 		}
