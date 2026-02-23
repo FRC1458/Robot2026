@@ -49,9 +49,9 @@ public class VisionDeviceManager extends SubsystemBase {
 	public VisionDeviceManager() {
 		// leftCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.L_CONSTANTS);
 		// rightCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.R_CONSTANTS);
-		frontrCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
-		frontlCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
-		cameras = List.of(frontrCamera, frontlCamera);
+		// frontrCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
+		// frontlCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
+		cameras = List.of();
 		// cameras = List.of(rightCamera);
 		if (Robot.isSimulation()) {
 			visionSim = new VisionSystemSim(getName());
@@ -87,16 +87,18 @@ public class VisionDeviceManager extends SubsystemBase {
 	}
 
 	public synchronized boolean isFullyConnected() {
-		return frontlCamera.isConnected()
-			&& frontrCamera.isConnected();
+		return true; 
+		// frontlCamera.isConnected()
+		// 	&& frontrCamera.isConnected();
 			// && rightCamera.isConnected();
 			// && backCamera.isConnected();
 	}
 
 	public Command bootUp() {
 		return Commands.parallel(
-			frontlCamera.bootUpSequence(),
-			frontrCamera.bootUpSequence())
+			// frontlCamera.bootUpSequence(),
+			// frontrCamera.bootUpSequence()
+			)
 			.withTimeout(4)
 			.andThen(Commands.print("Finished vision bootup"));
 	}

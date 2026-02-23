@@ -4,11 +4,14 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -68,12 +71,20 @@ public class Shooter extends SubsystemBase {
             topID = Motors.TOPRIGHT.id;
         }
 
+        var config = getConfig();
+
+        if (!left) {
+            config = config.clone().withMotorOutput(
+                new MotorOutputConfigs()
+                    .withInverted(InvertedValue.Clockwise_Positive));
+        }
+
 		bottomMotor = new TalonFX(bottomID);
-		bottomMotor.getConfigurator().apply(getConfig());
+		bottomMotor.getConfigurator().apply(config);
 		bottomMotor.setNeutralMode(NeutralModeValue.Coast);
 
         topMotor = new TalonFX(topID);
-		topMotor.getConfigurator().apply(getConfig());
+		topMotor.getConfigurator().apply(config);
 		topMotor.setNeutralMode(NeutralModeValue.Coast);
         
         if (Robot.isSimulation()) {

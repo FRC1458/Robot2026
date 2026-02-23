@@ -25,8 +25,8 @@ public class IntakeConstants {
     //etc
 
     public static enum Motors { //TODO: set motor ids; use separate file for ports?
-        WHEEL(53),
-        BAR(52);
+        WHEEL(31),
+        BAR(32);
         public final int id;
         private Motors(int id) {
             this.id = id;

@@ -2,6 +2,7 @@ package frc.robot.subsystems.roller;
 
 import static frc.robot.subsystems.roller.RollerConstants.*;
 
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -46,7 +47,7 @@ public class Roller extends SubsystemBase {
                 LinearSystemId.createFlywheelSystem(
                     DCMotor.getKrakenX44(1),
                     0.000189000861,
-                    2), 
+                    1), 
                 DCMotor.getKrakenX44(1), 
                 0.0);
         }
@@ -91,7 +92,7 @@ public class Roller extends SubsystemBase {
     }
 
     public Command stop() {
-        return runOnce(() -> setRequest(new NeutralOut()))
+        return runOnce(() -> setRequest(new CoastOut()))
             .withName("Stop");
     }
 

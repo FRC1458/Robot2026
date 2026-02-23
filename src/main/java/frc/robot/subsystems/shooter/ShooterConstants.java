@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
@@ -18,10 +19,10 @@ public final class ShooterConstants {
 
     /** Motor ids */
     public static enum Motors {
-        TOPLEFT(58),
-        BOTTOMLEFT(57),
-        TOPRIGHT(56),
-        BOTTOMRIGHT(55);
+        TOPLEFT(24),
+        BOTTOMLEFT(25),
+        TOPRIGHT(23),
+        BOTTOMRIGHT(22);
         public final int id;
         private Motors(int id) {
             this.id = id;
@@ -33,15 +34,15 @@ public final class ShooterConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(0.3 )
+                .withKP(0.3)
                 .withKI(0.001)
                 .withKD(0.0)
                 .withKA(0.1)
                 .withKS(0.1)
                 .withKV(0.1)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(60)
-                .withSupplyCurrentLimit(60))
+                .withStatorCurrentLimit(30)
+                .withSupplyCurrentLimit(30))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0));

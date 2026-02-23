@@ -121,8 +121,8 @@ public class Robot extends LoggedRobot {
 		Shooter.getRightInstance();
 		Indexer.getLeftInstance();
 		Indexer.getRightInstance();
-		Intake.getInstance();
-		Climb.getInstance();
+		// Intake.getInstance();
+		// Climb.getInstance();
 		Roller.getInstance();
 
 		TelemetryManager.getInstance();
@@ -216,11 +216,12 @@ public class Robot extends LoggedRobot {
 	public void testPeriodic() {
 	}
 
-	public static FuelSim fuelSim = new FuelSim();
+	public static FuelSim fuelSim;
 
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
+		fuelSim = new FuelSim();
 		// fuelSim.spawnStartingFuel();
 		fuelSim.registerRobot(
 			Inches.of(27),

@@ -2,9 +2,12 @@ package frc.robot.subsystems.indexer;
 
 import static frc.robot.subsystems.indexer.IndexerConstants.*;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -54,7 +57,15 @@ public class Indexer extends SubsystemBase {
         super();
         setName("Indexer " + (isLeft ? "Left" : "Right"));
         motor = new TalonFX(isLeft ? L_MOTOR_ID : R_MOTOR_ID);
-        motor.getConfigurator().apply(getConfig());
+        
+        var config = getConfig();
+
+        if (isLeft) {
+            config = config.clone().withMotorOutput(
+                new MotorOutputConfigs()
+                    .withInverted(InvertedValue.Clockwise_Positive));
+        }
+        motor.getConfigurator().apply(config);
         // lc = new LaserCan(isLeft ? L_LASER_ID : R_LASER_ID);
         // lcTwo = new LaserCan(LASER_ID_2);
 
@@ -90,7 +101,6 @@ public class Indexer extends SubsystemBase {
 
         io = new IndexerIO(getName(), motor);
         // TelemetryManager.getInstance().addSendable(this);
-        setDefaultCommand(deactivateIndexer());
     }
 
     @Override
@@ -145,7 +155,7 @@ public class Indexer extends SubsystemBase {
 
     /** turn motor down to zero */
     public Command deactivateIndexer() {
-        return setSpeed(0);
+        return runOnce(() -> setRequest(new CoastOut()));
     }
 
     /** command to sense distance from LaserCAN; used to sense if bol */

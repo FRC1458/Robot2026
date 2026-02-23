@@ -18,93 +18,150 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ControlsMapping {
-    
+
 	public static void mapTeleopCommand() {
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
-		Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
-		
-		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
-		controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
+		// Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
+		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
-		controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
-		controller.b().whileTrue(Intake.getInstance().outtake());
-		controller.x().onTrue(Climb.getInstance().hangCommand());
+		// controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new
+		// Pose2d()));
+		// controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
 
-		controller.rightTrigger().debounce(0.1
-		// ).onTrue(
-		// 	Commands.parallel(
-		// 		Shooter.getLeftInstance().shoot(50, -50),
-		// 		Shooter.getRightInstance().shoot(50, -50))
-		// ).onFalse(
-		// 	Commands.parallel(
-		// 		Shooter.getLeftInstance().stop(),
-		// 		Shooter.getRightInstance().stop())
-		).whileTrue(
-			Commands.parallel(
-				Indexer.getLeftInstance().activateIndexer(),
-				Indexer.getRightInstance().activateIndexer())
-		).whileTrue(
-			Commands.repeatingSequence(
-				Commands.runOnce(() -> Robot.fuelSim.launchFuel(
-					MetersPerSecond.of(
-						Shooter.getLeftInstance().getTopSpeed() * Constants.TAU * 0.0508),
-					Degrees.of(75),
-					Degrees.of(0),
-					Inches.of(19)
-				)).andThen(Commands.waitSeconds(0.1))
-			)
-		);
+		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
+		// controller.b().whileTrue(Intake.getInstance().outtake());
+		// controller.x().onTrue(Climb.getInstance().hangCommand());
 
-		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub()
-			.alongWith(Shooter.getLeftInstance().shoot(), Shooter.getRightInstance().shoot()));
+		// controller.rightTrigger().debounce(0.1
+		// // ).onTrue(
+		// // Commands.parallel(
+		// // Shooter.getLeftInstance().shoot(50, -50),
+		// // Shooter.getRightInstance().shoot(50, -50))
+		// // ).onFalse(
+		// // Commands.parallel(
+		// // Shooter.getLeftInstance().stop(),
+		// // Shooter.getRightInstance().stop())
+		// ).whileTrue(
+		// Commands.parallel(
+		// Indexer.getLeftInstance().activateIndexer(),
+		// Indexer.getRightInstance().activateIndexer())
+		// ).whileTrue(
+		// Commands.repeatingSequence(
+		// Commands.runOnce(() -> Robot.fuelSim.launchFuel(
+		// MetersPerSecond.of(
+		// Shooter.getLeftInstance().getTopSpeed() * Constants.TAU * 0.0508),
+		// Degrees.of(75),
+		// Degrees.of(0),
+		// Inches.of(19)
+		// )).andThen(Commands.waitSeconds(0.1))
+		// )
+		// );
+
+		controller.x().whileTrue(
+				Commands.parallel(
+						// Shooter.getRightInstance().shoot(50, -10),
+						// Indexer.getRightInstance().activateIndexer()
+						// ,
+						Shooter.getLeftInstance().shoot(50, -10),
+						Indexer.getLeftInstance().activateIndexer()))
+				.onFalse(
+						Commands.parallel(
+								// Shooter.getRightInstance().stop(),
+								// Indexer.getRightInstance().deactivateIndexer()
+								// ,
+								Shooter.getLeftInstance().stop(),
+								Indexer.getLeftInstance().deactivateIndexer()
+
+						));
+
+		controller.y().whileTrue(
+				Commands.parallel(
+						// Shooter.getRightInstance().shoot(-10, 50),
+						// Indexer.getRightInstance().activateIndexer()
+						// ,
+						Shooter.getLeftInstance().shoot(-10, 50),
+						Indexer.getLeftInstance().activateIndexer()))
+				.onFalse(
+						Commands.parallel(
+								// Shooter.getRightInstance().stop(),
+								// Indexer.getRightInstance().deactivateIndexer()
+								// ,
+								Shooter.getLeftInstance().stop(),
+								Indexer.getLeftInstance().deactivateIndexer()
+
+						));
+
+		controller.a().whileTrue(
+				Commands.parallel(
+						Shooter.getRightInstance().shoot(40, 40),
+						Indexer.getRightInstance().activateIndexer(),
+						Shooter.getLeftInstance().shoot(40, 40),
+						Indexer.getLeftInstance().activateIndexer(),
+						Roller.getInstance().roll()))
+				.onFalse(
+						Commands.parallel(
+								Shooter.getRightInstance().stop(),
+								Indexer.getRightInstance().deactivateIndexer()
+								,
+								Shooter.getLeftInstance().stop(),
+								Indexer.getLeftInstance().deactivateIndexer(),
+		Roller.getInstance().stop()
+								));
+
+		controller.b().whileTrue(
+				Roller.getInstance().roll()).onFalse(Roller.getInstance().stop());
+
+		// controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub()
+		// .alongWith(Shooter.getLeftInstance().shoot(),
+		// Shooter.getRightInstance().shoot()));
 	}
 
 	public static void mapSysId() {
 		// set up sysID routine type
 		controller.a().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
+				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
 		controller.b().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
+				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
 		controller.back().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
+				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
 		// map the sysid routine movement directions
 		controller.leftBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
+				Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
+						.finallyDo((
+								boolean interrupted) -> {
+							if (interrupted) {
+								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
+							}
+						}));
 		controller.leftBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
+				Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
+						.finallyDo((
+								boolean interrupted) -> {
+							if (interrupted) {
+								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
+							}
+						}));
 		controller.rightBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
+				Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
+						.finallyDo((
+								boolean interrupted) -> {
+							if (interrupted) {
+								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
+							}
+						}));
 		controller.rightBumper().and(controller.y()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
+				Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
+						.finallyDo((
+								boolean interrupted) -> {
+							if (interrupted) {
+								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
+							}
+						}));
 	}
 }
