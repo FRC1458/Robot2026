@@ -37,7 +37,6 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
@@ -121,9 +120,8 @@ public class Robot extends LoggedRobot {
 		Shooter.getRightInstance();
 		Indexer.getLeftInstance();
 		Indexer.getRightInstance();
-		// Intake.getInstance();
+		Intake.getInstance();
 		// Climb.getInstance();
-		Roller.getInstance();
 
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());

@@ -2,8 +2,6 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -43,7 +41,7 @@ import frc.robot.lib.field.FieldUtil;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
-import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
+import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
@@ -75,7 +73,7 @@ public class Drive extends SubsystemBase {
 	private final DriveIO io;
 
 	private Drive() {
-		drivetrain = CtreDriveConstants.createDrivetrain();  
+		drivetrain = CompCtreDriveConstants.createDrivetrain();  
 		// telemetry = new CtreDriveTelemetry(MAX_SPEED);  
 		teleopRequest = new SwerveRequest.FieldCentric();
 		driveRequest = teleopRequest;

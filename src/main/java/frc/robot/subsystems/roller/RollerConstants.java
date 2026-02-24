@@ -19,7 +19,7 @@ public class RollerConstants {
                 .withKI(0.0)
                 .withKD(0.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(110)
+                .withStatorCurrentLimit(90)
                 // .withSupplyCurrentLimit(120)
                 )
             .withVoltage(new VoltageConfigs()

@@ -1,11 +1,15 @@
 package frc.robot.subsystems.intake;
 
 import static frc.robot.subsystems.intake.IntakeConstants.*;
+import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
@@ -15,6 +19,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.intake.IntakeConstants.Motors;
@@ -53,12 +58,10 @@ public class Intake extends SubsystemBase {
         barMotor = new TalonFX(Motors.BAR.id);
         wheelMotor.getConfigurator().apply(getWheelConfig());
 		barMotor.getConfigurator().apply(getBarConfig());
-        wheelMotor.setNeutralMode(NeutralModeValue.Brake);
-		barMotor.setNeutralMode(NeutralModeValue.Brake); //?
+        wheelMotor.setNeutralMode(NeutralModeValue.Coast);
+		barMotor.setNeutralMode(NeutralModeValue.Brake); 
 
-        // SmartDashboard.putData("123123", mech2d);
-        // //TelemetryManager.getInstance().addSendable(this);
-        // mech2droot.append(mech2dpivot);
+        barMotor.setPosition(BAR_POSITION_UP);
 
         if (Robot.isSimulation()) {
             sim = new SingleJointedArmSim(
@@ -75,7 +78,6 @@ public class Intake extends SubsystemBase {
 
             barMotor.getSimState()
                 .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
-
             
             wheelSim = new FlywheelSim(
                 LinearSystemId.createFlywheelSystem(
@@ -86,7 +88,6 @@ public class Intake extends SubsystemBase {
                 0.0);
         }
         
-        // TelemetryManager.getInstance().addSendable(this);
         io = new IntakeIO(getName(), wheelMotor, barMotor);
     }
 
@@ -149,14 +150,18 @@ public class Intake extends SubsystemBase {
         this.barRequest = request;
     }
 
-
     public Command setSetpoint(double wheelSpeed, double barPosition) {
+        if (Math.abs(wheelSpeed) <= 0.1) {
+            return stopWheel()
+                .andThen(setBarPosition(barPosition)) 
+                .withName("Setpoint: " + wheelSpeed + "rps, " + barPosition + "rot");
+        }
+
         return 
             setWheelSpeed(wheelSpeed)
             .andThen(setBarPosition(barPosition)) 
             .withName("Setpoint: " + wheelSpeed + "rps, " + barPosition + "rot");
     }
-
 
     //---------bar-----------
 
@@ -197,20 +202,41 @@ public class Intake extends SubsystemBase {
         ).withName("wheel speed set "+ (speed));
     }
 
+    public Command stopWheel() {
+        return runOnce(() -> setRequestWheel(new CoastOut()));
+    }
+
     public Command waitUntilBarIsAtPosition(double target) {
         return Commands.waitUntil(() -> Math.abs(target - barPosition) < BAR_EPSILON);
     }
-    
-    public Command waitUntilWheelIsAtSpeed(double target) {
-        return Commands.waitUntil(() -> Math.abs(target - wheelSpeed) < WHEEL_EPSILON);
+
+    /**
+     * Recalibrates the elevator zero point. This slowly drives the elevator
+     * down until we see a drop in velocity and a spike in stator current,
+     * indicating that we've hit a hard stop.
+     *
+     * @return Command to run
+     */
+    public Command calibrateZero() {
+        VoltageOut calibrationRequest = new VoltageOut(-1)
+            .withIgnoreHardwareLimits(true)
+            .withIgnoreSoftwareLimits(true);
+
+        /** Trigger to detect when the elevator drives into a hard stop. */
+        Trigger isHardStop = new Trigger(() -> {
+            return barMotor.getVelocity().getValue().abs(RotationsPerSecond) < 1 &&
+                barMotor.getTorqueCurrent().getValue().abs(Amps) > 10;
+        }).debounce(0.1);
+
+        return run(() -> {
+            barMotor.setControl(calibrationRequest);
+        })
+        .until(isHardStop)
+        .andThen(
+            runOnce(() -> setRequestBar(new NeutralOut())).withTimeout(0.25)
+                .finallyDo(() -> {
+                    barMotor.setPosition(Rotations.of(0)); 
+                })
+        );
     }
-
-    // @Override
-    // public void initSendable(SendableBuilder builder){ 
-    //     super.initSendable(builder);
-    //     builder.addDoubleProperty("Position", () -> barPosition, null);
-    //     TelemetryManager.makeSendableTalonFX("Bar Motor", barMotor, builder);
-    //     TelemetryManager.makeSendableTalonFX("Wheel Motor", wheelMotor, builder);
-    // }
-
 }

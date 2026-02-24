@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.TelemetryManager;
-import frc.robot.lib.io.TalonFXIO;
 import frc.robot.subsystems.climb.ClimbConstants.Setpoint;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
@@ -64,7 +63,6 @@ public class Climb extends SubsystemBase {
 			);
 		}
 		io = new ClimbIO(getName(), climbMotor);
-		// TelemetryManager.getInstance().addSendable(this);
 	}
 
 	@Override
@@ -163,27 +161,8 @@ public class Climb extends SubsystemBase {
 			targetHeight,
 			EPSILON);
 	}
-
-	@Override
-	public void initSendable(SendableBuilder builder) {
-		super.initSendable(builder);
-		builder.addDoubleProperty(
-			"Height",
-			() -> lastReadHeight,
-			null);
-		builder.addDoubleProperty(
-			"Speed",
-			() -> lastReadSpeed,
-			null);
-		builder.addDoubleProperty(
-			"Target Height",
-			() -> targetHeight,
-			null);
-		TelemetryManager.makeSendableTalonFX("ClimbMotor", climbMotor, builder);
-	}
-
 	// command
-
+	
 	public Command hangCommand() {
 		return moveToScoringHeight(Setpoint.UP)
 			.andThen(Climb.getInstance().moveToScoringHeight(Setpoint.BASE));

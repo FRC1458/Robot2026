@@ -23,8 +23,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.subsystems.drive.ctre.CtreDriveConstants2.TunerSwerveDrivetrain;
+import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants.TunerSwerveDrivetrain;
 
+
+// FL: -0.419922
+// FR: 0.141113
+// BL: -0.460693
+// BR: 0.193604
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.

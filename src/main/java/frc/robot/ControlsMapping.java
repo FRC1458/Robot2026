@@ -27,11 +27,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class ControlsMapping {
 
 	public static void mapTeleopCommand() {
-		// Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
+		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
 		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
-		// controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new
-		// Pose2d()));
+		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new
+			Pose2d()));
 		// controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
 
 		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
@@ -62,61 +62,29 @@ public class ControlsMapping {
 		// )).andThen(Commands.waitSeconds(0.1))
 		// )
 		// );
-
-		controller.x().whileTrue(
-				Commands.parallel(
-						// Shooter.getRightInstance().shoot(50, -10),
-						// Indexer.getRightInstance().activateIndexer()
-						// ,
-						Shooter.getLeftInstance().shoot(50, -10),
-						Indexer.getLeftInstance().activateIndexer()))
-				.onFalse(
-						Commands.parallel(
-								// Shooter.getRightInstance().stop(),
-								// Indexer.getRightInstance().deactivateIndexer()
-								// ,
-								Shooter.getLeftInstance().stop(),
-								Indexer.getLeftInstance().deactivateIndexer()
-
-						));
-
-		controller.y().whileTrue(
-				Commands.parallel(
-						// Shooter.getRightInstance().shoot(-10, 50),
-						// Indexer.getRightInstance().activateIndexer()
-						// ,
-						Shooter.getLeftInstance().shoot(-10, 50),
-						Indexer.getLeftInstance().activateIndexer()))
-				.onFalse(
-						Commands.parallel(
-								// Shooter.getRightInstance().stop(),
-								// Indexer.getRightInstance().deactivateIndexer()
-								// ,
-								Shooter.getLeftInstance().stop(),
-								Indexer.getLeftInstance().deactivateIndexer()
-
-						));
-
 		controller.a().whileTrue(
 				Commands.parallel(
-						Shooter.getRightInstance().shoot(40, 40),
+						Shooter.getRightInstance().shoot(60, 60),
 						Indexer.getRightInstance().activateIndexer(),
-						Shooter.getLeftInstance().shoot(40, 40),
-						Indexer.getLeftInstance().activateIndexer(),
-						Roller.getInstance().roll()))
+						Shooter.getLeftInstance().shoot(60, 60),
+						Indexer.getLeftInstance().activateIndexer()
+						,
+						Roller.getInstance().roll()
+						))
 				.onFalse(
 						Commands.parallel(
 								Shooter.getRightInstance().stop(),
 								Indexer.getRightInstance().deactivateIndexer()
 								,
 								Shooter.getLeftInstance().stop(),
-								Indexer.getLeftInstance().deactivateIndexer(),
-		Roller.getInstance().stop()
+								Indexer.getLeftInstance().deactivateIndexer()
+								,
+								Roller.getInstance().stop()
 								));
 
 		controller.b().whileTrue(
-				Roller.getInstance().roll()).onFalse(Roller.getInstance().stop());
-
+				Intake.getInstance().intake()).onFalse(Intake.getInstance().stow());
+		// controller.y().onTrue(Intake.getInstance().)
 		// controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub()
 		// .alongWith(Shooter.getLeftInstance().shoot(),
 		// Shooter.getRightInstance().shoot()));

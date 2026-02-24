@@ -4,7 +4,6 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
@@ -103,7 +102,6 @@ public class Shooter extends SubsystemBase {
         }
 
         io = new ShooterIO(getName(), topMotor, bottomMotor);
-		// TelemetryManager.getInstance().addSendable(this);
     }
 
     @Override
@@ -190,22 +188,4 @@ public class Shooter extends SubsystemBase {
         return shoot(() -> shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR, 
             () -> -shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR);
     }
-
-    // @Override
-	// public void initSendable(SendableBuilder builder) {
-	// 	super.initSendable(builder);
-
-    //     builder.addDoubleProperty(
-    //         "TopSpeed", 
-    //         () -> lastReadSpeedTop, 
-    //         null);
-	// 	TelemetryManager.makeSendableTalonFX("Top", topMotor, builder);
-
-    //     builder.addDoubleProperty(
-    //         "BottomSpeed", 
-    //         () -> lastReadSpeedBottom, 
-    //         null);
-	// 	TelemetryManager.makeSendableTalonFX("Bottom", bottomMotor, builder);
-	// }
-
 }

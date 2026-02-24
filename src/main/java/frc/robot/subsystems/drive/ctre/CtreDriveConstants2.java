@@ -23,7 +23,7 @@ public class CtreDriveConstants2 {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(100).withKI(0).withKD(0.5)
+        .withKP(60).withKI(0).withKD(0.1)
         .withKS(0.1).withKV(2.66).withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
@@ -77,10 +77,12 @@ public class CtreDriveConstants2 {
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
-    private static final double kCoupleRatio = 3.5714285714285716;
-
+    
     private static final double kDriveGearRatio = 6.122448979591837;
     private static final double kSteerGearRatio = 21.428571428571427;
+    private static final double kCoupleRatio = kDriveGearRatio /(150./7.);
+    // 3.5714285714285716;
+
     private static final Distance kWheelRadius = Inches.of(2);
 
     private static final boolean kInvertLeftSide = false;
