@@ -27,14 +27,14 @@ public class VisionConstants {
             "frontr",
             new Transform3d(
                 new Translation3d(0.2822, 0.1087, 0.1984),
-                new Rotation3d(0.5 * Constants.TAU, 14.0 * Constants.TAU / 360.0, -26.0 * Constants.TAU/360.0)),
+                new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)),
             1, 1280, 800),
         
         FL_CONSTANTS (
             "frontl",
             new Transform3d(
                 new Translation3d(0.2822, -0.1087, 0.1984),
-                new Rotation3d(0.5 * Constants.TAU, 14.0 * Constants.TAU / 360.0, 26.0 * Constants.TAU/360.0)),
+                new Rotation3d(0, 24 * Constants.TAU / 360.0, 27.5 * Constants.TAU/360.0)),
             2, 1280, 800);
 
         public final String tableName;
