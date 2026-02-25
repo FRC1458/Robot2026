@@ -32,7 +32,7 @@ public class ControlsMapping {
 
 		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new
 			Pose2d()));
-		// controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
+		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
 
 		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
 		// controller.b().whileTrue(Intake.getInstance().outtake());
@@ -63,30 +63,36 @@ public class ControlsMapping {
 		// )
 		// );
 		controller.a().whileTrue(
-				Commands.parallel(
-						Shooter.getRightInstance().shoot(60, 60),
-						Indexer.getRightInstance().activateIndexer(),
-						Shooter.getLeftInstance().shoot(60, 60),
-						Indexer.getLeftInstance().activateIndexer()
-						,
-						Roller.getInstance().roll()
-						))
-				.onFalse(
-						Commands.parallel(
-								Shooter.getRightInstance().stop(),
-								Indexer.getRightInstance().deactivateIndexer()
-								,
-								Shooter.getLeftInstance().stop(),
-								Indexer.getLeftInstance().deactivateIndexer()
-								,
-								Roller.getInstance().stop()
-								));
+			Commands.parallel(
+				Shooter.getRightInstance().shoot(60, 60),
+				Shooter.getLeftInstance().shoot(60, 60)
+			)
+		).onFalse(
+			Commands.parallel(
+				Shooter.getRightInstance().stop(),
+				Shooter.getLeftInstance().stop()
+			)
+		);
+
+		controller.x().whileTrue(
+			Commands.parallel(
+				Indexer.getRightInstance().activateIndexer(),
+				Indexer.getLeftInstance().activateIndexer(),
+				Roller.getInstance().roll()
+			)
+		).onFalse(
+			Commands.parallel(
+				Indexer.getRightInstance().deactivateIndexer(),
+				Indexer.getLeftInstance().deactivateIndexer(),
+				Roller.getInstance().stop()
+			)
+		);
+
 
 		controller.b().whileTrue(
 				Intake.getInstance().intake()).onFalse(Intake.getInstance().stow());
 		// controller.y().onTrue(Intake.getInstance().)
-		// controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub()
-		// .alongWith(Shooter.getLeftInstance().shoot(),
+		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub());
 		// Shooter.getRightInstance().shoot()));
 	}
 

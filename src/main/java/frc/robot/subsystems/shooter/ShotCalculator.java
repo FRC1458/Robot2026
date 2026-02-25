@@ -46,26 +46,26 @@ public class ShotCalculator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Pose2d drivePose = drive.getPose();
+        Pose2d drivePose = drive.getPose();
 
-        // targetDistance = drivePose.getTranslation().getDistance(targetLocation.toPose2d().getTranslation());
+        targetDistance = drivePose.getTranslation().getDistance(targetLocation.toPose2d().getTranslation());
 
-        // Pose3d shooterPose = new Pose3d(drivePose).plus(ShooterConstants.OFFSET);
+        Pose3d shooterPose = new Pose3d(drivePose).plus(ShooterConstants.OFFSET);
 
         
-        // ChassisSpeeds driveSpeeds = drive.getFieldSpeeds();
-        // ChassisAccels driveAccelerations = ChassisAccels.estimate(driveSpeeds, drive.getPrevFieldSpeeds(), Constants.DT);
+        ChassisSpeeds driveSpeeds = drive.getFieldSpeeds();
+        ChassisAccels driveAccelerations = ChassisAccels.estimate(driveSpeeds, drive.getPrevFieldSpeeds(), Constants.DT);
 
-        // currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(
-        //     shooterPose, 
-        //     targetLocation,
-        //     zero, 
-        //     zero1, 
-        //     -shooterAngle,
-        //     5, 0.01);
+        currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(
+            shooterPose, 
+            targetLocation,
+            zero, 
+            zero1, 
+            -shooterAngle,
+            5, 0.01);
 
-        // currentEffectiveTargetPose = currentInterceptSolution.effectiveTargetPose();
-        // currentEffectiveYaw = currentInterceptSolution.requiredYaw();
+        currentEffectiveTargetPose = currentInterceptSolution.effectiveTargetPose();
+        currentEffectiveYaw = currentInterceptSolution.requiredYaw();
     }
 
     public void setTarget(Pose3d targetLocation) {

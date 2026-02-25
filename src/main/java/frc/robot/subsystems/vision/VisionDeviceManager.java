@@ -49,9 +49,9 @@ public class VisionDeviceManager extends SubsystemBase {
 	public VisionDeviceManager() {
 		// leftCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.L_CONSTANTS);
 		// rightCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.R_CONSTANTS);
-		// frontrCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
-		// frontlCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
-		cameras = List.of();
+		frontrCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
+		frontlCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
+		cameras = List.of(frontrCamera, frontlCamera);
 		// cameras = List.of(rightCamera);
 		if (Robot.isSimulation()) {
 			visionSim = new VisionSystemSim(getName());

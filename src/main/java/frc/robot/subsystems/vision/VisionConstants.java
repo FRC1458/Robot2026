@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -24,16 +26,22 @@ public class VisionConstants {
         
     public static enum VisionDeviceConstants {
         FR_CONSTANTS (
-            "frontr",
+            "orangelight",
             new Transform3d(
-                new Translation3d(0.2822, 0.1087, 0.1984),
+                new Translation3d(
+                    Inches.of(4.52790), 
+                    Inches.of(13.124114), 
+                    Inches.of(14.365654)),
                 new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)),
             1, 1280, 800),
         
         FL_CONSTANTS (
-            "frontl",
+            "lemonlight",
             new Transform3d(
-                new Translation3d(0.2822, -0.1087, 0.1984),
+                new Translation3d(
+                    Inches.of(-3.030256), 
+                    Inches.of(13.262586), 
+                    Inches.of(14.325391)),
                 new Rotation3d(0, 24 * Constants.TAU / 360.0, 27.5 * Constants.TAU/360.0)),
             2, 1280, 800);
 

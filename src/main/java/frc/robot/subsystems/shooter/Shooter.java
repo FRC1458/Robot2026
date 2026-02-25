@@ -7,6 +7,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -164,14 +165,14 @@ public class Shooter extends SubsystemBase {
 
     public Command shoot(double topSpeed, double bottomSpeed) {
         return runOnce(() -> {
-            setTopRequest(new VelocityVoltage(topSpeed));
-            setBottomRequest(new VelocityVoltage(bottomSpeed));
+            setTopRequest(new MotionMagicVelocityVoltage(topSpeed));
+            setBottomRequest(new MotionMagicVelocityVoltage(bottomSpeed));
         }).withName("Shooting");
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
-        var topReq = new VelocityVoltage(0.0);
-        var bottomReq = new VelocityVoltage(0.0);
+        var topReq = new MotionMagicVelocityVoltage(0.0);
+        var bottomReq = new MotionMagicVelocityVoltage(0.0);
         return runOnce(() -> {
             setTopRequest(topReq);
             setBottomRequest(bottomReq);

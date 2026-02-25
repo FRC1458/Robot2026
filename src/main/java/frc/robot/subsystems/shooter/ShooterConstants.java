@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
@@ -33,16 +34,20 @@ public final class ShooterConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(0.3)
+                .withKP(0.7)
                 .withKI(0.0)
                 .withKD(0.0)
                 .withKA(0.0)
-                .withKS(0.0)
+                .withKS(5.0)
                 .withKV(0.0)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40))
+                .withStatorCurrentLimit(60))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
-                .withPeakReverseVoltage(-12.0));
+                .withPeakReverseVoltage(-12.0))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(120) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(120)
+                .withMotionMagicJerk(120));
     }
 }

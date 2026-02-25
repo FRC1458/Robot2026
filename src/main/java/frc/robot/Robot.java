@@ -67,14 +67,14 @@ public class Robot extends LoggedRobot {
 	public Robot() {
 		boolean replay = Logger.hasReplaySource();
 		//robot data loggers 
-		// boolean usbPresent = new java.io.File("/u").exists();
-		// if (usbPresent) {
+		boolean usbPresent = new java.io.File("/u").exists();
+		if (usbPresent) {
 		//   DataLogManager.start("/u/logs");  // USB stick
-		//   System.out.println("Log/USB mounts OK");
-		// } else {
+		  System.out.println("Log/USB mounts OK");
+		} else {
 		//   DataLogManager.start();           // falls back to /home/lvuser/logs
-		//   System.out.println("Log/USB mounts NOT OK");
-		// }
+		  System.out.println("Log/USB mounts NOT OK");
+		}
 
 		Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -108,7 +108,7 @@ public class Robot extends LoggedRobot {
             Logger.addDataReceiver(new WPILOGWriter());
         }
 
-        Logger.start();
+        // Logger.start();
         if (!Logger.hasReplaySource()) {
             RobotController.setTimeSource(RobotController::getFPGATime);
         }
