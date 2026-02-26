@@ -23,6 +23,9 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
+
 
 public class ControlsMapping {
 
@@ -98,44 +101,38 @@ public class ControlsMapping {
 
 	public static void mapSysId() {
 		// set up sysID routine type
-		controller.a().onTrue(Commands.runOnce(
-				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
-		controller.b().onTrue(Commands.runOnce(
-				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
-		controller.back().onTrue(Commands.runOnce(
-				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
+		controller.a().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
+		controller.b().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
+		controller.back().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
 		// map the sysid routine movement directions
-		controller.leftBumper().and(controller.x()).whileTrue(
-				Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
-						.finallyDo((
-								boolean interrupted) -> {
-							if (interrupted) {
-								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-							}
-						}));
-		controller.leftBumper().and(controller.x()).whileTrue(
-				Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
-						.finallyDo((
-								boolean interrupted) -> {
-							if (interrupted) {
-								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-							}
-						}));
-		controller.rightBumper().and(controller.x()).whileTrue(
-				Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
-						.finallyDo((
-								boolean interrupted) -> {
-							if (interrupted) {
-								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-							}
-						}));
-		controller.rightBumper().and(controller.y()).whileTrue(
-				Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
-						.finallyDo((
-								boolean interrupted) -> {
-							if (interrupted) {
-								Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-							}
-						}));
+		controller.leftBumper().and(controller.x())
+			.whileTrue(
+				new ProxyCommand(
+					()->Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
+						.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
+				)
+			);
+		controller.leftBumper().and(controller.y())
+			.whileTrue(
+				new ProxyCommand(
+					()->Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
+						.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
+				)
+			);
+		controller.rightBumper().and(controller.x())
+				.whileTrue(
+					new ProxyCommand(
+						()->Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
+							.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
+					)
+				);
+		controller.rightBumper().and(controller.y())
+				.whileTrue(
+					new ProxyCommand(
+						()->Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
+							.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
+					)
+				);
 	}
+
 }
