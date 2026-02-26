@@ -26,21 +26,21 @@ public class VisionConstants {
         
     public static enum VisionDeviceConstants {
         FR_CONSTANTS (
-            "orangelight",
+            "orangelight", //right camera 
             new Transform3d(
                 new Translation3d(
-                    Inches.of(4.52790), 
-                    Inches.of(13.124114), 
+                    Inches.of(13.124114),   //wpi x-axis positive is forward direction 
+                    Inches.of(-3.030256),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
                     Inches.of(14.365654)),
-                new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)),
+                new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)), //(roll: x, pitch: y, yaw: z)
             1, 1280, 800),
         
         FL_CONSTANTS (
-            "lemonlight",
+            "lemonlight", //left camera 
             new Transform3d(
                 new Translation3d(
-                    Inches.of(-3.030256), 
-                    Inches.of(13.262586), 
+                    Inches.of(13.262586),   //wpi x-axis positive is forward direction
+                    Inches.of(4.52790),     //wpi y-axis positive is strafe left, so left camera shall have positive offset
                     Inches.of(14.325391)),
                 new Rotation3d(0, 24 * Constants.TAU / 360.0, 27.5 * Constants.TAU/360.0)),
             2, 1280, 800);
