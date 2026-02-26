@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -37,6 +38,7 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
@@ -113,20 +115,24 @@ public class Robot extends LoggedRobot {
             RobotController.setTimeSource(RobotController::getFPGATime);
         }
 
-		VisionDeviceManager.getInstance();
+		// VisionDeviceManager.getInstance();
 		
-		Drive.getInstance();
-		Shooter.getLeftInstance();
-		Shooter.getRightInstance();
-		Indexer.getLeftInstance();
-		Indexer.getRightInstance();
-		Intake.getInstance();
+		// Drive.getInstance();
+		// Shooter.getLeftInstance();
+		// Shooter.getRightInstance();
+		// Indexer.getLeftInstance();
+		// Indexer.getRightInstance();
+		// Intake.getInstance();
 		// Climb.getInstance();
 
-		TelemetryManager.getInstance();
-		commandScheduler.schedule(FollowPathCommand.warmupCommand());
-		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
-		autoChooser = new AutoSelector();
+		// TelemetryManager.getInstance();
+		// commandScheduler.schedule(FollowPathCommand.warmupCommand());
+		// commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
+		// autoChooser = new AutoSelector();
+
+		Led.getInstance();
+		commandScheduler.schedule(
+			Led.getInstance().setRainbowCommand());
 
 		DriverStation.startDataLog(DataLogManager.getLog());
 	}
@@ -188,7 +194,7 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
-		ControlsMapping.mapTeleopCommand();
+		// ControlsMapping.mapTeleopCommand();
 		// This makes sure that the autonomous stops running when teleop starts running. 
 		if (autoCommand != null) {
 			autoCommand.cancel();
@@ -206,7 +212,7 @@ public class Robot extends LoggedRobot {
 		CommandScheduler.getInstance().cancelAll();
 
 		//map test commands
-		ControlsMapping.mapSysId();
+		// ControlsMapping.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */
