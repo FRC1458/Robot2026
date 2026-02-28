@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -43,13 +42,12 @@ public class Robot extends TimedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-		if (Robot.isReal()) {
-			VisionDeviceManager.getInstance();
-		}
+		VisionDeviceManager.getInstance();
+		
 		Drive.getInstance();
-		Shooter.getInstance();
 		TelemetryManager.getInstance();
-		FollowPathCommand.warmupCommand().schedule();
+		commandScheduler.schedule(FollowPathCommand.warmupCommand());
+		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
 		//robot data loggers 
@@ -96,7 +94,7 @@ public class Robot extends TimedRobot {
 	public void autonomousInit() {
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
-			autoCommand.schedule();
+			commandScheduler.schedule(autoCommand);
 		} else {
 			DriverStation.reportWarning("Tried to schedule a null auto", false);
 		}
@@ -118,7 +116,7 @@ public class Robot extends TimedRobot {
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().teleopCommand());
+		Drive.getInstance().setDefaultCommand(Drive.getInstance().openLoopControl());
 		
 		ControlsMapping.mapTeleopCommand();
 	}

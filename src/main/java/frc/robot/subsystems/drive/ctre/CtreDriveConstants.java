@@ -55,7 +55,7 @@ public class CtreDriveConstants {
     private static final Slot0Configs steerGains = new Slot0Configs()
         .withKP(100)
         .withKI(0)
-        .withKD(0.5)
+        .withKD(0.0)
         .withKS(0.1)
         .withKV(2.66)
         .withKA(0)
