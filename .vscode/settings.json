@@ -55,7 +55,8 @@
     "javax.smartcardio.*",
     "edu.wpi.first.math.proto.*",
     "edu.wpi.first.math.**.proto.*",
-    "edu.wpi.first.math.**.struct.*",
+    "edu.wpi.first.math.**.stru
+ct.*",
   ],
   "java.dependency.enableDependencyCheckup": false
 }

@@ -7,13 +7,15 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
+import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ControlsMapping {
 	public static void mapTeleopCommand() {
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().teleopCommand()));
+		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
@@ -23,6 +25,14 @@ public class ControlsMapping {
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 		new Trigger(() -> controller.getHID().getPOV() != -1).whileTrue(Drive.getInstance().nudgeCommand());
+
+		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TAG.pose));
+		controller.x().onTrue(Drive.getInstance().pathFindToThisRandomPlaceIdk());
+		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
+		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
+		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
+		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
+		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
 	}
 
 	public static void mapSysId() {
