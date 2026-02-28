@@ -52,6 +52,7 @@ public class Intake extends SubsystemBase {
 
     private IntakeIO io;
 
+    public boolean isIntaking = false;
     private Intake() {
         super();
         wheelMotor = new TalonFX(Motors.WHEEL.id);
@@ -93,6 +94,7 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic(){
+        isIntaking = false;
         wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
         barPosition = barMotor.getPosition().getValueAsDouble();
         barMotor.setControl(barRequest);
@@ -127,6 +129,7 @@ public class Intake extends SubsystemBase {
 
 
     public Command intake() {
+        isIntaking = true;
         return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN)
             .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
     }

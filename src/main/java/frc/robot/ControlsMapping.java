@@ -8,6 +8,7 @@ import static frc.robot.Robot.controller;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -66,11 +67,13 @@ public class ControlsMapping {
 		// )
 		// );
 		controller.a().whileTrue(
-			Commands.parallel(
+			Commands.waitUntil(() -> Drive.getInstance().getFieldSpeeds().vxMetersPerSecond < 0.1 && Drive.getInstance().getFieldSpeeds().vyMetersPerSecond < 0.1
+			&& !Intake.getInstance().isIntaking)
+			.andThen(Commands.parallel(
 				Shooter.getRightInstance().shoot(60, 60),
 				Shooter.getLeftInstance().shoot(60, 60)
 			)
-		).onFalse(
+		)).onFalse(
 			Commands.parallel(
 				Shooter.getRightInstance().stop(),
 				Shooter.getLeftInstance().stop()
