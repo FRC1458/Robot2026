@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
+import java.lang.reflect.Field;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -17,7 +18,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-// import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -108,6 +111,8 @@ public class Drive extends SubsystemBase {
 		FieldLayout.field.setRobotPose(getPose());
 		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
 		io.process();
+
+		SmartDashboard.putNumber("To Shooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
 	}
 
 	/**
@@ -180,7 +185,7 @@ public class Drive extends SubsystemBase {
 	 * Locks the robot onto a pose. 
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
-	public Command headingLockToPose(Pose2d pose) {
+	public Command headingLockToPose(Translation2d pose) {
 		SwerveRequest.FieldCentric request = 
 			new SwerveRequest.FieldCentric();
 		
@@ -210,7 +215,7 @@ public class Drive extends SubsystemBase {
 				double yFancy = xy[1];
 
 				var state = getState();
-				var delta = pose.getTranslation().minus(getPose().getTranslation());
+				var delta = pose.minus(getPose().getTranslation());
 				var targetDirection = delta.getAngle();
 				
 				
@@ -304,13 +309,13 @@ public class Drive extends SubsystemBase {
 	 */
 	public Command headingLockToHub() {
 		return Commands.runOnce(() -> ShotCalculator.getInstance().setTarget(
-			DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 
-				DriveConstants.FieldPoses.HUB.pose3d :
-				new Pose3d(
-					FieldUtil.flipPose(DriveConstants.FieldPoses.HUB.pose).getX(), 
-					FieldUtil.flipPose(DriveConstants.FieldPoses.HUB.pose).getY(), 
-					DriveConstants.FieldPoses.HUB.pose3d.getZ(), Rotation3d.kZero)))
-			.andThen(headingLockToPose(() -> ShotCalculator.getInstance().getCurrentEffectiveTargetPose().toPose2d()));
+				Constants.FieldConstants.allianceCorrected(Constants.FieldConstants.Hub.topCenterPoint)))
+			.andThen(
+				headingLockToPose(
+					Constants.FieldConstants
+						.allianceCorrected(
+							Constants.FieldConstants.Hub.topCenterPoint)
+								.toTranslation2d()));
 	}
 
 	/** 

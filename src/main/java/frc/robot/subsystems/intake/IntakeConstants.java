@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -54,12 +55,16 @@ public class IntakeConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(0.0)
+                .withKP(10.0)
                 .withKI(0.0)
                 .withKD(0.0)
                 .withKG(0.0).withGravityType(GravityTypeValue.Arm_Cosine))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(40))
+                .withStatorCurrentLimit(60))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(2) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(3)
+                .withMotionMagicJerk(16))
             .withVoltage(new VoltageConfigs()
             .withPeakForwardVoltage(12.0)
             .withPeakReverseVoltage(-12.0))

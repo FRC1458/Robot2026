@@ -7,12 +7,17 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.InterpolatingMatrixTreeMap;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -51,6 +56,9 @@ public class Shooter extends SubsystemBase {
     private FlywheelSim bottomSim;
 
     private ShotCalculator shotCalculator = ShotCalculator.getInstance();
+
+    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter_left = new InterpolatingMatrixTreeMap<Double, N2, N1>();
+    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter_right = new InterpolatingMatrixTreeMap<Double, N2, N1>();
 
     private ShooterIO io;
 
@@ -103,6 +111,11 @@ public class Shooter extends SubsystemBase {
         }
 
         io = new ShooterIO(getName(), topMotor, bottomMotor);
+
+        distance_to_shooter_left.put(1.67, VecBuilder.fill(28.59375, 28.59375));
+        distance_to_shooter_left.put(2.12, VecBuilder.fill(55, 20));
+        distance_to_shooter_right.put(1.67, VecBuilder.fill(28.59375, 28.59375));
+        distance_to_shooter_right.put(2.12, VecBuilder.fill(55, 20));
     }
 
     @Override
@@ -165,14 +178,14 @@ public class Shooter extends SubsystemBase {
 
     public Command shoot(double topSpeed, double bottomSpeed) {
         return runOnce(() -> {
-            setTopRequest(new MotionMagicVelocityVoltage(topSpeed));
-            setBottomRequest(new MotionMagicVelocityVoltage(bottomSpeed));
+            setTopRequest(new VelocityVoltage(topSpeed));
+            setBottomRequest(new VelocityVoltage(bottomSpeed));
         }).withName("Shooting");
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
-        var topReq = new MotionMagicVelocityVoltage(0.0);
-        var bottomReq = new MotionMagicVelocityVoltage(0.0);
+        var topReq = new VelocityVoltage(0.0);
+        var bottomReq = new VelocityVoltage(0.0);
         return runOnce(() -> {
             setTopRequest(topReq);
             setBottomRequest(bottomReq);

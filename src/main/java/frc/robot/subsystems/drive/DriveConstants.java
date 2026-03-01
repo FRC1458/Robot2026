@@ -52,26 +52,4 @@ public final class DriveConstants {
     public static final double ACCELERATION_CONSTANT = 0.1;
 
     public static final double AUTO_ALIGN_TIMEOUT = 0.5;
-
-    public static enum FieldPoses {
-        HUB(
-            new Pose3d(
-                Units.Inches.of(182.11), 
-                Units.Inches.of(158.84),
-                Units.Inches.of(72), Rotation3d.kZero)),
-        TRENCH(
-            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero)),
-        TAG(
-            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero));
-        public Pose2d pose;
-        public Pose3d pose3d;
-        private FieldPoses(Pose2d pose) {
-            this.pose = pose;
-        }
-
-        private FieldPoses(Pose3d pose3d) {
-            this.pose = pose3d.toPose2d();
-            this.pose3d = pose3d;
-        }
-    }
 }

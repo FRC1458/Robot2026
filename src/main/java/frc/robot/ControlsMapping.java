@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.lib.field.FieldUtil;
 import frc.robot.subsystems.climb.Climb;
@@ -30,12 +31,15 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 public class ControlsMapping {
 
 	public static void mapTeleopCommand() {
+		
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
 		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
-		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new
+		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new
 			Pose2d()));
-		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
+		controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
+		controller.back().and(controller.y()).onTrue(
+			Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
 
 		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
 		// controller.b().whileTrue(Intake.getInstance().outtake());
@@ -65,10 +69,16 @@ public class ControlsMapping {
 		// )).andThen(Commands.waitSeconds(0.1))
 		// )
 		// );
-		controller.a().whileTrue(
+		controller.rightBumper().whileTrue(
 			Commands.parallel(
-				Shooter.getRightInstance().shoot(60, 60),
-				Shooter.getLeftInstance().shoot(60, 60)
+				Shooter.getRightInstance().shoot(
+					() -> SmartDashboard.getNumber("topVel", 30), 
+					() -> SmartDashboard.getNumber("botVel", 30)
+				),
+				Shooter.getLeftInstance().shoot(
+					() -> SmartDashboard.getNumber("topVel", 30), 
+					() -> SmartDashboard.getNumber("botVel", 30)
+				)
 			)
 		).onFalse(
 			Commands.parallel(
@@ -77,7 +87,7 @@ public class ControlsMapping {
 			)
 		);
 
-		controller.x().whileTrue(
+		controller.leftBumper().whileTrue(
 			Commands.parallel(
 				Indexer.getRightInstance().activateIndexer(),
 				Indexer.getLeftInstance().activateIndexer(),
@@ -91,12 +101,13 @@ public class ControlsMapping {
 			)
 		);
 
-
-		controller.b().whileTrue(
-				Intake.getInstance().intake()).onFalse(Intake.getInstance().stow());
+		controller.leftTrigger().whileTrue(
+			Intake.getInstance().intake()).onFalse(Intake.getInstance().stopWheel());
 		// controller.y().onTrue(Intake.getInstance().)
-		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub());
+		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
 		// Shooter.getRightInstance().shoot()));
+		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
+		controller.povUp().onTrue(Intake.getInstance().stow());
 	}
 
 	public static void mapSysId() {

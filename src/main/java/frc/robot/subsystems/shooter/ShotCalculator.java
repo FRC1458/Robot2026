@@ -6,6 +6,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -27,12 +28,12 @@ public class ShotCalculator extends SubsystemBase {
     private final Drive drive;
 
     @AutoLogOutput
-    private Pose3d currentEffectiveTargetPose = Pose3d.kZero;
+    private Translation3d currentEffectiveTargetPose = Translation3d.kZero;
     private double currentEffectiveYaw;
 
     @AutoLogOutput
     private InterceptSolution currentInterceptSolution;
-    private Pose3d targetLocation = new Pose3d();
+    private Translation3d targetLocation = new Translation3d();
     private double targetDistance = 0.0;
     private double shooterAngle = 75 * Constants.TAU / 360;
 
@@ -46,33 +47,33 @@ public class ShotCalculator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Pose2d drivePose = drive.getPose();
+        // Pose2d drivePose = drive.getPose();
 
-        targetDistance = drivePose.getTranslation().getDistance(targetLocation.toPose2d().getTranslation());
+        // targetDistance = drivePose.getTranslation().getDistance(targetLocation.toTranslation2d());
 
-        Pose3d shooterPose = new Pose3d(drivePose).plus(ShooterConstants.OFFSET);
+        // var shooterPose = new Pose3d(drivePose).plus(ShooterConstants.OFFSET).getTranslation();
 
         
-        ChassisSpeeds driveSpeeds = drive.getFieldSpeeds();
-        ChassisAccels driveAccelerations = ChassisAccels.estimate(driveSpeeds, drive.getPrevFieldSpeeds(), Constants.DT);
+        // ChassisSpeeds driveSpeeds = drive.getFieldSpeeds();
+        // ChassisAccels driveAccelerations = ChassisAccels.estimate(driveSpeeds, drive.getPrevFieldSpeeds(), Constants.DT);
 
-        currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(
-            shooterPose, 
-            targetLocation,
-            zero, 
-            zero1, 
-            -shooterAngle,
-            5, 0.01);
+        // currentInterceptSolution = ShootOnTheFlyCalculator.solveShootOnTheFly(
+        //     shooterPose, 
+        //     targetLocation,
+        //     zero, 
+        //     zero1, 
+        //     -shooterAngle,
+        //     5, 0.01);
 
-        currentEffectiveTargetPose = currentInterceptSolution.effectiveTargetPose();
-        currentEffectiveYaw = currentInterceptSolution.requiredYaw();
+        // currentEffectiveTargetPose = currentInterceptSolution.effectiveTargetPose();
+        // currentEffectiveYaw = currentInterceptSolution.requiredYaw();
     }
 
-    public void setTarget(Pose3d targetLocation) {
+    public void setTarget(Translation3d targetLocation) {
         this.targetLocation = targetLocation;
     }
 
-    public Pose3d getCurrentEffectiveTargetPose() {
+    public Translation3d getCurrentEffectiveTargetPose() {
         return currentEffectiveTargetPose;
     }
 

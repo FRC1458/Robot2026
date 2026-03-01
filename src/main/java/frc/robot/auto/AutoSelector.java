@@ -51,7 +51,7 @@ public class AutoSelector {
         }
 
         chooser.setDefaultOption("None", () -> null);
-        SmartDashboard.putData(chooser);
+        SmartDashboard.putData("Auto Selector", chooser);
     }
 
     /** Gets the auto selected from the SmartDashboard */

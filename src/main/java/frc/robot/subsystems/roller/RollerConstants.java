@@ -9,7 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 public class RollerConstants {
     public static final int MOTOR_ID = 33;
-    public static final double ROLL_SPEED = 20;
+    public static final double ROLL_SPEED = 15;
 
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()
@@ -19,7 +19,7 @@ public class RollerConstants {
                 .withKI(0.0)
                 .withKD(0.0))
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(90)
+                .withStatorCurrentLimit(70)
                 // .withSupplyCurrentLimit(120)
                 )
             .withVoltage(new VoltageConfigs()

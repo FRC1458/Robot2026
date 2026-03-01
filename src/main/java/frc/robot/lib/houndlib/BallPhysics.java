@@ -1,6 +1,7 @@
 package frc.robot.lib.houndlib;
 
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -84,12 +85,12 @@ public final class BallPhysics {
     }
 
     public static ShotSolution solveBallisticWithIncomingAngle(
-            Pose3d shooterPose,
-            Pose3d targetPose,
+            Translation3d shooterPose,
+            Translation3d targetPose,
             double incomingPitchRad) {
 
-        Translation3d s = shooterPose.getTranslation();
-        Translation3d t = targetPose.getTranslation();
+        Translation3d s = shooterPose;
+        Translation3d t = targetPose;
 
         double dx = t.getX() - s.getX();
         double dy = t.getY() - s.getY();
@@ -120,12 +121,12 @@ public final class BallPhysics {
     }
 
     public static ShotSolution solveBallisticWithSpeed(
-            Pose3d shooterPose,
-            Pose3d targetPose,
+            Translation3d shooterPose,
+            Translation3d targetPose,
             double launchSpeed) {
 
-        Translation3d s = shooterPose.getTranslation();
-        Translation3d t = targetPose.getTranslation();
+        Translation3d s = shooterPose;
+        Translation3d t = targetPose;
 
         double dx = t.getX() - s.getX();
         double dy = t.getY() - s.getY();
@@ -156,11 +157,11 @@ public final class BallPhysics {
     }
 
     public static double minSpeedForAnyArc(
-            Pose3d shooterPose,
-            Pose3d targetPose) {
+            Translation3d shooterPose,
+            Translation3d targetPose) {
 
-        Translation3d s = shooterPose.getTranslation();
-        Translation3d t = targetPose.getTranslation();
+        Translation3d s = shooterPose;
+        Translation3d t = targetPose;
 
         double dx = t.getX() - s.getX();
         double dy = t.getY() - s.getY();

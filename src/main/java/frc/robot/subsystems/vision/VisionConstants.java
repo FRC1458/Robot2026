@@ -30,7 +30,7 @@ public class VisionConstants {
             new Transform3d(
                 new Translation3d(
                     Inches.of(13.124114),   //wpi x-axis positive is forward direction 
-                    Inches.of(-3.030256),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
+                    Inches.of(-4.527904),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
                     Inches.of(14.365654)),
                 new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)), //(roll: x, pitch: y, yaw: z)
             1, 1280, 800),

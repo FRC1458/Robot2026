@@ -39,6 +39,7 @@ import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.led.Led;
+import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
@@ -110,25 +111,29 @@ public class Robot extends LoggedRobot {
             Logger.addDataReceiver(new WPILOGWriter());
         }
 
-        // Logger.start();
+        Logger.start();
         if (!Logger.hasReplaySource()) {
             RobotController.setTimeSource(RobotController::getFPGATime);
         }
 
-		// VisionDeviceManager.getInstance();
+		VisionDeviceManager.getInstance();
 		
-		// Drive.getInstance();
-		// Shooter.getLeftInstance();
-		// Shooter.getRightInstance();
-		// Indexer.getLeftInstance();
-		// Indexer.getRightInstance();
+		Drive.getInstance();
+		Shooter.getLeftInstance();
+		Shooter.getRightInstance();
+		Indexer.getLeftInstance();
+		Indexer.getRightInstance();
+		Roller.getInstance();
 		// Intake.getInstance();
 		// Climb.getInstance();
 
-		// TelemetryManager.getInstance();
-		// commandScheduler.schedule(FollowPathCommand.warmupCommand());
-		// commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
-		// autoChooser = new AutoSelector();
+		SmartDashboard.putNumber("botVel", 30);
+		SmartDashboard.putNumber("topVel", 30);
+
+		TelemetryManager.getInstance();
+		commandScheduler.schedule(FollowPathCommand.warmupCommand());
+		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
+		autoChooser = new AutoSelector();
 
 		Led.getInstance();
 		commandScheduler.schedule(
@@ -163,6 +168,8 @@ public class Robot extends LoggedRobot {
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
 	public void disabledInit() {
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kGreen));
 	}
 
 	/** This function is called periodically during disabled. */
@@ -174,6 +181,8 @@ public class Robot extends LoggedRobot {
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kBlue));
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
 			commandScheduler.schedule(autoCommand);
@@ -194,7 +203,9 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
-		// ControlsMapping.mapTeleopCommand();
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kRed));
+		ControlsMapping.mapTeleopCommand();
 		// This makes sure that the autonomous stops running when teleop starts running. 
 		if (autoCommand != null) {
 			autoCommand.cancel();
@@ -208,6 +219,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void testInit() {
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kGray));
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
 

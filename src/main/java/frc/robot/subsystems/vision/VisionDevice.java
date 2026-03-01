@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import edu.wpi.first.math.Matrix;
@@ -66,6 +67,9 @@ public class VisionDevice {
 		// poseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
 
 		this.constants = constants;
+		TelemetryManager.getInstance().addStructPublisher(
+			constants.name() + "Pose", Pose2d.struct, 
+			() -> botPose);
 
 		hasTarget = false;
 	}

@@ -96,8 +96,8 @@ public class VisionDeviceManager extends SubsystemBase {
 
 	public Command bootUp() {
 		return Commands.parallel(
-			// frontlCamera.bootUpSequence(),
-			// frontrCamera.bootUpSequence()
+				frontlCamera.bootUpSequence(),
+				frontrCamera.bootUpSequence()
 			)
 			.withTimeout(4)
 			.andThen(Commands.print("Finished vision bootup"));

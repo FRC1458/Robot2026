@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -189,7 +190,7 @@ public class Intake extends SubsystemBase {
     public Command setBarPosition(double position) {
         double checkedPos = MathUtil.clamp(position, BAR_POS_MIN, BAR_POS_MAX);
 
-        var req = new PositionVoltage(checkedPos);
+        var req = new MotionMagicVoltage(checkedPos);
         return runOnce(() ->
             setRequestBar(req)
         ).withName("bar pos set" + (checkedPos));
@@ -218,14 +219,14 @@ public class Intake extends SubsystemBase {
      * @return Command to run
      */
     public Command calibrateZero() {
-        VoltageOut calibrationRequest = new VoltageOut(-1)
+        VoltageOut calibrationRequest = new VoltageOut(-2)
             .withIgnoreHardwareLimits(true)
             .withIgnoreSoftwareLimits(true);
 
         /** Trigger to detect when the elevator drives into a hard stop. */
         Trigger isHardStop = new Trigger(() -> {
             return barMotor.getVelocity().getValue().abs(RotationsPerSecond) < 1 &&
-                barMotor.getTorqueCurrent().getValue().abs(Amps) > 10;
+                barMotor.getTorqueCurrent().getValue().abs(Amps) > 25;
         }).debounce(0.1);
 
         return run(() -> {

@@ -6,8 +6,11 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
+import edu.wpi.first.math.InterpolatingMatrixTreeMap;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 
 public final class ShooterConstants {		
     public static final double GEAR_RATIO = 1;
@@ -15,8 +18,7 @@ public final class ShooterConstants {
     public static final double TOPSPIN_FACTOR = 0;
 
     public static final Transform3d OFFSET = new Transform3d();
-    public static final InterpolatingDoubleTreeMap DISTANCE_TO_SHOT_SPEED = new InterpolatingDoubleTreeMap();
-
+    
     /** Motor ids */
     public static enum Motors {
         TOPLEFT(24),
@@ -34,7 +36,7 @@ public final class ShooterConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(0.7)
+                .withKP(0.700)
                 .withKI(0.0)
                 .withKD(0.0)
                 .withKA(0.0)
