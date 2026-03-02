@@ -128,7 +128,7 @@ public final class Constants {
 		/** Hub related constants */
 		public static class Hub {
 			// Dimensions
-			public static final double width = edu.wpi.first.math.util.Units.inchesToMeters(47.0);
+			public static final double width = edu.wpi.first.math.util.Units.inchesToMeters(46.0);
 			public static final double height =
 				edu.wpi.first.math.util.Units.inchesToMeters(72.0); // includes the catcher at the top
 			public static final double innerWidth = edu.wpi.first.math.util.Units.inchesToMeters(41.7);
