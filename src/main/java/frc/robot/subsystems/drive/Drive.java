@@ -112,7 +112,7 @@ public class Drive extends SubsystemBase {
 		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
 		io.process();
 
-		SmartDashboard.putNumber("To Shooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
+		SmartDashboard.putNumber("toShooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
 	}
 
 	/**

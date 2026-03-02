@@ -127,8 +127,8 @@ public class Robot extends LoggedRobot {
 		// Intake.getInstance();
 		// Climb.getInstance();
 
-		SmartDashboard.putNumber("botVel", 30);
-		SmartDashboard.putNumber("topVel", 30);
+		SmartDashboard.putNumber("rightV", 30);
+		SmartDashboard.putNumber("leftV", 30);
 
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
@@ -169,7 +169,7 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void disabledInit() {
 		commandScheduler.schedule(
-			Led.getInstance().setSolidColorCommand(Color.kGreen));
+			Led.getInstance().setRainbowCommand());
 	}
 
 	/** This function is called periodically during disabled. */

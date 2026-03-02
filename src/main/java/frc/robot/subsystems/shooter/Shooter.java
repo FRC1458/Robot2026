@@ -18,6 +18,7 @@ import edu.wpi.first.math.InterpolatingMatrixTreeMap;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -57,8 +58,7 @@ public class Shooter extends SubsystemBase {
 
     private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
-    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter_left = new InterpolatingMatrixTreeMap<Double, N2, N1>();
-    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter_right = new InterpolatingMatrixTreeMap<Double, N2, N1>();
+    private InterpolatingMatrixTreeMap<Double, N3, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N3, N1>();
 
     private ShooterIO io;
 
@@ -112,10 +112,8 @@ public class Shooter extends SubsystemBase {
 
         io = new ShooterIO(getName(), topMotor, bottomMotor);
 
-        distance_to_shooter_left.put(1.67, VecBuilder.fill(28.59375, 28.59375));
-        distance_to_shooter_left.put(2.12, VecBuilder.fill(55, 20));
-        distance_to_shooter_right.put(1.67, VecBuilder.fill(28.59375, 28.59375));
-        distance_to_shooter_right.put(2.12, VecBuilder.fill(55, 20));
+        distance_to_shooter.put(1.6015, VecBuilder.fill(37.5, 31.875, 10));
+        distance_to_shooter.put(2.49,VecBuilder.fill(44.0625, 39.140625, 15));
     }
 
     @Override
@@ -181,6 +179,10 @@ public class Shooter extends SubsystemBase {
             setTopRequest(new VelocityVoltage(topSpeed));
             setBottomRequest(new VelocityVoltage(bottomSpeed));
         }).withName("Shooting");
+    }
+
+    public Command shoot(DoubleSupplier distance) {
+        return shoot(distance_to_shooter.get(distance.getAsDouble()).get(0, 0), distance_to_shooter.get(distance.getAsDouble()).get(1, 0) - 10);
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {

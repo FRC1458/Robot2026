@@ -27,19 +27,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 
-
 public class ControlsMapping {
 
 	public static void mapTeleopCommand() {
-		
+
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
 		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
-		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new
-			Pose2d()));
+		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 		controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
 		controller.back().and(controller.y()).onTrue(
-			Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
+				Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
 
 		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
 		// controller.b().whileTrue(Intake.getInstance().outtake());
@@ -69,40 +67,45 @@ public class ControlsMapping {
 		// )).andThen(Commands.waitSeconds(0.1))
 		// )
 		// );
+		// controller.rightBumper().whileTrue(
+		// Commands.parallel(
+		// Shooter.getRightInstance().shoot(
+		// () -> SmartDashboard.getNumber("rightV", 30),
+		// () -> SmartDashboard.getNumber("rightV", 30) - 15
+		// ),
+		// Shooter.getLeftInstance().shoot(
+		// () -> SmartDashboard.getNumber("leftV", 30),
+		// () -> SmartDashboard.getNumber("leftV", 30) - 15
+		// )
+		// )
+		// ).onFalse(
+		// Commands.parallel(
+		// Shooter.getRightInstance().stop(),
+		// Shooter.getLeftInstance().stop()
+		// )
+		// );
 		controller.rightBumper().whileTrue(
-			Commands.parallel(
-				Shooter.getRightInstance().shoot(
-					() -> SmartDashboard.getNumber("topVel", 30), 
-					() -> SmartDashboard.getNumber("botVel", 30)
-				),
-				Shooter.getLeftInstance().shoot(
-					() -> SmartDashboard.getNumber("topVel", 30), 
-					() -> SmartDashboard.getNumber("botVel", 30)
-				)
-			)
-		).onFalse(
-			Commands.parallel(
-				Shooter.getRightInstance().stop(),
-				Shooter.getLeftInstance().stop()
-			)
-		);
+				Commands.parallel(
+						Shooter.getRightInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1)),
+						Shooter.getLeftInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1))))
+				.onFalse(
+						Commands.parallel(
+								Shooter.getRightInstance().stop(),
+								Shooter.getLeftInstance().stop()));
 
 		controller.leftBumper().whileTrue(
-			Commands.parallel(
-				Indexer.getRightInstance().activateIndexer(),
-				Indexer.getLeftInstance().activateIndexer(),
-				Roller.getInstance().roll()
-			)
-		).onFalse(
-			Commands.parallel(
-				Indexer.getRightInstance().deactivateIndexer(),
-				Indexer.getLeftInstance().deactivateIndexer(),
-				Roller.getInstance().stop()
-			)
-		);
+				Commands.parallel(
+						Indexer.getRightInstance().activateIndexer(),
+						Indexer.getLeftInstance().activateIndexer(),
+						Roller.getInstance().roll()))
+				.onFalse(
+						Commands.parallel(
+								Indexer.getRightInstance().deactivateIndexer(),
+								Indexer.getLeftInstance().deactivateIndexer(),
+								Roller.getInstance().stop()));
 
 		controller.leftTrigger().whileTrue(
-			Intake.getInstance().intake()).onFalse(Intake.getInstance().stopWheel());
+				Intake.getInstance().intake()).onFalse(Intake.getInstance().stopWheel());
 		// controller.y().onTrue(Intake.getInstance().)
 		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
 		// Shooter.getRightInstance().shoot()));
@@ -112,38 +115,37 @@ public class ControlsMapping {
 
 	public static void mapSysId() {
 		// set up sysID routine type
-		controller.a().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
-		controller.b().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
-		controller.back().onTrue(new InstantCommand(()->Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
+		controller.a().onTrue(new InstantCommand(
+				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
+		controller.b().onTrue(new InstantCommand(
+				() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
+		controller.back().onTrue(
+				new InstantCommand(() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
 		// map the sysid routine movement directions
 		controller.leftBumper().and(controller.x())
-			.whileTrue(
-				new ProxyCommand(
-					()->Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
-						.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
-				)
-			);
+				.whileTrue(
+						new ProxyCommand(
+								() -> Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
+										.finallyDo(interrupted -> Drive.getInstance().getCtreDrive()
+												.setControl(new SwerveRequest.Idle()))));
 		controller.leftBumper().and(controller.y())
-			.whileTrue(
-				new ProxyCommand(
-					()->Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
-						.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
-				)
-			);
+				.whileTrue(
+						new ProxyCommand(
+								() -> Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
+										.finallyDo(interrupted -> Drive.getInstance().getCtreDrive()
+												.setControl(new SwerveRequest.Idle()))));
 		controller.rightBumper().and(controller.x())
 				.whileTrue(
-					new ProxyCommand(
-						()->Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
-							.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
-					)
-				);
+						new ProxyCommand(
+								() -> Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
+										.finallyDo(interrupted -> Drive.getInstance().getCtreDrive()
+												.setControl(new SwerveRequest.Idle()))));
 		controller.rightBumper().and(controller.y())
 				.whileTrue(
-					new ProxyCommand(
-						()->Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
-							.finallyDo(interrupted->Drive.getInstance().getCtreDrive().setControl(new SwerveRequest.Idle()))
-					)
-				);
+						new ProxyCommand(
+								() -> Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
+										.finallyDo(interrupted -> Drive.getInstance().getCtreDrive()
+												.setControl(new SwerveRequest.Idle()))));
 	}
 
 }
