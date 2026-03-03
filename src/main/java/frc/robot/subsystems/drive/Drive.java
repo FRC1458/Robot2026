@@ -193,15 +193,31 @@ public class Drive extends SubsystemBase {
 	 * Traverses the nearest trench
 	 */
 	public Command traverseTrench() {
-		double entranceVelocity = autoTrench ? getFieldSpeeds().vxMetersPerSecond : 2; //TODO: tune
+		//double entranceVelocity = autoTrench ? getFieldSpeeds().vxMetersPerSecond : 2; //TODO: tune
 		return defer(() -> {
-			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(entranceVelocity);
+			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(5);
 			return new AutopilotCommand(pose).andThen(
 				defer(() -> {
-				APTarget pose2 = FieldLayout.getTrenchTarget(getPose())/*.withVelocity(3)*/;
+				APTarget pose2 = FieldLayout.getTrenchTarget(getPose()).withVelocity(5);
 				return new AutopilotCommand(pose2);
 			}));
 		}).withName("Trench Traversal");
+	}
+
+	/**
+	 * Traverses the nearest bump
+	 */
+	public Command climbBump() {
+		return defer(() -> {
+			APTarget pose = FieldLayout.getBumpEntry(getPose()).withVelocity(2); //TODO: tune
+			System.out.println("Bump: moving to entry "+pose.getReference().toString());
+			return new AutopilotCommand(pose).andThen(
+				defer(() -> {
+				APTarget pose2 = FieldLayout.getBumpTarget(getPose())/*.withVelocity(3)*/;
+				System.out.println("Bump: moving to target "+pose2.getReference().toString());
+				return new AutopilotCommand(pose2);
+			}));
+		}).withName("Bump Climb");
 	}
 
 	/** Adds a vision update */

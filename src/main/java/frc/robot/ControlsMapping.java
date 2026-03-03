@@ -18,7 +18,7 @@ public class ControlsMapping {
 		
 		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 		controller.leftBumper().whileTrue(Drive.getInstance().traverseTrench());
-		controller.rightBumper().whileTrue(Drive.getInstance().traverseTrench());
+		controller.rightBumper().whileTrue(Drive.getInstance().climbBump());
 		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 	}

@@ -19,7 +19,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.drive.DriveConstants;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are
@@ -50,6 +49,13 @@ public class FieldLayout {
 
 	public static final HashMap<Pose2d,Pose2d> TARGET_RIGHT_POSES = new HashMap<>();
 	public static final HashMap<Pose2d,Pose2d> TARGET_LEFT_POSES = new HashMap<>();
+
+	public static final List<Pose2d> BUMP_ENTRY_RIGHT_POSES = new ArrayList<>();
+	public static final List<Pose2d> BUMP_ENTRY_LEFT_POSES = new ArrayList<>();
+
+	public static final HashMap<Pose2d,Pose2d> BUMP_TARGET_RIGHT_POSES = new HashMap<>();
+	public static final HashMap<Pose2d,Pose2d> BUMP_TARGET_LEFT_POSES = new HashMap<>();
+
 	
 	static {
 		try {
@@ -62,17 +68,38 @@ public class FieldLayout {
 				-Units.inchesToMeters(45), 0, Rotation2d.kZero);
 			Transform2d moveRight = new Transform2d(
 				Units.inchesToMeters(45),0,Rotation2d.kZero);
+			Transform2d moveUpTurn = new Transform2d(
+				0,Units.inchesToMeters(70),new Rotation2d(1,1));
+			Transform2d moveDownTurn = new Transform2d(
+				0,-Units.inchesToMeters(70),new Rotation2d(1,1));
 			Transform2d turn = new Transform2d(0,0,Rotation2d.kPi);
 			for (int i : rightTrenchIds) {
 				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
 				ENTRY_RIGHT_POSES.add(tagPose.transformBy(moveLeft));
 				TARGET_RIGHT_POSES.put(tagPose.transformBy(moveLeft),tagPose.transformBy(moveRight));
+				if (i == 6 || i == 28) {
+					BUMP_ENTRY_RIGHT_POSES.add(tagPose.transformBy(moveLeft).transformBy(moveDownTurn));
+					BUMP_TARGET_RIGHT_POSES.put(tagPose.transformBy(moveLeft).transformBy(moveDownTurn),tagPose.transformBy(moveRight).transformBy(moveDownTurn));
+				} else {
+					BUMP_ENTRY_RIGHT_POSES.add(tagPose.transformBy(moveLeft).transformBy(moveUpTurn));
+					BUMP_TARGET_RIGHT_POSES.put(tagPose.transformBy(moveLeft).transformBy(moveUpTurn),tagPose.transformBy(moveRight).transformBy(moveUpTurn));
+				}
 			}
 			for (int i : leftTrenchIds) {
 				var tagPose = APRILTAG_MAP.getTagPose(i).get().toPose2d();
 				ENTRY_LEFT_POSES.add(tagPose.transformBy(moveLeft));
 				TARGET_LEFT_POSES.put(tagPose.transformBy(moveLeft),tagPose.transformBy(moveRight));
+				if (i == 7 || i == 17) {
+					BUMP_ENTRY_LEFT_POSES.add(tagPose.transformBy(moveLeft).transformBy(moveUpTurn));
+					BUMP_TARGET_LEFT_POSES.put(tagPose.transformBy(moveLeft).transformBy(moveUpTurn),tagPose.transformBy(moveRight).transformBy(moveUpTurn));
+				} else {
+					BUMP_ENTRY_LEFT_POSES.add(tagPose.transformBy(moveLeft).transformBy(moveDownTurn));
+					BUMP_TARGET_LEFT_POSES.put(tagPose.transformBy(moveLeft).transformBy(moveDownTurn),tagPose.transformBy(moveRight).transformBy(moveDownTurn));
+				}
 			}
+
+
+
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -131,6 +158,24 @@ public class FieldLayout {
 		}
 
 		return true;
+	}
+
+	public static APTarget getBumpEntry(Pose2d pose) {
+		var set = isLeftOfTrench(pose) ? BUMP_ENTRY_LEFT_POSES : BUMP_ENTRY_RIGHT_POSES;
+		var out = Collections.min(
+			set,
+			Comparator.comparing(
+				(Pose2d other) -> pose.getTranslation().getDistance(other.getTranslation())
+			).thenComparing(
+				(Pose2d other) ->
+				Math.abs(pose.getRotation().minus(other.getRotation()).getRadians())));
+		return new APTarget(out).withEntryAngle(Rotation2d.kZero);
+	}
+
+	public static APTarget getBumpTarget(Pose2d pose) {
+		var set = isLeftOfTrench(pose) ? BUMP_TARGET_LEFT_POSES : BUMP_TARGET_RIGHT_POSES;
+		var out = set.get(getBumpEntry(pose).getReference());
+		return new APTarget(out).withEntryAngle(isLeftOfTrench(pose) ? Rotation2d.kZero : Rotation2d.k180deg);
 	}
 
 	public static Pose2d handleAllianceFlip(Pose2d blue_pose, boolean is_red_alliance) {
