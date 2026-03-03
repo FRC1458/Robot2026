@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -30,6 +31,7 @@ import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
+import frc.robot.subsystems.drive.commands.PIDToYCommand;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.drive.ctre.CtreDriveTelemetry;
 import frc.robot.lib.field.FieldLayout;
@@ -62,9 +64,9 @@ public class Drive extends SubsystemBase {
 			return driveRequest;
 		}));
 
-		new Trigger(() -> 
-			(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
-				&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench()); autoTrench = true;
+		// new Trigger(() -> 
+		// 	(FieldLayout.isMovingToTrench(getPose(),getFieldSpeeds()) 
+		// 		&& FieldLayout.isNearTrench(getPose()))).onTrue(traverseTrench()); autoTrench = true;
 
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct, () -> new Pose3d(getPose()));
@@ -195,13 +197,17 @@ public class Drive extends SubsystemBase {
 	public Command traverseTrench() {
 		//double entranceVelocity = autoTrench ? getFieldSpeeds().vxMetersPerSecond : 2; //TODO: tune
 		return defer(() -> {
-			APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(5);
-			return new AutopilotCommand(pose).andThen(
-				defer(() -> {
-				APTarget pose2 = FieldLayout.getTrenchTarget(getPose()).withVelocity(5);
-				return new AutopilotCommand(pose2);
-			}));
-		}).withName("Trench Traversal");
+			var thing = FieldLayout.getTrenchTarget(getPose());
+			return new PIDToYCommand(thing.getReference().getY(), thing.getReference().getRotation());
+		});
+		// return defer(() -> {
+		// 	APTarget pose = FieldLayout.getTrenchEntry(getPose()).withVelocity(5);
+		// 	return new AutopilotCommand(pose).andThen(
+		// 		defer(() -> {
+		// 		APTarget pose2 = FieldLayout.getTrenchTarget(getPose()).withVelocity(5);
+		// 		return new AutopilotCommand(pose2);
+		// 	}));
+		// }).withName("Trench Traversal");
 	}
 
 	/**
@@ -209,15 +215,19 @@ public class Drive extends SubsystemBase {
 	 */
 	public Command climbBump() {
 		return defer(() -> {
-			APTarget pose = FieldLayout.getBumpEntry(getPose()).withVelocity(2); //TODO: tune
-			System.out.println("Bump: moving to entry "+pose.getReference().toString());
-			return new AutopilotCommand(pose).andThen(
-				defer(() -> {
-				APTarget pose2 = FieldLayout.getBumpTarget(getPose())/*.withVelocity(3)*/;
-				System.out.println("Bump: moving to target "+pose2.getReference().toString());
-				return new AutopilotCommand(pose2);
-			}));
-		}).withName("Bump Climb");
+			var thing = FieldLayout.getBumpTarget(getPose());
+			return new PIDToYCommand(thing.getReference().getY(), thing.getReference().getRotation());
+		});
+		// return defer(() -> {
+		// 	APTarget pose = FieldLayout.getBumpEntry(getPose()).withVelocity(2); //TODO: tune
+		// 	System.out.println("Bump: moving to entry "+pose.getReference().toString());
+		// 	return new AutopilotCommand(pose).andThen(
+		// 		defer(() -> {
+		// 		APTarget pose2 = FieldLayout.getBumpTarget(getPose())/*.withVelocity(3)*/;
+		// 		System.out.println("Bump: moving to target "+pose2.getReference().toString());
+		// 		return new AutopilotCommand(pose2);
+		// 	}));
+		// }).withName("Bump Climb");
 	}
 
 	/** Adds a vision update */

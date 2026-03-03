@@ -3,6 +3,7 @@ package frc.robot.subsystems.drive.commands;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
@@ -14,6 +15,8 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib.control.ControlConstants.*;
+import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.lib.control.*;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
@@ -26,6 +29,7 @@ public class PIDToYCommand extends Command {
 
     private final SwerveRequest.ApplyFieldSpeeds request = 
         new SwerveRequest.ApplyFieldSpeeds();
+            // .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
 
     private final ProfiledPIDVController yController;
     private final ProfiledPIDVController thetaController;
@@ -96,7 +100,7 @@ public class PIDToYCommand extends Command {
         double deltaY = yTarget - currentPose.getTranslation().getY();
         
         // Magnitude target
-        double vMagnitude = -MathUtil.clamp(
+        double yMagnitude = -MathUtil.clamp(
             yController.setTarget(0)
                 .setMeasurement(
                     deltaY, // We are exactly where we are
@@ -116,21 +120,25 @@ public class PIDToYCommand extends Command {
                 .getOutput(),
             -MAX_ROTATION_SPEED, MAX_ROTATION_SPEED);
 
-        SmartDashboard.putNumber("Debug/PIDToPose/vx", vMagnitude * Math.cos(deltaRotation));
-        SmartDashboard.putNumber("Debug/PIDToPose/vy", vMagnitude * Math.sin(deltaRotation));
+        SmartDashboard.putNumber("Debug/PIDToPose/vy", yMagnitude * Math.sin(deltaRotation));
         SmartDashboard.putNumber("Debug/PIDToPose/vrotation", rotation);
+        double xDesiredRaw = Robot.controller.getLeftY();
+        double actualXThing = MathUtil.applyDeadband(xDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
+
+        SmartDashboard.putNumber("ewiufhewiuhfa", actualXThing);
         return new ChassisSpeeds(
-            vMagnitude * Math.cos(deltaRotation), // convert from polar to rectangular
-            vMagnitude * Math.sin(deltaRotation),
+            actualXThing * MAX_SPEED,
+            yMagnitude,
             rotation);
     }
 
     @Override
     public boolean isFinished() {
-        return finishDebouncer.calculate(
-            Math.abs(yController.getError()) <= EPSILON_TRANSLATION
-                && MathUtil.isNear(thetaController.getError(), 0, EPSILON_ROTATION)); // Within tolerance
+        return false;
+        // finishDebouncer.calculate(
+        //     Math.abs(yController.getError()) <= EPSILON_TRANSLATION
+        //         && MathUtil.isNear(thetaController.getError(), 0, EPSILON_ROTATION)); // Within tolerance
     }
 
     @Override
