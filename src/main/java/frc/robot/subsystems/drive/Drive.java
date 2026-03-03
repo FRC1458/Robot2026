@@ -308,13 +308,24 @@ public class Drive extends SubsystemBase {
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
 	public Command headingLockToHub() {
+		TelemetryManager.getInstance().addStructPublisher(
+			"thing", Pose2d.struct, () -> new Pose2d(Constants.FieldConstants.allianceCorrected(
+					FieldPoses.HUB.pose3d.getTranslation()
+					// Constants.FieldConstants.Hub.topCenterPoint
+					).toTranslation2d(), Rotation2d.kZero));
+
 		return Commands.runOnce(() -> ShotCalculator.getInstance().setTarget(
-				Constants.FieldConstants.allianceCorrected(Constants.FieldConstants.Hub.topCenterPoint)))
+				Constants.FieldConstants.allianceCorrected(
+					FieldPoses.HUB.pose3d.getTranslation()
+					// Constants.FieldConstants.Hub.topCenterPoint
+					)))
 			.andThen(
 				headingLockToPose(
 					Constants.FieldConstants
 						.allianceCorrected(
-							Constants.FieldConstants.Hub.topCenterPoint)
+							FieldPoses.HUB.pose3d.getTranslation()
+							// Constants.FieldConstants.Hub.topCenterPoint
+							)
 								.toTranslation2d()));
 	}
 

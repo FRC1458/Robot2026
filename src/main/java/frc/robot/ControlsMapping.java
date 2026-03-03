@@ -67,31 +67,31 @@ public class ControlsMapping {
 		// )).andThen(Commands.waitSeconds(0.1))
 		// )
 		// );
-		// controller.rightBumper().whileTrue(
-		// Commands.parallel(
-		// Shooter.getRightInstance().shoot(
-		// () -> SmartDashboard.getNumber("rightV", 30),
-		// () -> SmartDashboard.getNumber("rightV", 30) - 15
-		// ),
-		// Shooter.getLeftInstance().shoot(
-		// () -> SmartDashboard.getNumber("leftV", 30),
-		// () -> SmartDashboard.getNumber("leftV", 30) - 15
-		// )
-		// )
-		// ).onFalse(
-		// Commands.parallel(
-		// Shooter.getRightInstance().stop(),
-		// Shooter.getLeftInstance().stop()
-		// )
-		// );
 		controller.rightBumper().whileTrue(
-				Commands.parallel(
-						Shooter.getRightInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1)),
-						Shooter.getLeftInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1))))
-				.onFalse(
-						Commands.parallel(
-								Shooter.getRightInstance().stop(),
-								Shooter.getLeftInstance().stop()));
+		Commands.parallel(
+		Shooter.getRightInstance().shoot(
+		() -> SmartDashboard.getNumber("rightV", 30) - 15,
+		() -> SmartDashboard.getNumber("rightV", 30) + 15
+		),
+		Shooter.getLeftInstance().shoot(
+		() -> SmartDashboard.getNumber("leftV", 30) - 15,
+		() -> SmartDashboard.getNumber("leftV", 30) + 15
+		)
+		)
+		).onFalse(
+		Commands.parallel(
+		Shooter.getRightInstance().stop(),
+		Shooter.getLeftInstance().stop()
+		)
+		);
+		// controller.rightBumper().whileTrue(
+		// 		Commands.parallel(
+		// 				Shooter.getRightInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1)),
+		// 				Shooter.getLeftInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1))))
+		// 		.onFalse(
+		// 				Commands.parallel(
+		// 						Shooter.getRightInstance().stop(),
+		// 						Shooter.getLeftInstance().stop()));
 
 		controller.leftBumper().whileTrue(
 				Commands.parallel(

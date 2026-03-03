@@ -3,11 +3,13 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
@@ -52,4 +54,25 @@ public final class DriveConstants {
     public static final double ACCELERATION_CONSTANT = 0.1;
 
     public static final double AUTO_ALIGN_TIMEOUT = 0.5;
+    public static enum FieldPoses {
+        HUB(
+            
+            new Pose3d(Constants.FieldConstants.Hub.topCenterPoint, Rotation3d.kZero)
+        ),
+        TRENCH(
+            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero)),
+        TAG(
+            FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero));
+        public Pose2d pose;
+        public Pose3d pose3d;
+        private FieldPoses(Pose2d pose) {
+            this.pose = pose;
+        }
+
+        private FieldPoses(Pose3d pose3d) {
+            this.pose = pose3d.toPose2d();
+            this.pose3d = pose3d;
+        }
+    }
+
 }

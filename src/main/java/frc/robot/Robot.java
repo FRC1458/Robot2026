@@ -204,7 +204,7 @@ public class Robot extends LoggedRobot {
 	@Override
 	public void teleopInit() {
 		commandScheduler.schedule(
-			Led.getInstance().setSolidColorCommand(Color.kRed));
+			Led.getInstance().blinkCommand(Color.kRed, Color.kYellow, 0.25));
 		ControlsMapping.mapTeleopCommand();
 		// This makes sure that the autonomous stops running when teleop starts running. 
 		if (autoCommand != null) {

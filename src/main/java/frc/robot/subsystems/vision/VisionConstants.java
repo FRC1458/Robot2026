@@ -57,6 +57,7 @@ public class VisionConstants {
             Transform3d robotToCamera,
             int cameraId, 
             int cameraResolutionWidth,
+            
             int cameraResolutionHeight
         ) {
             this.tableName = tableName;
