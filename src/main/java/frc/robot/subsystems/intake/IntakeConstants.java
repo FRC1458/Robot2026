@@ -16,9 +16,10 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.Units;
 
 public class IntakeConstants {
-    public static final double BAR_EPSILON = Units.Degrees.of(5).in(Units.Rotations);
+    public static final double BAR_EPSILON = Units.Degrees.of(10).in(Units.Rotations);
     public static final double INTAKE_SPEED = 50;
     public static final double BAR_POSITION_DOWN = 0.00;
+    public static final double BAR_POSITION_MID = Degrees.of(67).in(Rotations);
     public static final double BAR_POSITION_UP = Degrees.of(126).in(Rotations);
     public static final double BAR_GEAR_RATIO = 44.0 / 18.0 * 5.0 * 4.0;
     public static final double BAR_POS_MIN = 0.0;
@@ -55,15 +56,15 @@ public class IntakeConstants {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
                 .withKV(0.0)
-                .withKP(10.0)
+                .withKP(20.0)
                 .withKI(0.0)
                 .withKD(0.0)
                 .withKG(0.0).withGravityType(GravityTypeValue.Arm_Cosine))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(60))
             .withMotionMagic(new MotionMagicConfigs()
-                .withMotionMagicAcceleration(2) // 1.0 m/s^2
-                .withMotionMagicCruiseVelocity(3)
+                .withMotionMagicAcceleration(10) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(10)
                 .withMotionMagicJerk(16))
             .withVoltage(new VoltageConfigs()
             .withPeakForwardVoltage(12.0)

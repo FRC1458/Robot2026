@@ -58,8 +58,6 @@ public class VisionDeviceManager extends SubsystemBase {
 			visionSim.addAprilTags(FieldLayout.APRILTAG_MAP);
 			cameras.forEach((camera) -> visionSim.addCamera(camera.getSimulation(), camera.getConstants().robotToCamera));
 		}
-		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(LOCAL_MEASUREMENT_STD_DEVS);
-		Drive.getInstance().getCtreDrive().setStateStdDevs(STATE_STD_DEVS);
 		io = new VisionIO(getName(), this);
 		// TelemetryManager.getInstance().addSendable(this);
 	}

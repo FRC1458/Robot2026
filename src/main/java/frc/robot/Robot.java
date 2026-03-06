@@ -41,6 +41,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -97,18 +98,18 @@ public class Robot extends LoggedRobot {
         }
 
         if (RobotBase.isReal()) {
-            Logger.addDataReceiver(new WPILOGWriter());
+            // Logger.addDataReceiver(new WPILOGWriter());
             if (!DriverStation.isFMSAttached()) {
                 Logger.addDataReceiver(new NT4Publisher());
             }
         } else if (replay) {
             setUseTiming(false);
             String logPath = LogFileUtil.findReplayLog();
-            Logger.setReplaySource(new WPILOGReader(logPath));
-            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+            // Logger.setReplaySource(new WPILOGReader(logPath));
+            // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         } else if (RobotBase.isSimulation()) {
             Logger.addDataReceiver(new NT4Publisher());
-            Logger.addDataReceiver(new WPILOGWriter());
+            // Logger.addDataReceiver(new WPILOGWriter());
         }
 
         Logger.start();
@@ -138,8 +139,8 @@ public class Robot extends LoggedRobot {
 		Led.getInstance();
 		commandScheduler.schedule(
 			Led.getInstance().setRainbowCommand());
-
-		DriverStation.startDataLog(DataLogManager.getLog());
+		Drive.getInstance().getCtreDrive().setStateStdDevs(VisionConstants.STATE_STD_DEVS);
+		// DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
 
@@ -170,6 +171,9 @@ public class Robot extends LoggedRobot {
 	public void disabledInit() {
 		commandScheduler.schedule(
 			Led.getInstance().setRainbowCommand());
+			
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.ROTATION_STD_DEVS);
+		
 	}
 
 	/** This function is called periodically during disabled. */
@@ -178,9 +182,16 @@ public class Robot extends LoggedRobot {
 
 	}
 
+	@Override
+	public void disabledExit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	}
+
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
 		commandScheduler.schedule(
 			Led.getInstance().setSolidColorCommand(Color.kBlue));
 		autoCommand = autoChooser.getAuto();
@@ -203,6 +214,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
 		commandScheduler.schedule(
 			Led.getInstance().blinkCommand(Color.kRed, Color.kYellow, 0.25));
 		ControlsMapping.mapTeleopCommand();
@@ -219,6 +232,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void testInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
 		commandScheduler.schedule(
 			Led.getInstance().setSolidColorCommand(Color.kGray));
 		// Cancels all running commands at the start of test mode.

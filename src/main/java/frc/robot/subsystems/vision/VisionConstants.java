@@ -23,6 +23,11 @@ public class VisionConstants {
             Math.pow(0.35, 1), // vision
             Math.pow(0.35, 1),
             Math.pow(Double.POSITIVE_INFINITY, 1));
+    public static final Matrix<N3, N1> ROTATION_STD_DEVS =
+        VecBuilder.fill(
+            Math.pow(0.35, 1), // vision
+            Math.pow(0.35, 1),
+            Math.pow(0.35, 1));
         
     public static enum VisionDeviceConstants {
         FR_CONSTANTS (

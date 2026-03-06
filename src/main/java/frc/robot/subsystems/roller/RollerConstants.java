@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 
@@ -22,6 +23,8 @@ public class RollerConstants {
                 .withStatorCurrentLimit(70)
                 // .withSupplyCurrentLimit(120)
                 )
+            // .withTorqueCurrent(new TorqueCurrentConfigs()
+            //     .withPeakForwardTorqueCurrent(null))
             .withVoltage(new VoltageConfigs()
             .withPeakForwardVoltage(12.0)
             .withPeakReverseVoltage(-12.0))

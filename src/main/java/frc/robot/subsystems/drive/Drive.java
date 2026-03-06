@@ -45,7 +45,7 @@ import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
-import frc.robot.subsystems.shooter.ShotCalculator;
+// import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
@@ -112,7 +112,7 @@ public class Drive extends SubsystemBase {
 		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
 		io.process();
 
-		SmartDashboard.putNumber("toShooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
+		// SmartDashboard.putNumber("toShooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
 	}
 
 	/**
@@ -170,9 +170,9 @@ public class Drive extends SubsystemBase {
             double yFancy = xy[1];
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
-			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
 
 			teleopRequest
 				.withVelocityX(xFancy * MAX_SPEED)
@@ -308,25 +308,19 @@ public class Drive extends SubsystemBase {
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
 	public Command headingLockToHub() {
-		TelemetryManager.getInstance().addStructPublisher(
-			"thing", Pose2d.struct, () -> new Pose2d(Constants.FieldConstants.allianceCorrected(
-					FieldPoses.HUB.pose3d.getTranslation()
-					// Constants.FieldConstants.Hub.topCenterPoint
-					).toTranslation2d(), Rotation2d.kZero));
+		// TelemetryManager.getInstance().addStructPublisher(
+		// 	"thing", Pose2d.struct, () -> new Pose2d(Constants.FieldConstants.allianceCorrected(
+		// 			FieldPoses.HUB.pose3d.getTranslation()
+		// 			// Constants.FieldConstants.Hub.topCenterPoint
+		// 			).toTranslation2d(), Rotation2d.kZero));
 
-		return Commands.runOnce(() -> ShotCalculator.getInstance().setTarget(
-				Constants.FieldConstants.allianceCorrected(
-					FieldPoses.HUB.pose3d.getTranslation()
-					// Constants.FieldConstants.Hub.topCenterPoint
-					)))
-			.andThen(
-				headingLockToPose(
-					Constants.FieldConstants
-						.allianceCorrected(
-							FieldPoses.HUB.pose3d.getTranslation()
-							// Constants.FieldConstants.Hub.topCenterPoint
-							)
-								.toTranslation2d()));
+		return headingLockToPose(
+				Constants.FieldConstants
+					.allianceCorrected(
+						FieldPoses.HUB.pose3d.getTranslation()
+						// Constants.FieldConstants.Hub.topCenterPoint
+						)
+							.toTranslation2d());
 	}
 
 	/** 

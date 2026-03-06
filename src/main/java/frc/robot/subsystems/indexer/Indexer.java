@@ -66,21 +66,6 @@ public class Indexer extends SubsystemBase {
                     .withInverted(InvertedValue.Clockwise_Positive));
         }
         motor.getConfigurator().apply(config);
-        // lc = new LaserCan(isLeft ? L_LASER_ID : R_LASER_ID);
-        // lcTwo = new LaserCan(LASER_ID_2);
-
-        /* new laser configs */
-        // if (Robot.isReal()) {
-        // for (int i = 0; i < 20; i++) {
-        //     try {
-        //         lc.setRangingMode(LaserCan.RangingMode.SHORT);
-        //         lc.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-        //         lc.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
-        //         break;
-        //     } catch (ConfigurationFailedException e) {
-        //         System.out.println("Configuration failed! " + e);
-        //     }
-        // }}
 
         if (Robot.isSimulation()) {
             wheelSim = new FlywheelSim(
@@ -91,14 +76,6 @@ public class Indexer extends SubsystemBase {
                 DCMotor.getKrakenX44(1), 
                 0.0);
         }
-        // try {
-        //     lcTwo.setRangingMode(LaserCan.RangingMode.SHORT);
-        //     lcTwo.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-        //     lcTwo.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
-        // } catch (ConfigurationFailedException e) {
-        //     System.out.println("Configuration failed! " + e);
-        // }
-
         io = new IndexerIO(getName(), motor);
         // TelemetryManager.getInstance().addSendable(this);
     }
@@ -151,6 +128,10 @@ public class Indexer extends SubsystemBase {
 
     public Command activateIndexer() {
         return setSpeed(ROLLING_SPEED);
+    }
+
+    public Command back() {
+        return setSpeed(-ROLLING_SPEED);
     }
 
     /** turn motor down to zero */

@@ -91,6 +91,10 @@ public class Roller extends SubsystemBase {
         return setSpeed(ROLL_SPEED);
     }
 
+    public Command antiRoll() {
+        return setSpeed(-ROLL_SPEED);
+    }
+
     public Command stop() {
         return runOnce(() -> setRequest(new CoastOut()))
             .withName("Stop");

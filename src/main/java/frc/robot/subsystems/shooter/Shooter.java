@@ -4,6 +4,8 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
@@ -29,6 +31,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.lib.util.Util;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants.FieldPoses;
 import frc.robot.subsystems.shooter.ShooterConstants.Motors;
 
 public class Shooter extends SubsystemBase {
@@ -57,7 +62,7 @@ public class Shooter extends SubsystemBase {
     private FlywheelSim topSim;
     private FlywheelSim bottomSim;
 
-    private ShotCalculator shotCalculator = ShotCalculator.getInstance();
+    // private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
     private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N2, N1>();
 
@@ -131,13 +136,26 @@ public class Shooter extends SubsystemBase {
         topMotor.setControl(topRequest);
         bottomMotor.setControl(bottomRequest);
 
-        SmartDashboard.putNumber(
-            "ShooterV", 
-            distance_to_shooter.get(
-                SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0));
+        // SmartDashboard.putNumber(
+        //     "ShooterV", 
+        //     distance_to_shooter.get(
+        //         SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0));
 
         io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
         io.process();
+
+        SmartDashboard.putNumber("toShooter", Drive.getInstance().getPose().getTranslation()
+                .getDistance(
+                    Constants.FieldConstants.allianceCorrected(
+                        FieldPoses.HUB.pose3d.getTranslation()
+                    ).toTranslation2d()));
+        SmartDashboard.putNumber("ShooterVel", 
+            distance_to_shooter.get(
+                Drive.getInstance().getPose().getTranslation()
+                    .getDistance(
+                        Constants.FieldConstants.allianceCorrected(
+                            FieldPoses.HUB.pose3d.getTranslation()
+                        ).toTranslation2d())).get(0, 0));
     }
 
     public double getTopSpeed() {
@@ -195,7 +213,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot(DoubleSupplier distance) {
-        return shoot(distance_to_shooter.get(distance.getAsDouble()).get(0, 0) - 15, distance_to_shooter.get(distance.getAsDouble()).get(1, 0) + 15);
+        return shoot(
+            distance_to_shooter.get(distance.getAsDouble())
+                .get(0, 0) - 15, 
+            distance_to_shooter.get(distance.getAsDouble())
+                .get(1, 0) + 15);
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
@@ -214,7 +236,11 @@ public class Shooter extends SubsystemBase {
 
 
     public Command shoot() {
-        return shoot(() -> shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR, 
-            () -> -shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR);
+        return shoot(() -> 
+            Drive.getInstance().getPose().getTranslation()
+                .getDistance(
+                    Constants.FieldConstants.allianceCorrected(
+                        FieldPoses.HUB.pose3d.getTranslation()
+                    ).toTranslation2d()));
     }
 }

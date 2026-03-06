@@ -1,28 +1,20 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.Robot.controller;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.lib.field.FieldUtil;
-import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.vision.VisionDeviceManager;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
@@ -39,78 +31,80 @@ public class ControlsMapping {
 		controller.back().and(controller.y()).onTrue(
 				Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
 
-		// controller.leftTrigger().debounce(0.1).whileTrue(Intake.getInstance().outtake());
-		// controller.b().whileTrue(Intake.getInstance().outtake());
-		// controller.x().onTrue(Climb.getInstance().hangCommand());
+		controller.x().whileTrue(Intake.getInstance().outtake());
 
-		// controller.rightTrigger().debounce(0.1
-		// // ).onTrue(
-		// // Commands.parallel(
-		// // Shooter.getLeftInstance().shoot(50, -50),
-		// // Shooter.getRightInstance().shoot(50, -50))
-		// // ).onFalse(
-		// // Commands.parallel(
-		// // Shooter.getLeftInstance().stop(),
-		// // Shooter.getRightInstance().stop())
-		// ).whileTrue(
-		// Commands.parallel(
-		// Indexer.getLeftInstance().activateIndexer(),
-		// Indexer.getRightInstance().activateIndexer())
-		// ).whileTrue(
-		// Commands.repeatingSequence(
-		// Commands.runOnce(() -> Robot.fuelSim.launchFuel(
-		// MetersPerSecond.of(
-		// Shooter.getLeftInstance().getTopSpeed() * Constants.TAU * 0.0508),
-		// Degrees.of(75),
-		// Degrees.of(0),
-		// Inches.of(19)
-		// )).andThen(Commands.waitSeconds(0.1))
-		// )
-		// );
-		controller.rightBumper().whileTrue(
-		Commands.parallel(
-		Shooter.getRightInstance().shoot(
-		() -> SmartDashboard.getNumber("rightV", 30) - 15,
-		() -> SmartDashboard.getNumber("rightV", 30) + 15
-		),
-		Shooter.getLeftInstance().shoot(
-		() -> SmartDashboard.getNumber("leftV", 30) - 15,
-		() -> SmartDashboard.getNumber("leftV", 30) + 15
-		)
-		)
-		).onFalse(
-		Commands.parallel(
-		Shooter.getRightInstance().stop(),
-		Shooter.getLeftInstance().stop()
-		)
-		);
-		// controller.rightBumper().whileTrue(
-		// 		Commands.parallel(
-		// 				Shooter.getRightInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1)),
-		// 				Shooter.getLeftInstance().shoot(() -> SmartDashboard.getNumber("toShooter", 1))))
-		// 		.onFalse(
-		// 				Commands.parallel(
-		// 						Shooter.getRightInstance().stop(),
-		// 						Shooter.getLeftInstance().stop()));
+		controller.rightBumper()
+			.whileTrue(shootAll())
+			.onFalse(stopShoot());
+		controller.leftBumper()
+			.whileTrue(indexAll())
+			.onFalse(stopIndex());
 
-		controller.leftBumper().whileTrue(
-				Commands.parallel(
-						Indexer.getRightInstance().activateIndexer(),
-						Indexer.getLeftInstance().activateIndexer(),
-						Roller.getInstance().roll()))
-				.onFalse(
-						Commands.parallel(
-								Indexer.getRightInstance().deactivateIndexer(),
-								Indexer.getLeftInstance().deactivateIndexer(),
-								Roller.getInstance().stop()));
+		controller.leftTrigger()
+			.whileTrue(Intake.getInstance().intake())
+			.onFalse(Intake.getInstance().stopWheel());
 
-		controller.leftTrigger().whileTrue(
-				Intake.getInstance().intake()).onFalse(Intake.getInstance().stopWheel());
-		// controller.y().onTrue(Intake.getInstance().)
+		controller.y().and(controller.back().negate())
+			.whileTrue(Intake.getInstance().stow())
+			.onFalse(Intake.getInstance().lower());
+
 		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
-		// Shooter.getRightInstance().shoot()));
 		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
-		controller.povUp().onTrue(Intake.getInstance().stow());
+		controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
+
+		// controller.a().whileTrue(
+		// 	Intake.getInstance().agitate()
+		// ).onFalse(Intake.getInstance().lower());
+		
+		// controller.rightBumper().whileTrue(
+		// 	Commands.parallel(
+		// 		Shooter.getRightInstance().shoot(
+		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[0] - 15,
+		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[0] + 15
+		// 		),
+		// 		Shooter.getLeftInstance().shoot(
+		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[1] - 15,
+		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[1] + 15
+		// 		)
+		// 	)
+		// 	).onFalse(
+		// 		stopShoot()
+		// 	)
+		// );
+
+	}
+
+	public static Command shootAll() {
+		return Commands.parallel(
+			Shooter.getRightInstance().shoot(),
+			Shooter.getLeftInstance().shoot());
+	}
+
+	public static Command stopShoot() {
+		return Commands.parallel(
+			Shooter.getRightInstance().stop(),
+			Shooter.getLeftInstance().stop());
+	}
+
+	public static Command indexAll() {
+		return Commands.parallel(
+			Indexer.getRightInstance().activateIndexer(),
+			Indexer.getLeftInstance().activateIndexer(),
+			Roller.getInstance().roll());
+	}
+
+	public static Command stopIndex() {
+		return Commands.parallel(
+			Indexer.getRightInstance().deactivateIndexer(),
+			Indexer.getLeftInstance().deactivateIndexer(),
+			Roller.getInstance().stop());
+	}
+
+	public static Command backIndex() {
+		return Commands.parallel(
+				Indexer.getRightInstance().back(),
+				Indexer.getLeftInstance().back(),
+				Roller.getInstance().antiRoll());
 	}
 
 	public static void mapSysId() {
