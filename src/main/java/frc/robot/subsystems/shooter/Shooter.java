@@ -24,6 +24,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -58,7 +59,7 @@ public class Shooter extends SubsystemBase {
 
     private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
-    private InterpolatingMatrixTreeMap<Double, N3, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N3, N1>();
+    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N2, N1>();
 
     private ShooterIO io;
 
@@ -112,8 +113,14 @@ public class Shooter extends SubsystemBase {
 
         io = new ShooterIO(getName(), topMotor, bottomMotor);
 
-        distance_to_shooter.put(1.6015, VecBuilder.fill(37.5, 31.875, 10));
-        distance_to_shooter.put(2.49,VecBuilder.fill(44.0625, 39.140625, 15));
+        distance_to_shooter.put(0.0, VecBuilder.fill(0,0));
+        distance_to_shooter.put(0.641, VecBuilder.fill(25.0, 25.0));
+        distance_to_shooter.put(1.06, VecBuilder.fill(31.25, 31.25));
+        distance_to_shooter.put(1.56, VecBuilder.fill(34.375, 34.375));
+        distance_to_shooter.put(2.04, VecBuilder.fill(37.5, 37.5));
+        distance_to_shooter.put(2.54, VecBuilder.fill(49.21875, 49.21875));
+        distance_to_shooter.put(3.0, VecBuilder.fill(60.9375, 60.9375));
+        distance_to_shooter.put(3.4, VecBuilder.fill(81.25, 81.265));
     }
 
     @Override
@@ -123,6 +130,12 @@ public class Shooter extends SubsystemBase {
         lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
         topMotor.setControl(topRequest);
         bottomMotor.setControl(bottomRequest);
+
+        SmartDashboard.putNumber(
+            "ShooterV", 
+            distance_to_shooter.get(
+                SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0));
+
         io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
         io.process();
     }
@@ -182,7 +195,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot(DoubleSupplier distance) {
-        return shoot(distance_to_shooter.get(distance.getAsDouble()).get(0, 0), distance_to_shooter.get(distance.getAsDouble()).get(1, 0) - 10);
+        return shoot(distance_to_shooter.get(distance.getAsDouble()).get(0, 0) - 15, distance_to_shooter.get(distance.getAsDouble()).get(1, 0) + 15);
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
