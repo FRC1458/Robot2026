@@ -69,8 +69,22 @@ public class ControlsMapping {
 		// 	)
 		// 	).onFalse(
 		// 		stopShoot()
-		// 	)
-		// );
+		// 	);
+
+		controller.rightBumper().whileTrue(
+			Commands.parallel(
+				Shooter.getRightInstance().shoot(
+					() -> SmartDashboard.getNumber("rightv", 30.0) - 15,
+					() -> SmartDashboard.getNumber("rightv", 30.0) + 15
+				),
+				Shooter.getLeftInstance().shoot(
+					() -> SmartDashboard.getNumber("leftv", 30.0) - 15,
+					() -> SmartDashboard.getNumber("leftv", 30.0) + 15
+				)
+			)
+			).onFalse(
+				stopShoot()
+			);
 
 	}
 

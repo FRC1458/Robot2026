@@ -15,7 +15,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -128,8 +128,14 @@ public class Robot extends LoggedRobot {
 		// Intake.getInstance();
 		// Climb.getInstance();
 
-		SmartDashboard.putNumber("rightV", 30);
-		SmartDashboard.putNumber("leftV", 30);
+		SmartDashboard.putNumber("rightv", 30);
+		SmartDashboard.putNumber("leftv", 30);
+		
+		NamedCommands.registerCommand("shoot", Commands.parallel(Shooter.getLeftInstance().shoot(), Shooter.getRightInstance().shoot()));
+		NamedCommands.registerCommand("hang", Commands.parallel(Climb.getInstance().hangCommand()));
+		NamedCommands.registerCommand("stopShoot", Commands.parallel(
+			Shooter.getRightInstance().stop(),
+			Shooter.getLeftInstance().stop()));
 
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
@@ -194,6 +200,7 @@ public class Robot extends LoggedRobot {
 	
 		commandScheduler.schedule(
 			Led.getInstance().setSolidColorCommand(Color.kBlue));
+
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
 			commandScheduler.schedule(autoCommand);
