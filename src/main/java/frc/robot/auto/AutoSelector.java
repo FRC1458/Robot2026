@@ -26,29 +26,32 @@ public class AutoSelector {
     private final SendableChooser<Supplier<Command>> chooser = new SendableChooser<>();
 
     public AutoSelector() {
-        Method[] autos = AutoRoutines.class.getMethods();
-        // Warning: dark and evil magic below
-        for (Method auto : autos) {
-            if (auto.isAnnotationPresent(Auto.class)) {
-                String name = auto.getAnnotation(Auto.class).name();
-                if (name.equals("")) {
-                    name = auto.getName();
-                }
+        // Method[] autos = AutoRoutines.class.getMethods();
+        // // Warning: dark and evil magic below
+        // for (Method auto : autos) {
+        //     if (auto.isAnnotationPresent(Auto.class)) {
+        //         String name = auto.getAnnotation(Auto.class).name();
+        //         if (name.equals("")) {
+        //             name = auto.getName();
+        //         }
 
-                if (auto.getReturnType() == Command.class) {
-                    chooser.addOption(name, () -> {
-                        try {
-                            return (Command) auto.invoke(null);
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    });
-                } else {
-                    DriverStation.reportWarning(
-                        "@Auto annotation for this element is not supported", true);
-                }
-            }
-        }
+        //         if (auto.getReturnType() == Command.class) {
+        //             chooser.addOption(name, () -> {
+        //                 try {
+        //                     return (Command) auto.invoke(null);
+        //                 } catch (Exception e) {
+        //                     DriverStation.reportWarning(
+        //                         "something really bad happened", true);
+        //                     return null;
+        //                 }
+        //             });
+        //         } else {
+        //             DriverStation.reportWarning(
+        //                 "@Auto annotation for this element is not supported", true);
+        //         }
+        //     }
+        // }
+        chooser.addOption("right", () -> AutoRoutines.rightAutoNeutral());
 
         chooser.setDefaultOption("None", () -> null);
         SmartDashboard.putData("Auto Selector", chooser);
