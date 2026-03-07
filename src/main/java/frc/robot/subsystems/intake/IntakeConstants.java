@@ -23,7 +23,7 @@ public class IntakeConstants {
     public static final double BAR_POSITION_UP = Degrees.of(126).in(Rotations);
     public static final double BAR_GEAR_RATIO = 44.0 / 18.0 * 5.0 * 4.0;
     public static final double BAR_POS_MIN = 0.0;
-    public static final double BAR_POS_MAX = Degrees.of(126).in(Rotations);
+    public static final double BAR_POS_MAX = Degrees.of(127).in(Rotations);
     public static final double INTAKE_MASS = 3.656684786; // kg, ideally
     public static final double INTAKE_LENGTH = 0.1746631508; //m, hopefully
     

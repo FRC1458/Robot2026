@@ -64,18 +64,20 @@ public class VisionDeviceManager extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		if (Robot.isSimulation()) {
-			visionSim.update(Drive.getInstance().getPose());
-		}
 		cameras.forEach(VisionDevice::periodic);
 		movingAvgRead = headingAvg.getAverage();
-
+		
 		io.updateInputs(getCurrentCommand(), getDefaultCommand());
 		io.process();
 		// SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
 		// SmartDashboard.putBoolean("vision disabled", getVisionDisabled());
 	}
-
+	
+	@Override
+	public void simulationPeriodic() {
+		visionSim.update(Drive.getInstance().getPose());
+	}
+	
 	public double getMovingAvgRead() {
 		return movingAvgRead;
 	}

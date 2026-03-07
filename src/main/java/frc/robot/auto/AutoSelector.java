@@ -43,7 +43,7 @@ public class AutoSelector {
                             return (Command) auto.invoke(null);
                         } catch (Exception e) {
                             DriverStation.reportWarning(
-                                "something really bad happened", true);
+                                "something really bad happened " + e.getMessage(), true);
                             return null;
                         }
                     });
@@ -53,7 +53,7 @@ public class AutoSelector {
                 }
             }
         }
-        // chooser.addOption("right", () -> AutoRoutines.rightAutoNeutral());
+        // chooser.addOption("right", () -> AutoRoutines.leftAutoNeutral());
 
         chooser.setDefaultOption("None", () -> null);
         SmartDashboard.putData("Auto Selector", chooser);

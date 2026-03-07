@@ -74,8 +74,7 @@ public class Intake extends SubsystemBase {
                 BAR_POS_MAX,
                 true,
                 BAR_POSITION_UP,
-                0.0, 0.0
-            );
+                0.0, 0.0);
 
             barMotor.getSimState()
                 .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
@@ -95,7 +94,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic(){
         wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
-        barPosition = barMotor.getPosition().getValueAsDouble();
+        barPosition = barMotor.getPosition().getValue().in(Degrees);
         barMotor.setControl(barRequest);
         wheelMotor.setControl(wheelRequest);
         io.updateInputs(wheelSpeed, barPosition, getCurrentCommand(), getDefaultCommand());
