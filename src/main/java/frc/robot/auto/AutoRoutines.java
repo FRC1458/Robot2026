@@ -86,5 +86,62 @@ public final class AutoRoutines {
 					.andThen(
 						Automation.indexAll()));
 	}
+
+	@Auto(name = "left neutral auto")
+	public static Command leftAutoNeutral() {
+		var tTrenchLeft = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER, 
+			"TrenchLeft");
+
+		if (tTrenchLeft.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+
+		var tSwipeLeft = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER, 
+			"SwipeLeft");
+
+		if (tSwipeLeft.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+
+		var tReturnTrenchLeft = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER, 
+			"ReturnTrenchLeft");
+
+		if (tReturnTrenchLeft.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+
+		var crossTrench = tTrenchLeft.get();
+		var swipe = tSwipeLeft.get();
+		var back = tReturnTrenchLeft.get();
+		return 
+			Intake.getInstance().calibrateZero()
+				.alongWith(
+					new TrajectoryCommand(crossTrench))
+			.andThen(
+				Intake.getInstance().intake())
+			.andThen(
+				new TrajectoryCommand(swipe))
+			.andThen(
+				Intake.getInstance().lower()
+					.alongWith(
+						new TrajectoryCommand(back)))
+			.andThen(
+				Drive.getInstance().headingLockToHub())
+			.alongWith(
+				Automation.shootAll()
+					.andThen(
+						Commands.waitSeconds(0.5))
+					.andThen(
+						Automation.indexAll()));
+	}
 }
 
