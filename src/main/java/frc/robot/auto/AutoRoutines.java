@@ -30,7 +30,7 @@ public final class AutoRoutines {
 		return new TrajectoryCommand(traj);
 	}
 
-	// @Auto(name = "right neutral auto")
+	@Auto(name = "right neutral auto")
 	public static Command rightAutoNeutral() {
 		var tTrenchRight = TrajectoryLoader.loadAutoTrajectory(
 			TrajectoryType.PATHPLANNER, 
