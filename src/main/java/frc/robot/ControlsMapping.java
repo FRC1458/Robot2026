@@ -30,8 +30,9 @@ public class ControlsMapping {
 		controller.back().and(controller.y()).onTrue(
 				Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
 
-		controller.x().whileTrue(Intake.getInstance().outtake());
+		// controller.x().whileTrue(Intake.getInstance().outtake());
 
+	
 		controller.rightBumper()
 			.whileTrue(shootAll())
 			.onFalse(stopShoot());
@@ -51,10 +52,10 @@ public class ControlsMapping {
 		// controller.povDown().onTrue(Intake.getInstance().calibrateZero());
 		// controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
 
-		controller.y().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
-		controller.x().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
-		controller.b().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
-		controller.a().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
+		controller.y().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
+		controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
+		controller.b().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
+		controller.a().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
 		// controller.a().whileTrue(
 		// 	Intake.getInstance().agitate()
 		// ).onFalse(Intake.getInstance().lower());

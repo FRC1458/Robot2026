@@ -105,6 +105,7 @@ public class Robot extends LoggedRobot {
             Logger.addDataReceiver(new NT4Publisher());
         }
 
+		Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs"));
         Logger.start();
         if (!Logger.hasReplaySource()) {
             RobotController.setTimeSource(RobotController::getFPGATime);

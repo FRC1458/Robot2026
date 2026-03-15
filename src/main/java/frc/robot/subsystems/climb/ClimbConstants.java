@@ -26,7 +26,7 @@ public class ClimbConstants {
     public static final double MAX_ACCEL = 1.5;
     public static final double MAX_SPEED = 1.0; // m/s
     
-    public static final int CLIMB_MOTOR_ID = 25; // change this
+    public static final int CLIMB_MOTOR_ID = 35; // change this
 
     public static enum Setpoint {
         BASE(0.003), // small offset to prevent stalling (allegedly)
@@ -52,7 +52,9 @@ public class ClimbConstants {
                 .withMotionMagicJerk(320))
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(60)
-                .withSupplyCurrentLimit(60))
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0))

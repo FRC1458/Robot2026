@@ -29,7 +29,10 @@ public class IndexerConstants {
                 .withKS(0.0)
                 .withKV(0.0)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(80)
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true)
                 // .withSupplyCurrentLimit(120)
                 )
             .withVoltage(new VoltageConfigs()

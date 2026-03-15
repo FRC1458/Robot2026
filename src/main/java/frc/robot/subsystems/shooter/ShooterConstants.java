@@ -28,18 +28,43 @@ public final class ShooterConstants {
     }
     
     /** Config for shooter motors */
-    public static TalonFXConfiguration getConfig() {
+    public static TalonFXConfiguration getTopConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
-                .withKV(0.0)
-                .withKP(0.6)
+                .withKP(0.3)
                 .withKI(0.0)
                 .withKD(0.0)
-                .withKA(0.0)
-                .withKS(5.0)
-                .withKV(0.0)) // placeholder values
+                .withKA(0.012289)
+                .withKS(0.12018)
+                .withKV(0.12347)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(60))
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
+            .withVoltage(new VoltageConfigs()
+                .withPeakForwardVoltage(12.0)
+                .withPeakReverseVoltage(-12.0))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(120) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(120)
+                .withMotionMagicJerk(120));
+    }
+    /** Config for shooter motors */
+    public static TalonFXConfiguration getBottomConfig() {
+        return new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs()
+                .withKP(0.3)
+                .withKI(0.0)
+                .withKD(0.0)
+                .withKA(0.0092851)
+                .withKS(0.068015)
+                .withKV(0.11781)) // placeholder values
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0))

@@ -46,7 +46,9 @@ public class CompCtreDriveConstants {
         .withCurrentLimits(
             new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(Amps.of(60))
-                .withStatorCurrentLimitEnable(true)   
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true) 
         );
     private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
@@ -54,7 +56,9 @@ public class CompCtreDriveConstants {
                 // Swerve azimuth does not require much torque output, so we can set a relatively low
                 // stator current limit to help avoid brownouts without impacting performance.
                 .withStatorCurrentLimit(Amps.of(40))
+                .withSupplyCurrentLimit(40)
                 .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true)
         );
 
     public static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();

@@ -88,20 +88,28 @@ public class Shooter extends SubsystemBase {
             topID = Motors.TOPRIGHT.id;
         }
 
-        var config = getConfig();
+        var tconfig = getTopConfig();
 
         if (!left) {
-            config = config.clone().withMotorOutput(
+            tconfig = tconfig.clone().withMotorOutput(
+                    new MotorOutputConfigs()
+                            .withInverted(InvertedValue.Clockwise_Positive));
+        }
+
+        var bconfig = getBottomConfig();
+
+        if (!left) {
+            bconfig = bconfig.clone().withMotorOutput(
                     new MotorOutputConfigs()
                             .withInverted(InvertedValue.Clockwise_Positive));
         }
 
         bottomMotor = new TalonFX(bottomID);
-        bottomMotor.getConfigurator().apply(config);
+        bottomMotor.getConfigurator().apply(bconfig);
         bottomMotor.setNeutralMode(NeutralModeValue.Coast);
 
         topMotor = new TalonFX(topID);
-        topMotor.getConfigurator().apply(config);
+        topMotor.getConfigurator().apply(tconfig);
         topMotor.setNeutralMode(NeutralModeValue.Coast);
 
         if (Robot.isSimulation()) {
@@ -223,14 +231,15 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return shoot(() -> Drive.getInstance().getPose().getTranslation()
-                .getDistance(
-                        Constants.FieldConstants.allianceCorrected(
-                                FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
+        return shoot(30, 30);
+        // return shoot(() -> Drive.getInstance().getPose().getTranslation()
+        //         .getDistance(
+        //                 Constants.FieldConstants.allianceCorrected(
+        //                         FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
     }
 
-    public Command runVolts(double voltage) {
-        return runOnce(() -> setTopRequest(new VoltageOut(voltage)));
+    public void runVolts(Voltage voltage) {
+        setTopRequest(new VoltageOut(voltage));
     }
 
     public SysIdRoutine sysId() {
@@ -239,7 +248,7 @@ public class Shooter extends SubsystemBase {
                         null, null, null, // Use default config
                         (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
-                        (voltage) -> runVolts(voltage.in(Volts)),
+                        this::runVolts,
                         null, // No log consumer, since data is recorded by AdvantageKit
                         this));
     }
