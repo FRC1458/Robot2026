@@ -1,18 +1,13 @@
 package frc.robot.auto;
 
-import frc.robot.Constants;
 import frc.robot.auto.AutoSelector.Auto;
 import frc.robot.lib.trajectory.RedTrajectory;
 import frc.robot.lib.trajectory.TrajectoryLoader;
 import frc.robot.lib.trajectory.RedTrajectory.TrajectoryType;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.commands.AutopilotCommand;
-import frc.robot.subsystems.drive.commands.HeadingLockToHub2;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.intake.Intake;
-
-import com.therekrab.autopilot.APTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

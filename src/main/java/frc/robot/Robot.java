@@ -54,8 +54,6 @@ public class Robot extends LoggedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	private AutoSelector autoChooser;
 	private Command autoCommand;
-	private static final String standardMap = "standard";
-    private static final String mapTwo = "mapTwo";
     private final SendableChooser<String> mapChooser = new SendableChooser<>();
 
 	public static final CommandXboxController controller =
@@ -73,10 +71,8 @@ public class Robot extends LoggedRobot {
 		//robot data loggers 
 		boolean usbPresent = new java.io.File("/u").exists();
 		if (usbPresent) {
-		//   DataLogManager.start("/u/logs");  // USB stick
 		  System.out.println("Log/USB mounts OK");
 		} else {
-		//   DataLogManager.start();           // falls back to /home/lvuser/logs
 		  System.out.println("Log/USB mounts NOT OK");
 		}
 
@@ -85,6 +81,7 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
         Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
         Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+
         switch (BuildConstants.DIRTY) {
             case 0:
                 Logger.recordMetadata("GitDirty", "All changes committed");
@@ -98,26 +95,20 @@ public class Robot extends LoggedRobot {
         }
 
         if (RobotBase.isReal()) {
-            // Logger.addDataReceiver(new WPILOGWriter());
             if (!DriverStation.isFMSAttached()) {
                 Logger.addDataReceiver(new NT4Publisher());
             }
         } else if (replay) {
             setUseTiming(false);
             String logPath = LogFileUtil.findReplayLog();
-            // Logger.setReplaySource(new WPILOGReader(logPath));
-            // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         } else if (RobotBase.isSimulation()) {
             Logger.addDataReceiver(new NT4Publisher());
-            // Logger.addDataReceiver(new WPILOGWriter());
         }
 
         Logger.start();
         if (!Logger.hasReplaySource()) {
             RobotController.setTimeSource(RobotController::getFPGATime);
         }
-
-		VisionDeviceManager.getInstance();
 		
 		Drive.getInstance();
 		Shooter.getLeftInstance();
@@ -125,28 +116,33 @@ public class Robot extends LoggedRobot {
 		Indexer.getLeftInstance();
 		Indexer.getRightInstance();
 		Roller.getInstance();
-		// Intake.getInstance();
-		// Climb.getInstance();
+		Intake.getInstance();
+		Climb.getInstance();
 
-		SmartDashboard.putNumber("rightv", 30);
-		SmartDashboard.putNumber("leftv", 30);
-		
-		NamedCommands.registerCommand("shoot", Commands.parallel(Shooter.getLeftInstance().shoot(), Shooter.getRightInstance().shoot()));
-		NamedCommands.registerCommand("hang", Commands.parallel(Climb.getInstance().hangCommand()));
-		NamedCommands.registerCommand("stopShoot", Commands.parallel(
-			Shooter.getRightInstance().stop(),
-			Shooter.getLeftInstance().stop()));
+		VisionDeviceManager.getInstance();
+
+		/** TODO: 1 LED? */
+		Led.getInstance();
+
+		/** TODO: Interpolate */
+		// SmartDashboard.putNumber("rightv", 30);
+		// SmartDashboard.putNumber("leftv", 30);
+
+
+		/** TODO: Why this break robot? */
+		// NamedCommands.registerCommand("shoot", Commands.parallel(Shooter.getLeftInstance().shoot(), Shooter.getRightInstance().shoot()));
+		// NamedCommands.registerCommand("hang", Commands.parallel(Climb.getInstance().hangCommand()));
+		// NamedCommands.registerCommand("stopShoot", Commands.parallel(
+		// 	Shooter.getRightInstance().stop(),
+		// 	Shooter.getLeftInstance().stop()));
 
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
-		Led.getInstance();
-		commandScheduler.schedule(
-			Led.getInstance().setRainbowCommand());
+		commandScheduler.schedule(Led.getInstance().setRainbowCommand());
 		Drive.getInstance().getCtreDrive().setStateStdDevs(VisionConstants.STATE_STD_DEVS);
-		// DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
 

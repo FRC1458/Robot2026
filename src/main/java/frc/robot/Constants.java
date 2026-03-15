@@ -26,9 +26,6 @@ public final class Constants {
 		public static final double DRIVER_DEADBAND = 0.07;
 	}
 
-	public static final class Odometry {
-	}
-
 	public static final class Pathplanner {
 		public static RobotConfig config;
 		static {

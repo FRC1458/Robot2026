@@ -5,7 +5,6 @@ import static frc.robot.Robot.controller;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
@@ -24,7 +23,6 @@ public class ControlsMapping {
 	public static void mapTeleopCommand() {
 
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
-		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
 		controller.back().and(controller.a()).onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 		controller.back().and(controller.b()).onTrue(VisionDeviceManager.getInstance().bootUp());
@@ -55,36 +53,21 @@ public class ControlsMapping {
 		// controller.a().whileTrue(
 		// 	Intake.getInstance().agitate()
 		// ).onFalse(Intake.getInstance().lower());
-		
+
 		// controller.rightBumper().whileTrue(
 		// 	Commands.parallel(
 		// 		Shooter.getRightInstance().shoot(
-		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[0] - 15,
-		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[0] + 15
+		// 			() -> SmartDashboard.getNumber("rightv", 30.0) - 15,
+		// 			() -> SmartDashboard.getNumber("rightv", 30.0) + 15
 		// 		),
 		// 		Shooter.getLeftInstance().shoot(
-		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[1] - 15,
-		// 			() -> SmartDashboard.getNumberArray("shootervel", new Double[] {30.0, 30.0})[1] + 15
+		// 			() -> SmartDashboard.getNumber("leftv", 30.0) - 15,
+		// 			() -> SmartDashboard.getNumber("leftv", 30.0) + 15
 		// 		)
 		// 	)
 		// 	).onFalse(
 		// 		stopShoot()
 		// 	);
-
-		controller.rightBumper().whileTrue(
-			Commands.parallel(
-				Shooter.getRightInstance().shoot(
-					() -> SmartDashboard.getNumber("rightv", 30.0) - 15,
-					() -> SmartDashboard.getNumber("rightv", 30.0) + 15
-				),
-				Shooter.getLeftInstance().shoot(
-					() -> SmartDashboard.getNumber("leftv", 30.0) - 15,
-					() -> SmartDashboard.getNumber("leftv", 30.0) + 15
-				)
-			)
-			).onFalse(
-				stopShoot()
-			);
 
 	}
 
@@ -121,6 +104,7 @@ public class ControlsMapping {
 				Roller.getInstance().antiRoll());
 	}
 
+	@SuppressWarnings("removal")
 	public static void mapSysId() {
 		// set up sysID routine type
 		controller.a().onTrue(new InstantCommand(
@@ -155,5 +139,4 @@ public class ControlsMapping {
 										.finallyDo(interrupted -> Drive.getInstance().getCtreDrive()
 												.setControl(new SwerveRequest.Idle()))));
 	}
-
 }

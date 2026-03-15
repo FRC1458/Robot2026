@@ -74,6 +74,7 @@ public class VisionDevice {
 		hasTarget = false;
 	}
 
+	@SuppressWarnings("removal")
 	private void processFrames() {
 		// var results = camera.getAllUnreadResults();
 		// for (var result : results) {
@@ -132,6 +133,7 @@ public class VisionDevice {
 		// }
 	}
 
+	@SuppressWarnings("removal")
 	private void processFramesRigged(Matrix<N3, N1> riggedness) {
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
