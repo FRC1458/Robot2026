@@ -5,6 +5,7 @@ import static frc.robot.Robot.controller;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
@@ -38,18 +39,22 @@ public class ControlsMapping {
 			.whileTrue(indexAll())
 			.onFalse(stopIndex());
 
-		controller.leftTrigger()
-			.whileTrue(Intake.getInstance().intake())
-			.onFalse(Intake.getInstance().stopWheel());
+		// controller.leftTrigger()
+		// 	.whileTrue(Intake.getInstance().intake())
+		// 	.onFalse(Intake.getInstance().stopWheel());
 
-		controller.y().and(controller.back().negate())
-			.whileTrue(Intake.getInstance().stow())
-			.onFalse(Intake.getInstance().lower());
+		// controller.y().and(controller.back().negate())
+		// 	.whileTrue(Intake.getInstance().stow())
+		// 	.onFalse(Intake.getInstance().lower());
 
 		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
-		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
-		controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
+		// controller.povDown().onTrue(Intake.getInstance().calibrateZero());
+		// controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
 
+		controller.y().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
+		controller.x().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
+		controller.b().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
+		controller.a().and(controller.back().negate()).whileTrue(Shooter.getLeftInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
 		// controller.a().whileTrue(
 		// 	Intake.getInstance().agitate()
 		// ).onFalse(Intake.getInstance().lower());
