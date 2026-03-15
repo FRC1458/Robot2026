@@ -138,19 +138,6 @@ public class Shooter extends SubsystemBase {
 
         io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
         io.process();
-
-        SmartDashboard.putNumber("toShooter", Drive.getInstance().getPose().getTranslation()
-                .getDistance(
-                    Constants.FieldConstants.allianceCorrected(
-                        FieldPoses.HUB.pose3d.getTranslation()
-                    ).toTranslation2d()));
-        SmartDashboard.putNumber("ShooterVel", 
-            distance_to_shooter.get(
-                Drive.getInstance().getPose().getTranslation()
-                    .getDistance(
-                        Constants.FieldConstants.allianceCorrected(
-                            FieldPoses.HUB.pose3d.getTranslation()
-                        ).toTranslation2d())).get(0, 0));
     }
 
     public double getTopSpeed() {
