@@ -92,6 +92,9 @@ public class VisionDevice {
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
 			var target = result.getBestTarget();
+			if (target.getPoseAmbiguity() > 0.2) {
+				return;
+			}
 
 			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
 				target.getBestCameraToTarget(), 

@@ -19,6 +19,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.InterpolatingMatrixTreeMap;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -69,6 +70,7 @@ public class Shooter extends SubsystemBase {
     // private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
     private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N2, N1>();
+    private InterpolatingDoubleTreeMap tree = new InterpolatingDoubleTreeMap();
 
     private ShooterIO io;
 
@@ -137,6 +139,18 @@ public class Shooter extends SubsystemBase {
         distance_to_shooter.put(2.54, VecBuilder.fill(49.21875, 49.21875));
         distance_to_shooter.put(3.0, VecBuilder.fill(60.9375, 60.9375));
         distance_to_shooter.put(3.4, VecBuilder.fill(81.25, 81.265));
+
+        tree.put(1.24, 27.0);
+        tree.put(1.56, 28.0);
+        tree.put(1.752, 29.8);
+        tree.put(2.005, 32.0);
+        tree.put(2.77, 36.0);
+        tree.put(3.09, 44.0);
+        tree.put(2.45, 34.5);
+        tree.put(2.3, 33.3);
+        tree.put(1.87, 32.0);
+        tree.put(2.094, 32.6);
+        tree.put(2.91, 39.8);
     }
 
     @Override
@@ -211,10 +225,12 @@ public class Shooter extends SubsystemBase {
 
     public Command shoot(DoubleSupplier distance) {
         return shoot(
-                distance_to_shooter.get(distance.getAsDouble())
-                        .get(0, 0) - 15,
-                distance_to_shooter.get(distance.getAsDouble())
-                        .get(1, 0) + 15);
+            tree.get(distance.getAsDouble()) - 15,
+            tree.get(distance.getAsDouble()) + 15);
+                // distance_to_shooter.get(distance.getAsDouble())
+                //         .get(0, 0) - 15,
+                // distance_to_shooter.get(distance.getAsDouble())
+                //         .get(1, 0) + 15);
     }
 
     public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
@@ -231,11 +247,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shoot() {
-        return shoot(30, 30);
-        // return shoot(() -> Drive.getInstance().getPose().getTranslation()
-        //         .getDistance(
-        //                 Constants.FieldConstants.allianceCorrected(
-        //                         FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
+        // return shoot(30, 30);
+        return shoot(() -> Drive.getInstance().getPose().getTranslation()
+                .getDistance(
+                        Constants.FieldConstants.allianceCorrected(
+                                FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
     }
 
     public void runVolts(Voltage voltage) {

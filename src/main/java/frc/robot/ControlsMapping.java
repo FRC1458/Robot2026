@@ -2,6 +2,8 @@ package frc.robot;
 
 import static frc.robot.Robot.controller;
 
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.*;
@@ -20,6 +22,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 
 public class ControlsMapping {
+
+	public static LoggedNetworkNumber speed = new LoggedNetworkNumber("speed", 30);
+	public static LoggedNetworkNumber bottom = new LoggedNetworkNumber("bottom", 30);
 
 	public static void mapTeleopCommand() {
 
@@ -40,17 +45,17 @@ public class ControlsMapping {
 			.whileTrue(indexAll())
 			.onFalse(stopIndex());
 
-		// controller.leftTrigger()
-		// 	.whileTrue(Intake.getInstance().intake())
-		// 	.onFalse(Intake.getInstance().stopWheel());
+		controller.leftTrigger()
+			.whileTrue(Intake.getInstance().intake())
+			.onFalse(Intake.getInstance().stopWheel());
 
-		// controller.y().and(controller.back().negate())
-		// 	.whileTrue(Intake.getInstance().stow())
-		// 	.onFalse(Intake.getInstance().lower());
+		controller.y().and(controller.back().negate())
+			.whileTrue(Intake.getInstance().stow())
+			.onFalse(Intake.getInstance().lower());
 
 		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
-		// controller.povDown().onTrue(Intake.getInstance().calibrateZero());
-		// controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
+		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
+		controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
 
 		controller.y().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
 		controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
@@ -81,6 +86,11 @@ public class ControlsMapping {
 		return Commands.parallel(
 			Shooter.getRightInstance().shoot(),
 			Shooter.getLeftInstance().shoot());
+	}
+	public static Command shootAllTable() {
+		return Commands.parallel(
+			Shooter.getRightInstance().shoot(speed::getAsDouble, speed::getAsDouble),
+			Shooter.getLeftInstance().shoot(speed::getAsDouble, speed::getAsDouble));
 	}
 
 	public static Command stopShoot() {

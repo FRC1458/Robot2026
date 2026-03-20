@@ -36,6 +36,7 @@ import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.drive.DriveConstants.FieldPoses;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.led.Led;
@@ -160,7 +161,10 @@ public class Robot extends LoggedRobot {
 		// commands, running already-scheduled commands, removing finished or interrupted commands,
 		// and running subsystem periodic() methods.  This must be called from the robot's periodic
 		// block in order for anything in the Command-based framework to work.
-
+		SmartDashboard.putNumber("toShooter", Drive.getInstance().getPose().getTranslation()
+			.getDistance(
+				Constants.FieldConstants.allianceCorrected(
+					FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
 		commandScheduler.run();
 		double now = Timer.getFPGATimestamp();
 		fpsTracker.add(1.0 / (now - lastTime));
