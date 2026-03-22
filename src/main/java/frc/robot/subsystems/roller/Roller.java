@@ -92,7 +92,7 @@ public class Roller extends SubsystemBase {
     }
 
     public Command antiRoll() {
-        return setSpeed(-ROLL_SPEED);
+        return setSpeed(-ROLL_SPEED/2);
     }
 
     public Command stop() {

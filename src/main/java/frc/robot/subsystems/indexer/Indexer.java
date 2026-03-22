@@ -2,18 +2,23 @@ package frc.robot.subsystems.indexer;
 
 import static frc.robot.subsystems.indexer.IndexerConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 
 // TODO (ethan): only activate if shooter ready
@@ -192,5 +197,20 @@ public class Indexer extends SubsystemBase {
     //     // builder.addBooleanProperty("Has Ball", () -> hasBall, null);
     //     TelemetryManager.makeSendableTalonFX("Indexer Motor", motor, builder);
     // }
+
+    public void runVolts(Voltage voltage) {
+        setRequest(new VoltageOut(voltage));
+    }
+
+    public SysIdRoutine sysId() {
+        return new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null, null, null, // Use default config
+                        (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(
+                        this::runVolts,
+                        null, // No log consumer, since data is recorded by AdvantageKit
+                        this));
+    }
 
 }
