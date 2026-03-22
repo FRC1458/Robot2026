@@ -44,7 +44,7 @@ public class Climb extends SubsystemBase {
 
 	private Climb() {
 		super();
-		climbMotor = new TalonFX(CLIMB_MOTOR_ID);
+		climbMotor = new TalonFX(CLIMB_MOTOR_ID,"CV");
 		climbMotor.getConfigurator().apply(getConfig());
 		climbMotor.setNeutralMode(NeutralModeValue.Brake);
 		if (Robot.isSimulation()) {

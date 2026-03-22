@@ -45,7 +45,7 @@ public class ControlsMapping {
 			.whileTrue(indexAll())
 			.onFalse(stopIndex());
 
-		controller.leftTrigger()
+		controller.rightTrigger()
 			.whileTrue(Intake.getInstance().intake())
 			.onFalse(Intake.getInstance().stopWheel());
 
@@ -53,15 +53,15 @@ public class ControlsMapping {
 			.whileTrue(Intake.getInstance().stow())
 			.onFalse(Intake.getInstance().lower());
 
-		controller.rightTrigger().whileTrue(Drive.getInstance().headingLockToHub());
+		controller.leftTrigger().whileTrue(Drive.getInstance().headingLockToHub());
 		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
 		controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
 
-		controller.y().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
-		controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
-		controller.b().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
-		controller.a().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
-		// controller.a().whileTrue(
+		// controller.y().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
+		// controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
+		// controller.b().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
+		// controller.a().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
+		// // controller.a().whileTrue(
 		// 	Intake.getInstance().agitate()
 		// ).onFalse(Intake.getInstance().lower());
 

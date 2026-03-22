@@ -26,7 +26,7 @@ public class ClimbConstants {
     public static final double MAX_ACCEL = 1.5;
     public static final double MAX_SPEED = 1.0; // m/s
     
-    public static final int CLIMB_MOTOR_ID = 35; // change this
+    public static final int CLIMB_MOTOR_ID = 41; // change this
 
     public static enum Setpoint {
         BASE(0.003), // small offset to prevent stalling (allegedly)
