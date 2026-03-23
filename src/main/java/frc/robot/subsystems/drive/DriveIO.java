@@ -23,8 +23,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib.io.CancoderIO;
-import frc.robot.lib.io.TalonFXIO;
+import frc.robot.lib.oldio.CancoderIO;
+import frc.robot.lib.oldio.TalonFXIO;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 
 public class DriveIO {

@@ -4,6 +4,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.List;
 
@@ -302,5 +305,12 @@ public class Util {
 		double decelTime = maxSpeed / maxAccel;
 
 		return accelTime + cruiseTime + decelTime;
+	}
+
+	public static <T extends Unit> boolean epsilonEquals(Measure<T> actual, Measure<T> target, Measure<T> epsilon) {
+		double actualUnits = actual.baseUnitMagnitude();
+		double targetUnits = target.baseUnitMagnitude();
+		double epsilonUnits = epsilon.baseUnitMagnitude();
+		return MathUtil.isNear(actualUnits, targetUnits, epsilonUnits);
 	}
 }

@@ -7,7 +7,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib.io.TalonFXIO;
+import frc.robot.lib.oldio.TalonFXIO;
 
 public  class ClimbIO {
     @AutoLog
