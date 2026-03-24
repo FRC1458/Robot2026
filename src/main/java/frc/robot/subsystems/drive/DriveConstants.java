@@ -10,7 +10,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.lib.field.FieldLayout;
-import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
+import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 
 public final class DriveConstants {		
     public static final double EPSILON_TRANSLATION = 0.015; // cm
@@ -27,7 +27,7 @@ public final class DriveConstants {
     // Swerve dimensions
     public static final double TRACK_WIDTH = Units.Inches.of(24).in(Units.Meters);
     public static final double WHEEL_BASE =	Units.Inches.of(24).in(Units.Meters);
-    public static final double WHEEL_DIAMETER = 2 * CtreDriveConstants.kWheelRadius.in(Units.Meters);
+    public static final double WHEEL_DIAMETER = 2 * CompCtreDriveConstants.kWheelRadius.in(Units.Meters);
     public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
 
     // Stability constants

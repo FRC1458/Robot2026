@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import edu.wpi.first.math.Matrix;
@@ -14,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
@@ -82,6 +80,9 @@ public class VisionDevice {
 		// 	}
 		// }
 
+		// if (Robot.isSimulation()) {
+		// 	botPose = sim.process(0.01, constants.robotToCamera);
+		// }
 		
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
@@ -175,10 +176,10 @@ public class VisionDevice {
 
 		processFrames();
 
-		SmartDashboard.putNumber(
-				"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
-		// SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
-		SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
+		// SmartDashboard.putNumber(
+		// 		"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
+		// // SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
+		// SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
 	}
 
 	public boolean isConnected() {

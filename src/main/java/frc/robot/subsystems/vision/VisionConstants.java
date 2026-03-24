@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -18,23 +20,29 @@ public class VisionConstants {
             Math.pow(0.02, 1)); // drive
     public static final Matrix<N3, N1> LOCAL_MEASUREMENT_STD_DEVS =
         VecBuilder.fill(
-            Math.pow(0.2, 1), // vision
-            Math.pow(0.2, 1),
+            Math.pow(0.35, 1), // vision
+            Math.pow(0.35, 1),
             Math.pow(Double.POSITIVE_INFINITY, 1));
         
     public static enum VisionDeviceConstants {
         FR_CONSTANTS (
-            "frontr",
+            "orangelight", //right camera 
             new Transform3d(
-                new Translation3d(0.2822, 0.1087, 0.1984),
-                new Rotation3d(0.5 * Constants.TAU, 14.0 * Constants.TAU / 360.0, -26.0 * Constants.TAU/360.0)),
+                new Translation3d(
+                    Inches.of(13.124114),   //wpi x-axis positive is forward direction 
+                    Inches.of(-3.030256),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
+                    Inches.of(14.365654)),
+                new Rotation3d(0, 26 * Constants.TAU / 360.0, -32.5 * Constants.TAU/360.0)), //(roll: x, pitch: y, yaw: z)
             1, 1280, 800),
         
         FL_CONSTANTS (
-            "frontl",
+            "lemonlight", //left camera 
             new Transform3d(
-                new Translation3d(0.2822, -0.1087, 0.1984),
-                new Rotation3d(0.5 * Constants.TAU, 14.0 * Constants.TAU / 360.0, 26.0 * Constants.TAU/360.0)),
+                new Translation3d(
+                    Inches.of(13.262586),   //wpi x-axis positive is forward direction
+                    Inches.of(4.52790),     //wpi y-axis positive is strafe left, so left camera shall have positive offset
+                    Inches.of(14.325391)),
+                new Rotation3d(0, 24 * Constants.TAU / 360.0, 27.5 * Constants.TAU/360.0)),
             2, 1280, 800);
 
         public final String tableName;

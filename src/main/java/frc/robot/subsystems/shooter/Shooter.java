@@ -1,0 +1,192 @@
+package frc.robot.subsystems.shooter;
+
+import static frc.robot.subsystems.shooter.ShooterConstants.*;
+
+import java.util.function.DoubleSupplier;
+
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.subsystems.shooter.ShooterConstants.Motors;
+
+public class Shooter extends SubsystemBase {
+    private static Shooter shooterLeftInstance;
+    private static Shooter shooterRightInstance;
+	public static Shooter getLeftInstance() {
+		if (shooterLeftInstance == null) {
+			shooterLeftInstance = new Shooter(true);
+		}
+		return shooterLeftInstance;
+	}
+
+	public static Shooter getRightInstance() {
+		if (shooterRightInstance == null) {
+			shooterRightInstance = new Shooter(false);
+		}
+		return shooterRightInstance;
+	}
+    private final TalonFX topMotor;
+    private final TalonFX bottomMotor;
+	private double lastReadSpeedTop;
+    private double lastReadSpeedBottom;
+	private ControlRequest topRequest = new NeutralOut();
+	private ControlRequest bottomRequest = new NeutralOut();
+
+    private FlywheelSim topSim;
+    private FlywheelSim bottomSim;
+
+    private ShotCalculator shotCalculator = ShotCalculator.getInstance();
+
+    private ShooterIO io;
+
+    private Shooter(boolean left) {
+        super();
+
+        setName(this.getClass().getSimpleName() + (left ? "Left" : "Right"));
+
+        int bottomID;
+        int topID;
+
+        if (left) {
+            bottomID = Motors.BOTTOMLEFT.id;
+            topID = Motors.TOPLEFT.id;
+        }
+        else {
+            bottomID = Motors.BOTTOMRIGHT.id;
+            topID = Motors.TOPRIGHT.id;
+        }
+
+        var config = getConfig();
+
+        if (!left) {
+            config = config.clone().withMotorOutput(
+                new MotorOutputConfigs()
+                    .withInverted(InvertedValue.Clockwise_Positive));
+        }
+
+		bottomMotor = new TalonFX(bottomID);
+		bottomMotor.getConfigurator().apply(config);
+		bottomMotor.setNeutralMode(NeutralModeValue.Coast);
+
+        topMotor = new TalonFX(topID);
+		topMotor.getConfigurator().apply(config);
+		topMotor.setNeutralMode(NeutralModeValue.Coast);
+        
+        if (Robot.isSimulation()) {
+            topSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX60(1),
+                    0.000489000861,
+                    1
+                ), DCMotor.getKrakenX60(1), 0.0);
+            bottomSim = new FlywheelSim(
+                LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX60(1),
+                    0.000489000861,
+                    1
+                ), DCMotor.getKrakenX60(1), 0.0);
+        }
+
+        io = new ShooterIO(getName(), topMotor, bottomMotor);
+    }
+
+    @Override
+    public void periodic() {
+        // Read inputs
+        lastReadSpeedTop = topMotor.getVelocity().getValueAsDouble();
+        lastReadSpeedBottom = bottomMotor.getVelocity().getValueAsDouble();
+        topMotor.setControl(topRequest);
+        bottomMotor.setControl(bottomRequest);
+        io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
+        io.process();
+    }
+
+    public double getTopSpeed() {
+        return lastReadSpeedTop;
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        topMotor.getSimState().setSupplyVoltage(12);
+        bottomMotor.getSimState().setSupplyVoltage(12);
+
+        topSim.setInput(topMotor.getSimState().getMotorVoltage());
+        topSim.update(0.020);
+		topMotor.getSimState()
+            .setRotorVelocity(topSim.getAngularVelocityRPM() / 60.0);
+        topMotor.getSimState().addRotorPosition(topSim.getAngularVelocityRPM() / 60.0 * 0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(topSim.getCurrentDrawAmps()));
+        
+        bottomSim.setInput(bottomMotor.getSimState().getMotorVoltage());
+        bottomSim.update(0.020);
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculateDefaultBatteryLoadedVoltage(bottomSim.getCurrentDrawAmps()));
+		bottomMotor.getSimState()
+            .setRotorVelocity(topSim.getAngularVelocityRPM() / 60.0);
+        bottomMotor.getSimState().addRotorPosition(topSim.getAngularVelocityRPM() / 60.0 * 0.020);
+
+    }
+
+    /** Replaces the request */
+    private void setTopRequest(ControlRequest request) {
+        this.topRequest = request;
+    }    
+    
+    /** Replaces the request */
+    private void setBottomRequest(ControlRequest request) {
+        this.bottomRequest = request;
+    }
+
+    /** Stops the shooter */
+    public Command stop() {
+        return runOnce(
+            () -> {
+                setTopRequest(new CoastOut());
+                setBottomRequest(new CoastOut());
+            }
+        ).withName("Stopped");
+    }
+
+    public Command shoot(double topSpeed, double bottomSpeed) {
+        return runOnce(() -> {
+            setTopRequest(new MotionMagicVelocityVoltage(topSpeed));
+            setBottomRequest(new MotionMagicVelocityVoltage(bottomSpeed));
+        }).withName("Shooting");
+    }
+
+    public Command shoot(DoubleSupplier topSpeed, DoubleSupplier bottomSpeed) {
+        var topReq = new MotionMagicVelocityVoltage(0.0);
+        var bottomReq = new MotionMagicVelocityVoltage(0.0);
+        return runOnce(() -> {
+            setTopRequest(topReq);
+            setBottomRequest(bottomReq);
+        }).andThen(
+            run(() -> {
+                topReq.withVelocity(topSpeed.getAsDouble());
+                bottomReq.withVelocity(bottomSpeed.getAsDouble());
+            })
+        ).withName("Shooting");
+    }
+
+
+    public Command shoot() {
+        return shoot(() -> shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR, 
+            () -> -shotCalculator.getInterceptSolution().launchSpeed() / Constants.TAU / 0.0508 - TOPSPIN_FACTOR);
+    }
+}
