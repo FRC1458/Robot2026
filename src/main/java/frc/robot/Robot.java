@@ -36,6 +36,8 @@ import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
+<<<<<<< HEAD
+=======
 import frc.robot.subsystems.drive.DriveConstants.FieldPoses;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
@@ -43,6 +45,7 @@ import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.roller.Roller;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.VisionConstants;
+>>>>>>> origin/sotm
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -113,6 +116,8 @@ public class Robot extends LoggedRobot {
         }
 		
 		Drive.getInstance();
+<<<<<<< HEAD
+=======
 		Shooter.getLeftInstance();
 		Shooter.getRightInstance();
 		Indexer.getLeftInstance();
@@ -138,6 +143,7 @@ public class Robot extends LoggedRobot {
 		// 	Shooter.getRightInstance().stop(),
 		// 	Shooter.getLeftInstance().stop()));
 
+>>>>>>> origin/sotm
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());

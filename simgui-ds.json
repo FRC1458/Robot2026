@@ -11,6 +11,12 @@
           "incKey": 68
         },
         {
+<<<<<<< HEAD
+          "decayRate": 0.0,
+          "keyRate": 0.009999999776482582
+        },
+        {},
+=======
           "decKey": 49,
           "incKey": 50
         },
@@ -20,6 +26,7 @@
           "incKey": 52,
           "keyRate": 1.0
         },
+>>>>>>> origin/sotm
         {
           "decKey": 74,
           "incKey": 76
