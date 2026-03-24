@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
@@ -68,10 +67,14 @@ public class VisionDevice {
 		// poseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
 
 		this.constants = constants;
+		TelemetryManager.getInstance().addStructPublisher(
+			constants.name() + "Pose", Pose2d.struct, 
+			() -> botPose);
 
 		hasTarget = false;
 	}
 
+	@SuppressWarnings("removal")
 	private void processFrames() {
 		// var results = camera.getAllUnreadResults();
 		// for (var result : results) {
@@ -82,10 +85,16 @@ public class VisionDevice {
 		// 	}
 		// }
 
+		// if (Robot.isSimulation()) {
+		// 	botPose = sim.process(0.01, constants.robotToCamera);
+		// }
 		
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
 			var target = result.getBestTarget();
+			if (target.getPoseAmbiguity() > 0.2) {
+				return;
+			}
 
 			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
 				target.getBestCameraToTarget(), 
@@ -127,6 +136,7 @@ public class VisionDevice {
 		// }
 	}
 
+	@SuppressWarnings("removal")
 	private void processFramesRigged(Matrix<N3, N1> riggedness) {
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
@@ -175,10 +185,10 @@ public class VisionDevice {
 
 		processFrames();
 
-		SmartDashboard.putNumber(
-				"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
-		// SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
-		SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
+		// SmartDashboard.putNumber(
+		// 		"Vision " + constants.tableName + "/Last Update Timestamp Timestamp", latestTimestamp);
+		// // SmartDashboard.putNumber("Vision " + mConstants.tableName + "/N Queued Updates", frames.size());
+		// SmartDashboard.putBoolean("Vision " + constants.tableName + "/is Connnected", isConnected);
 	}
 
 	public boolean isConnected() {

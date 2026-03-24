@@ -4,7 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.SignalLogger;
+import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -23,8 +23,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.subsystems.drive.ctre.CtreDriveConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants.TunerSwerveDrivetrain;
 
+
+// FL: -0.419922
+// FR: 0.141113
+// BL: -0.460693
+// BR: 0.193604
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
@@ -63,21 +68,14 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
             // state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
-            null        
+            (state) -> Logger.recordOutput("SysIdDrive", state.toString())        
             ),
         new SysIdRoutine.Mechanism(
             output -> {
                 m_lastAppliedVolts = output.in(Volts);
                 setControl(m_translationCharacterization.withVolts(output));
             },
-            log -> {
-                var s = getStateCopy();
-                log.motor("drive")
-                   .voltage(Volts.of(m_lastAppliedVolts))
-                   .linearPosition(Meters.of(s.Pose.getTranslation().getX())) // or avg wheel distance
-                   .linearVelocity(MetersPerSecond.of(getKinematics()
-                             .toChassisSpeeds(s.ModuleStates).vxMetersPerSecond));
-              },
+            null ,
               this
         )
     );
@@ -89,7 +87,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(7), // Use dynamic voltage of 7 V
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
+            (state) -> Logger.recordOutput("SysIdSteer", state.toString())        
         ),
         new SysIdRoutine.Mechanism(
             volts -> setControl(m_steerCharacterization.withVolts(volts)),
@@ -112,7 +110,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             null, // Use default timeout (10 s)
             // Log state with SignalLogger class
             //state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-            null
+            (state) -> Logger.recordOutput("SysIdRotation", state.toString())
         ),
         new SysIdRoutine.Mechanism(
             output -> {
@@ -120,14 +118,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
                 m_lastAppliedVolts = output.in(Volts);
                 setControl(m_rotationCharacterization.withRotationalRate(m_lastAppliedVolts));
             },
-            log -> {
-                var s = getStateCopy();
-                log.motor("yaw")
-                   .voltage(Volts.of(m_lastAppliedVolts))
-                   .angularPosition(Radians.of(s.Pose.getRotation().getRadians())) // get rotation position
-                   .angularVelocity(RadiansPerSecond.of(getKinematics()
-                             .toChassisSpeeds(s.ModuleStates).omegaRadiansPerSecond));
-              },
+            null,
               this
            
             // output -> {
