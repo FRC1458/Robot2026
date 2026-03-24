@@ -5,12 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * A class to select autos
@@ -40,6 +42,8 @@ public class AutoSelector {
                         try {
                             return (Command) auto.invoke(null);
                         } catch (Exception e) {
+                            DriverStation.reportWarning(
+                                "something really bad happened " + e.getMessage(), true);
                             return null;
                         }
                     });
@@ -49,13 +53,14 @@ public class AutoSelector {
                 }
             }
         }
+        // chooser.addOption("right", () -> AutoRoutines.leftAutoNeutral());
 
         chooser.setDefaultOption("None", () -> null);
-        SmartDashboard.putData(chooser);
+        SmartDashboard.putData("Auto Selector", chooser);
     }
 
     /** Gets the auto selected from the SmartDashboard */
     public Command getAuto() {
-        return chooser.getSelected().get();
+        return Optional.of(chooser.getSelected()).orElse(() -> Commands.none()).get();
     }
 }
