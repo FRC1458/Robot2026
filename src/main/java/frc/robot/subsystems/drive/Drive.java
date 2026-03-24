@@ -16,8 +16,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-// import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -25,8 +24,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -37,12 +34,11 @@ import frc.robot.lib.control.ControlConstants.PIDVConstants;
 import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.field.FieldLayout;
-import frc.robot.lib.field.FieldUtil;
 import frc.robot.lib.trajectory.LocalADStarWrapper;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
-import frc.robot.subsystems.shooter.ShotCalculator;
+// import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
 import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
@@ -108,6 +104,8 @@ public class Drive extends SubsystemBase {
 		FieldLayout.field.setRobotPose(getPose());
 		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
 		io.process();
+
+		// SmartDashboard.putNumber("toShooter", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
 	}
 
 	/**
@@ -165,9 +163,9 @@ public class Drive extends SubsystemBase {
             double yFancy = xy[1];
             double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
-			SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
-			SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
+			// SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
 
 			teleopRequest
 				.withVelocityX(xFancy * MAX_SPEED)
@@ -199,7 +197,7 @@ public class Drive extends SubsystemBase {
 	 * Locks the robot onto a pose. 
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
-	public Command headingLockToPose(Pose2d pose) {
+	public Command headingLockToPose(Translation2d pose) {
 		SwerveRequest.FieldCentric request = 
 			new SwerveRequest.FieldCentric();
 		
@@ -229,7 +227,7 @@ public class Drive extends SubsystemBase {
 				double yFancy = xy[1];
 
 				var state = getState();
-				var delta = pose.getTranslation().minus(getPose().getTranslation());
+				var delta = pose.minus(getPose().getTranslation());
 				var targetDirection = delta.getAngle();
 				
 				
@@ -322,14 +320,19 @@ public class Drive extends SubsystemBase {
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
 	public Command headingLockToHub() {
-		return Commands.runOnce(() -> ShotCalculator.getInstance().setTarget(
-			DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? 
-				DriveConstants.FieldPoses.HUB.pose3d :
-				new Pose3d(
-					FieldUtil.flipPose(DriveConstants.FieldPoses.HUB.pose).getX(), 
-					FieldUtil.flipPose(DriveConstants.FieldPoses.HUB.pose).getY(), 
-					DriveConstants.FieldPoses.HUB.pose3d.getZ(), Rotation3d.kZero)))
-			.andThen(headingLockToPose(() -> ShotCalculator.getInstance().getCurrentEffectiveTargetPose().toPose2d()));
+		// TelemetryManager.getInstance().addStructPublisher(
+		// 	"thing", Pose2d.struct, () -> new Pose2d(Constants.FieldConstants.allianceCorrected(
+		// 			FieldPoses.HUB.pose3d.getTranslation()
+		// 			// Constants.FieldConstants.Hub.topCenterPoint
+		// 			).toTranslation2d(), Rotation2d.kZero));
+
+		return headingLockToPose(
+				Constants.FieldConstants
+					.allianceCorrected(
+						FieldPoses.HUB.pose3d.getTranslation()
+						// Constants.FieldConstants.Hub.topCenterPoint
+						)
+							.toTranslation2d());
 	}
 
 	/** 

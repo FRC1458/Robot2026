@@ -1,15 +1,11 @@
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
-
 import frc.robot.lib.util.TunableNumber;
-import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.util.MovingAverageDouble;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -58,26 +54,26 @@ public class VisionDeviceManager extends SubsystemBase {
 			visionSim.addAprilTags(FieldLayout.APRILTAG_MAP);
 			cameras.forEach((camera) -> visionSim.addCamera(camera.getSimulation(), camera.getConstants().robotToCamera));
 		}
-		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(LOCAL_MEASUREMENT_STD_DEVS);
-		Drive.getInstance().getCtreDrive().setStateStdDevs(STATE_STD_DEVS);
 		io = new VisionIO(getName(), this);
 		// TelemetryManager.getInstance().addSendable(this);
 	}
 
 	@Override
 	public void periodic() {
-		if (Robot.isSimulation()) {
-			visionSim.update(Drive.getInstance().getPose());
-		}
 		cameras.forEach(VisionDevice::periodic);
 		movingAvgRead = headingAvg.getAverage();
-
+		
 		io.updateInputs(getCurrentCommand(), getDefaultCommand());
 		io.process();
 		// SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
 		// SmartDashboard.putBoolean("vision disabled", getVisionDisabled());
 	}
-
+	
+	@Override
+	public void simulationPeriodic() {
+		visionSim.update(Drive.getInstance().getPose());
+	}
+	
 	public double getMovingAvgRead() {
 		return movingAvgRead;
 	}
@@ -96,8 +92,8 @@ public class VisionDeviceManager extends SubsystemBase {
 
 	public Command bootUp() {
 		return Commands.parallel(
-			// frontlCamera.bootUpSequence(),
-			// frontrCamera.bootUpSequence()
+				frontlCamera.bootUpSequence(),
+				frontrCamera.bootUpSequence()
 			)
 			.withTimeout(4)
 			.andThen(Commands.print("Finished vision bootup"));

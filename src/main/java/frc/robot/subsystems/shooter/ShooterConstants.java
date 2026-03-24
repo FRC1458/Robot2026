@@ -7,7 +7,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public final class ShooterConstants {		
     public static final double GEAR_RATIO = 1;
@@ -15,8 +14,7 @@ public final class ShooterConstants {
     public static final double TOPSPIN_FACTOR = 0;
 
     public static final Transform3d OFFSET = new Transform3d();
-    public static final InterpolatingDoubleTreeMap DISTANCE_TO_SHOT_SPEED = new InterpolatingDoubleTreeMap();
-
+    
     /** Motor ids */
     public static enum Motors {
         TOPLEFT(24),
@@ -30,18 +28,43 @@ public final class ShooterConstants {
     }
     
     /** Config for shooter motors */
-    public static TalonFXConfiguration getConfig() {
+    public static TalonFXConfiguration getTopConfig() {
         return new TalonFXConfiguration()
             .withSlot0(new Slot0Configs()
-                .withKV(0.0)
-                .withKP(0.7)
+                .withKP(0.3)
                 .withKI(0.0)
                 .withKD(0.0)
-                .withKA(0.0)
-                .withKS(5.0)
-                .withKV(0.0)) // placeholder values
+                .withKA(0.012289)
+                .withKS(0.12018)
+                .withKV(0.12347)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(60))
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
+            .withVoltage(new VoltageConfigs()
+                .withPeakForwardVoltage(12.0)
+                .withPeakReverseVoltage(-12.0))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(120) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(120)
+                .withMotionMagicJerk(120));
+    }
+    /** Config for shooter motors */
+    public static TalonFXConfiguration getBottomConfig() {
+        return new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs()
+                .withKP(0.3)
+                .withKI(0.0)
+                .withKD(0.0)
+                .withKA(0.0092851)
+                .withKS(0.068015)
+                .withKV(0.11781)) // placeholder values
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
             .withVoltage(new VoltageConfigs()
                 .withPeakForwardVoltage(12.0)
                 .withPeakReverseVoltage(-12.0))

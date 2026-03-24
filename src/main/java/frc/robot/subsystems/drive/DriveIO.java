@@ -122,12 +122,10 @@ public class DriveIO {
     private final String name;
     private final ModuleIO[] moduleIOs;
     private final GyroIO gyroIO;
-    private final CtreDrive drivetrain;
     private final DriveIOInputsAutoLogged inputs;
 
     public DriveIO(String name, CtreDrive drivetrain) {
         this.name = name;
-        this.drivetrain = drivetrain;
         inputs = new DriveIOInputsAutoLogged();
 
         //FrontLeft, FrontRight, BackLeft, BackRight

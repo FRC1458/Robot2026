@@ -5,9 +5,8 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -73,8 +72,7 @@ public class Intake extends SubsystemBase {
                 BAR_POS_MAX,
                 true,
                 BAR_POSITION_UP,
-                0.0, 0.0
-            );
+                0.0, 0.0);
 
             barMotor.getSimState()
                 .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
@@ -94,7 +92,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic(){
         wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
-        barPosition = barMotor.getPosition().getValueAsDouble();
+        barPosition = barMotor.getPosition().getValue().in(Degrees);
         barMotor.setControl(barRequest);
         wheelMotor.setControl(wheelRequest);
         io.updateInputs(wheelSpeed, barPosition, getCurrentCommand(), getDefaultCommand());
@@ -140,7 +138,17 @@ public class Intake extends SubsystemBase {
         return setSetpoint(0.0, BAR_POSITION_UP)
             .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
     }
+
+    public Command agitate() {
+        return setSetpoint(0.0, BAR_POSITION_DOWN)
+            .andThen(setSetpoint(0.0, BAR_POSITION_MID))
+            .repeatedly();
+    }
     
+    public Command lower() {
+        return setSetpoint(0.0, BAR_POSITION_DOWN);
+    }
+
     //----------------set request---------------
     private void setRequestWheel(ControlRequest request) {
         this.wheelRequest = request;
@@ -189,7 +197,7 @@ public class Intake extends SubsystemBase {
     public Command setBarPosition(double position) {
         double checkedPos = MathUtil.clamp(position, BAR_POS_MIN, BAR_POS_MAX);
 
-        var req = new PositionVoltage(checkedPos);
+        var req = new MotionMagicVoltage(checkedPos);
         return runOnce(() ->
             setRequestBar(req)
         ).withName("bar pos set" + (checkedPos));
@@ -218,7 +226,7 @@ public class Intake extends SubsystemBase {
      * @return Command to run
      */
     public Command calibrateZero() {
-        VoltageOut calibrationRequest = new VoltageOut(-1)
+        VoltageOut calibrationRequest = new VoltageOut(-0.5)
             .withIgnoreHardwareLimits(true)
             .withIgnoreSoftwareLimits(true);
 
@@ -226,7 +234,7 @@ public class Intake extends SubsystemBase {
         Trigger isHardStop = new Trigger(() -> {
             return barMotor.getVelocity().getValue().abs(RotationsPerSecond) < 1 &&
                 barMotor.getTorqueCurrent().getValue().abs(Amps) > 10;
-        }).debounce(0.1);
+        }).debounce(0.05);
 
         return run(() -> {
             barMotor.setControl(calibrationRequest);

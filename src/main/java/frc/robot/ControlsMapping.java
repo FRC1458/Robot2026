@@ -16,11 +16,6 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
-<<<<<<< HEAD
-import frc.robot.subsystems.vision.VisionDeviceManager;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-=======
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.roller.Roller;
@@ -28,16 +23,15 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 
->>>>>>> 81cd114328c916e94e7701a2cf77ec819cffbd8d
 
 public class ControlsMapping {
 
 	public static void mapTeleopCommand() {
 		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
-<<<<<<< HEAD
 		// run sysID functions
 		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
 		
@@ -55,7 +49,6 @@ public class ControlsMapping {
 		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
 		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
-=======
 		// Intake.getInstance().setDefaultCommand(Intake.getInstance().intake());
 
 		controller.back().onTrue(Drive.getInstance().resetPoseCommand(new
@@ -122,7 +115,6 @@ public class ControlsMapping {
 		// controller.y().onTrue(Intake.getInstance().)
 		controller.leftBumper().whileTrue(Drive.getInstance().headingLockToHub());
 		// Shooter.getRightInstance().shoot()));
->>>>>>> 81cd114328c916e94e7701a2cf77ec819cffbd8d
 	}
 
 	public static void mapSysId() {

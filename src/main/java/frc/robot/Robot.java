@@ -36,13 +36,10 @@ import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
-<<<<<<< HEAD
-=======
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.shooter.Shooter;
->>>>>>> 81cd114328c916e94e7701a2cf77ec819cffbd8d
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -70,7 +67,6 @@ public class Robot extends LoggedRobot {
 	 * initialization code.
 	 */
 	public Robot() {
-<<<<<<< HEAD
 		VisionDeviceManager.getInstance();
 		
 		Drive.getInstance();
@@ -79,9 +75,7 @@ public class Robot extends LoggedRobot {
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
-=======
 		boolean replay = Logger.hasReplaySource();
->>>>>>> 81cd114328c916e94e7701a2cf77ec819cffbd8d
 		//robot data loggers 
 		boolean usbPresent = new java.io.File("/u").exists();
 		if (usbPresent) {

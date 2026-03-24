@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import edu.wpi.first.math.Matrix;
@@ -66,10 +67,14 @@ public class VisionDevice {
 		// poseEstimator = new PhotonPoseEstimator(FieldLayout.APRILTAG_MAP, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, constants.robotToCamera);
 
 		this.constants = constants;
+		TelemetryManager.getInstance().addStructPublisher(
+			constants.name() + "Pose", Pose2d.struct, 
+			() -> botPose);
 
 		hasTarget = false;
 	}
 
+	@SuppressWarnings("removal")
 	private void processFrames() {
 		// var results = camera.getAllUnreadResults();
 		// for (var result : results) {
@@ -87,6 +92,9 @@ public class VisionDevice {
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {
 			var target = result.getBestTarget();
+			if (target.getPoseAmbiguity() > 0.2) {
+				return;
+			}
 
 			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
 				target.getBestCameraToTarget(), 
@@ -128,6 +136,7 @@ public class VisionDevice {
 		// }
 	}
 
+	@SuppressWarnings("removal")
 	private void processFramesRigged(Matrix<N3, N1> riggedness) {
 		var result = camera.getLatestResult();
 		if (result.hasTargets()) {

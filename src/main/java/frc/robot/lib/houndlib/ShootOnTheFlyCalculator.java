@@ -6,9 +6,10 @@ import frc.robot.lib.houndlib.BallPhysics.ShotSolution;
 import frc.robot.lib.trajectory.RedTrajectory.State.ChassisAccels;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
@@ -23,7 +24,7 @@ public class ShootOnTheFlyCalculator {
      * projectile's velocity. This allows you to have a shooter that may shoot a
      * projectile at varying speeds given varying distances from the targe.
      * 
-     * @see #calculateEffectiveTargetLocation(Pose2d, Pose3d, ChassisSpeeds,
+     * @see #calculateEffectiveTargetLocation(Pose2d, Translation3d, ChassisSpeeds,
      *      ChassisAccelerations, Function, double, double)
      * 
      * @param robotPose                      the current pose of the robot
@@ -41,9 +42,18 @@ public class ShootOnTheFlyCalculator {
      *                                       projectile in m/s.
      * @return the time it will take for the projectile to reach the target
      */
-    public static double getTimeToShoot(Pose2d robotPose, Pose3d targetPose,
+    public static double getTimeToShoot(Pose2d robotPose, Translation3d targetPose,
             Function<Double, Double> xyDistanceToProjectileVelocity) {
-        Transform3d diff = new Pose3d(robotPose).minus(targetPose);
+        Transform3d diff = 
+            new Pose3d(
+                new Translation3d(
+                    robotPose.getTranslation()
+                ), 
+                Rotation3d.kZero)
+            .minus(
+                new Pose3d(
+                    targetPose, 
+                    Rotation3d.kZero));
         double xyDistance = new Translation2d(diff.getX(), diff.getY()).getNorm();
         double distance = diff.getTranslation().getNorm();
         double projectileVelocity = xyDistanceToProjectileVelocity.apply(xyDistance);
@@ -52,12 +62,12 @@ public class ShootOnTheFlyCalculator {
     }
 
     public static double getTimeToShoot(
-            Pose3d shooterPose,
-            Pose3d targetPose,
+            Translation3d shooterPose,
+            Translation3d targetPose,
             double launchSpeed,
             double launchPitchRad) {
-        Translation3d s = shooterPose.getTranslation();
-        Translation3d t = targetPose.getTranslation();
+        Translation3d s = shooterPose;
+        Translation3d t = targetPose;
 
         double dx = t.getX() - s.getX();
         double dy = t.getY() - s.getY();
@@ -158,8 +168,8 @@ public class ShootOnTheFlyCalculator {
      * @param accelerationCompensationFactor the value to multiply the acceleration
      * @return
      */
-    public static Pose3d calculateEffectiveTargetLocation(
-            Pose2d robotPose, Pose3d targetPose,
+    public static Translation3d calculateEffectiveTargetLocation(
+            Pose2d robotPose, Translation3d targetPose,
             ChassisSpeeds fieldRelRobotVelocity,
             ChassisAccels fieldRelRobotAcceleration,
             Function<Double, Double> xyDistanceToProjectileVelocity,
@@ -168,7 +178,7 @@ public class ShootOnTheFlyCalculator {
 
         double shotTime = getTimeToShoot(robotPose, targetPose, xyDistanceToProjectileVelocity);
 
-        Pose3d correctedTargetPose = new Pose3d();
+        Translation3d correctedTargetPose = new Translation3d();
         for (int i = 0; i < goalPositionIterations; i++) {
             double virtualGoalX = targetPose.getX()
                     - shotTime * (fieldRelRobotVelocity.vxMetersPerSecond
@@ -179,8 +189,7 @@ public class ShootOnTheFlyCalculator {
                             + fieldRelRobotAcceleration.ay
                                     * accelerationCompensationFactor);
 
-            correctedTargetPose = new Pose3d(virtualGoalX, virtualGoalY, targetPose.getZ(),
-                    targetPose.getRotation());
+            correctedTargetPose = new Translation3d(virtualGoalX, virtualGoalY, targetPose.getZ());
 
             double newShotTime = getTimeToShoot(robotPose, correctedTargetPose, xyDistanceToProjectileVelocity);
 
@@ -194,7 +203,7 @@ public class ShootOnTheFlyCalculator {
     }
 
     public record InterceptSolution(
-            Pose3d effectiveTargetPose,
+            Translation3d effectiveTargetPose,
             double launchPitchRad,
             double launchSpeed,
             double flightTime,
@@ -202,8 +211,8 @@ public class ShootOnTheFlyCalculator {
     }
 
     public static InterceptSolution solveShootOnTheFly(
-            Pose3d shooterPose,
-            Pose3d targetPose,
+            Translation3d shooterPose,
+            Translation3d targetPose,
             ChassisSpeeds fieldRelRobotVelocity,
             ChassisAccels fieldRelRobotAcceleration,
             double incomingAngle,
@@ -216,7 +225,7 @@ public class ShootOnTheFlyCalculator {
                 incomingAngle);
 
         double t = sol.flightTimeSeconds();
-        Pose3d effectiveTarget = targetPose;
+        Translation3d effectiveTarget = targetPose;
 
         for (int i = 0; i < maxIterations; i++) {
 
@@ -226,11 +235,10 @@ public class ShootOnTheFlyCalculator {
             double dy = fieldRelRobotVelocity.vyMetersPerSecond * t
                 + 0.5 * fieldRelRobotAcceleration.ay * t * t;
 
-            effectiveTarget = new Pose3d(
+            effectiveTarget = new Translation3d(
                     targetPose.getX() - dx,
                     targetPose.getY() - dy,
-                    targetPose.getZ(),
-                    targetPose.getRotation());
+                    targetPose.getZ());
 
             ShotSolution newSol = BallPhysics.solveBallisticWithIncomingAngle(
                     shooterPose,

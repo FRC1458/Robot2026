@@ -12,14 +12,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.climb.ClimbConstants.Setpoint;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
@@ -46,7 +44,7 @@ public class Climb extends SubsystemBase {
 
 	private Climb() {
 		super();
-		climbMotor = new TalonFX(CLIMB_MOTOR_ID);
+		climbMotor = new TalonFX(CLIMB_MOTOR_ID,"CV");
 		climbMotor.getConfigurator().apply(getConfig());
 		climbMotor.setNeutralMode(NeutralModeValue.Brake);
 		if (Robot.isSimulation()) {
