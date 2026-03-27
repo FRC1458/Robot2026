@@ -103,14 +103,21 @@ public class ControlsMapping {
 		return Commands.parallel(
 			Indexer.getRightInstance().activateIndexer(),
 			Indexer.getLeftInstance().activateIndexer(),
-			Roller.getInstance().roll());
+			Roller.getInstance().roll(),
+			Intake.getInstance().onShoot()
+		);
 	}
 
 	public static Command stopIndex() {
 		return Commands.parallel(
 			Indexer.getRightInstance().deactivateIndexer(),
 			Indexer.getLeftInstance().deactivateIndexer(),
-			Roller.getInstance().stop());
+			Roller.getInstance().stop(),
+			Commands.sequence(
+				Intake.getInstance().setBarDown(),
+				Intake.getInstance().stopWheel()
+			)
+		);
 	}
 
 	public static Command backIndex() {

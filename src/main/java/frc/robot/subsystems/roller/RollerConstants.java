@@ -9,7 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 public class RollerConstants {
     public static final int MOTOR_ID = 33;
-    public static final double ROLL_SPEED = -10;
+    public static final double ROLL_SPEED = -15;
 
     public static TalonFXConfiguration getConfig() {
         return new TalonFXConfiguration()

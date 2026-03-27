@@ -161,10 +161,10 @@ public class Shooter extends SubsystemBase {
         topMotor.setControl(topRequest);
         bottomMotor.setControl(bottomRequest);
 
-        // SmartDashboard.putNumber(
-        // "ShooterV",
-        // distance_to_shooter.get(
-        // SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0));
+        SmartDashboard.putNumber(
+            "ShooterV",
+            distance_to_shooter.get(SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0)
+        );
 
         io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
         io.process();

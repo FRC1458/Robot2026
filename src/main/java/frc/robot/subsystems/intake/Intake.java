@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -246,5 +247,14 @@ public class Intake extends SubsystemBase {
                     barMotor.setPosition(Rotations.of(0)); 
                 })
         );
+    }
+
+    public Command onShoot() {
+        return Commands.sequence(
+            setSetpoint(INTAKE_SPEED, BAR_POSITION_UP),
+            Commands.waitSeconds(1.5),
+            setSetpoint(INTAKE_SPEED, BAR_POSITION_MID),
+            Commands.waitSeconds(0.5)
+        ).repeatedly();
     }
 }
