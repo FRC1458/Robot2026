@@ -1,26 +1,51 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+import frc.robot.lib.sim.FuelSim;
+import frc.robot.lib.util.MovingAverageDouble;
+
+import static edu.wpi.first.units.Units.Inches;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
+import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.TelemetryManager;
+import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.*;
+<<<<<<< HEAD
+=======
+import frc.robot.subsystems.drive.DriveConstants.FieldPoses;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.led.Led;
+import frc.robot.subsystems.roller.Roller;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.vision.VisionConstants;
+>>>>>>> origin/sotm
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -29,38 +54,105 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  * this project, you must also update the Main.java file in the project.
  */
 @SuppressWarnings("unused")
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
 	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
 	private AutoSelector autoChooser;
 	private Command autoCommand;
+    private final SendableChooser<String> mapChooser = new SendableChooser<>();
 
 	public static final CommandXboxController controller =
 		new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
+
+	public double lastTime = -1.0;
+	public MovingAverageDouble fpsTracker = new MovingAverageDouble(60);
 		
 	/**
 	 * This function is run when the robot is first started up and should be used for any
 	 * initialization code.
 	 */
 	public Robot() {
-		VisionDeviceManager.getInstance();
+		boolean replay = Logger.hasReplaySource();
+		//robot data loggers 
+		boolean usbPresent = new java.io.File("/u").exists();
+		if (usbPresent) {
+		  System.out.println("Log/USB mounts OK");
+		} else {
+		  System.out.println("Log/USB mounts NOT OK");
+		}
+
+		Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+        Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+        Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+        Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+        Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+
+        switch (BuildConstants.DIRTY) {
+            case 0:
+                Logger.recordMetadata("GitDirty", "All changes committed");
+                break;
+            case 1:
+                Logger.recordMetadata("GitDirty", "Uncomitted changes");
+                break;
+            default:
+                Logger.recordMetadata("GitDirty", "Unknown");
+                break;
+        }
+
+        if (RobotBase.isReal()) {
+            if (!DriverStation.isFMSAttached()) {
+                Logger.addDataReceiver(new NT4Publisher());
+            }
+        } else if (replay) {
+            setUseTiming(false);
+            String logPath = LogFileUtil.findReplayLog();
+        } else if (RobotBase.isSimulation()) {
+            Logger.addDataReceiver(new NT4Publisher());
+        }
+
+		Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs"));
+        Logger.start();
+        if (!Logger.hasReplaySource()) {
+            RobotController.setTimeSource(RobotController::getFPGATime);
+        }
 		
 		Drive.getInstance();
+<<<<<<< HEAD
+=======
+		Shooter.getLeftInstance();
+		Shooter.getRightInstance();
+		Indexer.getLeftInstance();
+		Indexer.getRightInstance();
+		Roller.getInstance();
+		Intake.getInstance();
+		Climb.getInstance();
+
+		VisionDeviceManager.getInstance();
+
+		/** TODO: 1 LED? */
+		Led.getInstance();
+
+		/** TODO: Interpolate */
+		// SmartDashboard.putNumber("rightv", 30);
+		// SmartDashboard.putNumber("leftv", 30);
+
+
+		/** TODO: Why this break robot? */
+		// NamedCommands.registerCommand("shoot", Commands.parallel(Shooter.getLeftInstance().shoot(), Shooter.getRightInstance().shoot()));
+		// NamedCommands.registerCommand("hang", Commands.parallel(Climb.getInstance().hangCommand()));
+		// NamedCommands.registerCommand("stopShoot", Commands.parallel(
+		// 	Shooter.getRightInstance().stop(),
+		// 	Shooter.getLeftInstance().stop()));
+
+>>>>>>> origin/sotm
 		TelemetryManager.getInstance();
 		commandScheduler.schedule(FollowPathCommand.warmupCommand());
 		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
 		autoChooser = new AutoSelector();
 
-		//robot data loggers 
-		boolean usbPresent = new java.io.File("/u").exists();
-		if (usbPresent) {
-		  DataLogManager.start("/u/logs");  // USB stick
-		  System.out.println("Log/USB mounts OK");
-		} else {
-		  DataLogManager.start();           // falls back to /home/lvuser/logs
-		  System.out.println("Log/USB mounts NOT OK");
-		}
-		DriverStation.startDataLog(DataLogManager.getLog());
+		commandScheduler.schedule(Led.getInstance().setRainbowCommand());
+		Drive.getInstance().getCtreDrive().setStateStdDevs(VisionConstants.STATE_STD_DEVS);
 	}
+
 
 	/**
 	 * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -75,12 +167,26 @@ public class Robot extends TimedRobot {
 		// commands, running already-scheduled commands, removing finished or interrupted commands,
 		// and running subsystem periodic() methods.  This must be called from the robot's periodic
 		// block in order for anything in the Command-based framework to work.
+		SmartDashboard.putNumber("toShooter", Drive.getInstance().getPose().getTranslation()
+			.getDistance(
+				Constants.FieldConstants.allianceCorrected(
+					FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
 		commandScheduler.run();
+		double now = Timer.getFPGATimestamp();
+		fpsTracker.add(1.0 / (now - lastTime));
+		Logger.recordOutput("FPS", fpsTracker.getAverage());
+		Logger.recordOutput("rawDtMs", 1000 * (now - lastTime));
+		lastTime = now;
 	}
 
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
 	public void disabledInit() {
+		commandScheduler.schedule(
+			Led.getInstance().setRainbowCommand());
+			
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.ROTATION_STD_DEVS);
+		
 	}
 
 	/** This function is called periodically during disabled. */
@@ -89,9 +195,19 @@ public class Robot extends TimedRobot {
 
 	}
 
+	@Override
+	public void disabledExit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	}
+
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kBlue));
+
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
 			commandScheduler.schedule(autoCommand);
@@ -112,13 +228,15 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
+		commandScheduler.schedule(
+			Led.getInstance().blinkCommand(Color.kRed, Color.kYellow, 0.25));
+		ControlsMapping.mapTeleopCommand();
 		// This makes sure that the autonomous stops running when teleop starts running. 
 		if (autoCommand != null) {
 			autoCommand.cancel();
 		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().openLoopControl());
-		
-		ControlsMapping.mapTeleopCommand();
 	}
 
 	/** This function is called periodically during operator control. */
@@ -128,11 +246,15 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void testInit() {
+		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
+	
+		commandScheduler.schedule(
+			Led.getInstance().setSolidColorCommand(Color.kGray));
 		// Cancels all running commands at the start of test mode.
 		CommandScheduler.getInstance().cancelAll();
 
 		//map test commands
-		ControlsMapping.mapSysId();
+		// ControlsMapping.mapSysId();
 	}
 
 	/** This function is called periodically during test mode. */
@@ -140,13 +262,38 @@ public class Robot extends TimedRobot {
 	public void testPeriodic() {
 	}
 
+	public static FuelSim fuelSim;
+
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
+		fuelSim = new FuelSim();
+		// fuelSim.spawnStartingFuel();
+		fuelSim.registerRobot(
+			Inches.of(27),
+			Inches.of(27),
+			Inches.of(0.5),
+			() -> Drive.getInstance().getPose(),
+			() -> Drive.getInstance().getFieldSpeeds());
+		fuelSim.registerIntake(
+				Inches.of(-13), Inches.of(13), Inches.of(-21.5), Inches.of(-17.5));
+		fuelSim.start();
+		fuelSim.enableAirResistance();
+		timer.start();;
+
 	}
 
+	Timer timer = new Timer();
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
+		fuelSim.updateSim();
+		Logger.recordOutput("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+		Logger.recordOutput("Red Score", FuelSim.Hub.RED_HUB.getScore());
+
+		if (timer.hasElapsed(5)) {
+			fuelSim.clearFuel();
+			timer.restart();
+		}
 	}
 }

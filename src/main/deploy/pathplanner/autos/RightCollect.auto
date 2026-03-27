@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TrenchRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SwipeRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReturnTrenchRight"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
