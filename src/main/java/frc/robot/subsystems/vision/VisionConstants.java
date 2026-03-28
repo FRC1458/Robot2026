@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.math.Matrix;
@@ -36,10 +37,18 @@ public class VisionConstants {
                 new Translation3d(
                     Inches.of(13.124114),   //wpi x-axis positive is forward direction 
                     // Inches.of(12.624114),
-                    Inches.of(-9.527904),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
+                    Inches.of(-4.678),    //wpi y-axis positive is strafe left, so right camera shall have negative offset 
                     Inches.of(14.365654)),
+
+                // Rotation3d.kZero
                 // new Rotation3d(0, 26 * Constants.TAU / 360.0, -24 * Constants.TAU / 360.0)), //(roll: x, pitch: y, yaw: z)
-                new Rotation3d(0, 26 * Constants.TAU / 360.0, -24 * Constants.TAU / 360.0)),
+                // new Rotation3d(0, 26 * Constants.TAU / 360.0, -39.5 * Constants.TAU / 360.0)
+                new Rotation3d(
+                    Degrees.of(0), 
+                    Degrees.of(-26),
+                    Degrees.of(-20)
+                )
+            ),
             1, 1280, 800),
         
         FL_CONSTANTS (
@@ -47,9 +56,16 @@ public class VisionConstants {
             new Transform3d(
                 new Translation3d(
                     Inches.of(13.262586),   //wpi x-axis positive is forward direction
-                    Inches.of(7.030256),     //wpi y-axis positive is strafe left, so left camera shall have positive offset
+                    Inches.of(3.171),     //wpi y-axis positive is strafe left, so left camera shall have positive offset
                     Inches.of(14.325391)),
-                new Rotation3d(0, 26 * Constants.TAU / 360.0, 18 * Constants.TAU / 360.0)),
+                // Rotation3d.kZero
+                new Rotation3d(
+                    Degrees.of(0), 
+                    Degrees.of(-26),
+                    Degrees.of(30)
+                )
+                // new Rotation3d(0, 26 * Constants.TAU / 360.0, 46.5 * Constants.TAU / 360.0)
+            ),
             2, 1280, 800);
 
         public final String tableName;
