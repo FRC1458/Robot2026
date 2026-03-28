@@ -252,7 +252,7 @@ public class Intake extends SubsystemBase {
     public Command onShoot() {
         return Commands.sequence(
             setSetpoint(INTAKE_SPEED, BAR_POSITION_UP),
-            Commands.waitSeconds(1.5),
+            Commands.waitSeconds(1.0),
             setSetpoint(INTAKE_SPEED, BAR_POSITION_MID),
             Commands.waitSeconds(0.5)
         ).repeatedly();
