@@ -69,7 +69,7 @@ public class Shooter extends SubsystemBase {
 
     // private ShotCalculator shotCalculator = ShotCalculator.getInstance();
 
-    private InterpolatingMatrixTreeMap<Double, N2, N1> distance_to_shooter = new InterpolatingMatrixTreeMap<Double, N2, N1>();
+    private InterpolatingDoubleTreeMap spin = new InterpolatingDoubleTreeMap();
     private InterpolatingDoubleTreeMap tree = new InterpolatingDoubleTreeMap();
 
     private ShooterIO io;
@@ -131,26 +131,27 @@ public class Shooter extends SubsystemBase {
 
         io = new ShooterIO(getName(), topMotor, bottomMotor);
 
-        distance_to_shooter.put(0.0, VecBuilder.fill(0, 0));
-        distance_to_shooter.put(0.641, VecBuilder.fill(25.0, 25.0));
-        distance_to_shooter.put(1.06, VecBuilder.fill(31.25, 31.25));
-        distance_to_shooter.put(1.56, VecBuilder.fill(34.375, 34.375));
-        distance_to_shooter.put(2.04, VecBuilder.fill(37.5, 37.5));
-        distance_to_shooter.put(2.54, VecBuilder.fill(49.21875, 49.21875));
-        distance_to_shooter.put(3.0, VecBuilder.fill(60.9375, 60.9375));
-        distance_to_shooter.put(3.4, VecBuilder.fill(81.25, 81.265));
+        // tree.put(1.24, 27.0);
+        // tree.put(1.56, 28.0);
+        // tree.put(1.752, 29.8);
+        // tree.put(2.005, 32.0);
+        // tree.put(2.77, 36.0);
+        // tree.put(3.09, 44.0);
+        // tree.put(2.45, 34.5);
+        // tree.put(2.3, 33.3);
+        // tree.put(1.87, 32.0);
+        // tree.put(2.094, 32.6);
+        // tree.put(2.91, 39.8);
 
-        tree.put(1.24, 27.0);
-        tree.put(1.56, 28.0);
-        tree.put(1.752, 29.8);
-        tree.put(2.005, 32.0);
-        tree.put(2.77, 36.0);
-        tree.put(3.09, 44.0);
-        tree.put(2.45, 34.5);
-        tree.put(2.3, 33.3);
-        tree.put(1.87, 32.0);
-        tree.put(2.094, 32.6);
-        tree.put(2.91, 39.8);
+        tree.put(2.0, 30.0);
+        tree.put(1.5, 23.5);
+        tree.put(2.5, 44.0);
+        tree.put(3.5, 63.0);
+
+        spin.put(1.5, 0.0);
+        spin.put(2.0, 0.0);
+        spin.put(2.5, 15.0);
+        spin.put(3.5, 26.0);
     }
 
     @Override
@@ -162,8 +163,12 @@ public class Shooter extends SubsystemBase {
         bottomMotor.setControl(bottomRequest);
 
         SmartDashboard.putNumber(
-            "ShooterV",
-            distance_to_shooter.get(SmartDashboard.getNumber("toShooter", 1.5)).get(0, 0)
+            "topShooterVel",
+            tree.get(SmartDashboard.getNumber("toShooter", 1.5))
+        );
+        SmartDashboard.putNumber(
+            "bottomShooterDel", 
+            spin.get(SmartDashboard.getNumber("toShooter", 0))
         );
 
         io.updateInputs(lastReadSpeedTop, lastReadSpeedBottom, getCurrentCommand(), getDefaultCommand());
@@ -225,8 +230,8 @@ public class Shooter extends SubsystemBase {
 
     public Command shoot(DoubleSupplier distance) {
         return shoot(
-            tree.get(distance.getAsDouble()) - 15,
-            tree.get(distance.getAsDouble()) + 15);
+            tree.get(distance.getAsDouble()),
+            tree.get(distance.getAsDouble()) - spin.get(distance.getAsDouble()));
                 // distance_to_shooter.get(distance.getAsDouble())
                 //         .get(0, 0) - 15,
                 // distance_to_shooter.get(distance.getAsDouble())
@@ -255,7 +260,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void runVolts(Voltage voltage) {
-        setTopRequest(new VoltageOut(voltage));
+        setBottomRequest(new VoltageOut(voltage));
     }
 
     public SysIdRoutine sysId() {
