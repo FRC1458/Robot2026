@@ -34,9 +34,9 @@ public final class ShooterConstants {
                 .withKP(0.3)
                 .withKI(0.0)
                 .withKD(0.0)
-                .withKA(0.012289)
-                .withKS(0.12018)
-                .withKV(0.12347)) // placeholder values
+                .withKA(0.00766)
+                .withKS(0.18188)
+                .withKV(0.12378)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(60)
                 .withSupplyCurrentLimit(40)
@@ -57,9 +57,9 @@ public final class ShooterConstants {
                 .withKP(0.3)
                 .withKI(0.0)
                 .withKD(0.0)
-                .withKA(0.0092851)
-                .withKS(0.068015)
-                .withKV(0.11781)) // placeholder values
+                .withKA(0.0077352)
+                .withKS(0.29729)
+                .withKV(0.12292)) // placeholder values
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(60)
                 .withSupplyCurrentLimit(40)
