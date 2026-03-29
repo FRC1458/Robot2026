@@ -55,7 +55,11 @@ public class ControlsMapping {
 		controller.leftTrigger().whileTrue(Drive.getInstance().headingLockToHub());
 		controller.povDown().onTrue(Intake.getInstance().calibrateZero());
 		controller.b().and(controller.back().negate()).whileTrue(backIndex()).onFalse(stopIndex());
-
+			
+		controller.a().and(controller.back().negate())
+			.whileTrue(volley())
+			.onFalse(stopVolley());
+		
 		// controller.y().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kForward));
 		// controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
 		// controller.b().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
@@ -80,6 +84,21 @@ public class ControlsMapping {
 		// 		stopShoot()
 		// 	);
 
+	}
+
+	public static Command volley() {
+		return Commands.parallel(
+			Shooter.getLeftInstance().shoot(() -> 60.0, () -> 40.0),
+			Shooter.getRightInstance().shoot(() -> 60.0, () -> 40.0),
+			indexAll()
+		);
+	}
+
+	public static Command stopVolley() {
+		return Commands.parallel(
+			stopShoot(),
+			stopIndex()
+		);
 	}
 
 	public static Command shootAll() {

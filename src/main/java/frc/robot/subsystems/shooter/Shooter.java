@@ -148,15 +148,17 @@ public class Shooter extends SubsystemBase {
         // tree.put(1.5, 23.5);
         // tree.put(2.5, 44.0);
         // tree.put(3.5, 63.0);
-        tree.put(1.5, 16.0);
-        tree.put(2.0, 20.0);
-        tree.put(2.5, 30.0);
-        tree.put(3.5, 50.0);
+        tree.put(1.5, 23.0);
+        tree.put(2.0, 30.0);
+        tree.put(2.5, 38.0);
+        tree.put(3.0, 45.0);
+        tree.put(3.5, 60.0);
 
         spin.put(1.5, 0.0);
         spin.put(2.0, 0.0);
-        spin.put(2.5, 15.0);
-        spin.put(3.5, 15.0);
+        spin.put(2.5, 0.0);
+        spin.put(3.0, 10.0);
+        spin.put(3.5, 20.0);
     }
 
     @Override
