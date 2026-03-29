@@ -126,8 +126,8 @@ public class Intake extends SubsystemBase {
 
 
     public Command intake() {
-        return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
+        return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN);
+            // .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
     }
 
     public Command outtake() {
@@ -136,8 +136,8 @@ public class Intake extends SubsystemBase {
     }
 
     public Command stow() {
-        return setSetpoint(0.0, BAR_POSITION_UP)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
+        return setSetpoint(0.0, BAR_POSITION_UP);
+            // .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
     }
 
     public Command agitate() {
@@ -227,24 +227,24 @@ public class Intake extends SubsystemBase {
      * @return Command to run
      */
     public Command calibrateZero() {
-        VoltageOut calibrationRequest = new VoltageOut(-0.5)
+        VoltageOut calibrationRequest = new VoltageOut(-1.5)
             .withIgnoreHardwareLimits(true)
             .withIgnoreSoftwareLimits(true);
 
         /** Trigger to detect when the elevator drives into a hard stop. */
         Trigger isHardStop = new Trigger(() -> {
             return barMotor.getVelocity().getValue().abs(RotationsPerSecond) < 1 &&
-                barMotor.getTorqueCurrent().getValue().abs(Amps) > 10;
-        }).debounce(0.05);
+                barMotor.getTorqueCurrent().getValue().abs(Amps) > 15;
+        }).debounce(0.10);
 
         return run(() -> {
             barMotor.setControl(calibrationRequest);
         })
         .until(isHardStop)
         .andThen(
-            runOnce(() -> setRequestBar(new NeutralOut())).withTimeout(0.25)
+            runOnce(() -> setRequestBar(new NeutralOut())).withTimeout(1)
                 .finallyDo(() -> {
-                    barMotor.setPosition(Rotations.of(0)); 
+                    barMotor.setPosition(Degrees.of(0)); 
                 })
         );
     }

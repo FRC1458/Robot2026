@@ -14,10 +14,11 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.units.Units;
+import frc.robot.Constants;
 
 public class IntakeConstants {
     public static final double BAR_EPSILON = Units.Degrees.of(10).in(Units.Rotations);
-    public static final double INTAKE_SPEED = 70 * 2/3;
+    public static final double INTAKE_SPEED = 4.5 * 2 / (Constants.TAU * edu.wpi.first.math.util.Units.inchesToMeters(1));
     public static final double BAR_POSITION_DOWN = 0.00;
     // TODO: CHANGE WITH NEW PIVOT
     public static final double BAR_POSITION_MID = Degrees.of(70).in(Rotations);
