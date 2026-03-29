@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
+import java.text.Format;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -143,15 +144,19 @@ public class Shooter extends SubsystemBase {
         // tree.put(2.094, 32.6);
         // tree.put(2.91, 39.8);
 
-        tree.put(2.0, 30.0);
-        tree.put(1.5, 23.5);
-        tree.put(2.5, 44.0);
-        tree.put(3.5, 63.0);
+        // tree.put(2.0, 30.0);
+        // tree.put(1.5, 23.5);
+        // tree.put(2.5, 44.0);
+        // tree.put(3.5, 63.0);
+        tree.put(1.5, 16.0);
+        tree.put(2.0, 20.0);
+        tree.put(2.5, 30.0);
+        tree.put(3.5, 50.0);
 
         spin.put(1.5, 0.0);
         spin.put(2.0, 0.0);
         spin.put(2.5, 15.0);
-        spin.put(3.5, 26.0);
+        spin.put(3.5, 15.0);
     }
 
     @Override
@@ -221,17 +226,21 @@ public class Shooter extends SubsystemBase {
                 }).withName("Stopped");
     }
 
-    public Command shoot(double topSpeed, double bottomSpeed) {
-        return runOnce(() -> {
+    public void shoot(double topSpeed, double bottomSpeed) {
+//        return runOnce(() -> {
             setTopRequest(new VelocityVoltage(topSpeed));
             setBottomRequest(new VelocityVoltage(bottomSpeed));
-        }).withName("Shooting");
+//        }).withName("Shooting");
     }
 
     public Command shoot(DoubleSupplier distance) {
-        return shoot(
+        // System.out.println("Shooter/shoot()/distance: " + distance.getAsDouble()+ 
+        //     ", top motor RPS: " + tree.get(distance.getAsDouble()) + 
+        //     ", spin delta: " + spin.get(distance.getAsDouble()));
+        return runOnce(()->{shoot(
             tree.get(distance.getAsDouble()),
             tree.get(distance.getAsDouble()) - spin.get(distance.getAsDouble()));
+        }).withName("Shooting");
                 // distance_to_shooter.get(distance.getAsDouble())
                 //         .get(0, 0) - 15,
                 // distance_to_shooter.get(distance.getAsDouble())
@@ -253,6 +262,7 @@ public class Shooter extends SubsystemBase {
 
     public Command shoot() {
         // return shoot(30, 30);
+        
         return shoot(() -> Drive.getInstance().getPose().getTranslation()
                 .getDistance(
                         Constants.FieldConstants.allianceCorrected(
