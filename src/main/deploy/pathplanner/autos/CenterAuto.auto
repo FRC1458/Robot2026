@@ -15,6 +15,18 @@
           "data": {
             "pathName": "DepotShootCenter"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "StationCenter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "StationShootCenter"
+          }
         }
       ]
     }

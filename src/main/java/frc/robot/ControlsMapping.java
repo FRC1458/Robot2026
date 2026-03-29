@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 public class ControlsMapping {
 
 	public static LoggedNetworkNumber speed = new LoggedNetworkNumber("speed", 30);
-	public static LoggedNetworkNumber bottom = new LoggedNetworkNumber("bottom", 30);
+	public static LoggedNetworkNumber spin = new LoggedNetworkNumber("spin", 15);
 
 	public static void mapTeleopCommand() {
 
@@ -35,9 +35,8 @@ public class ControlsMapping {
 		controller.back().and(controller.y()).onTrue(
 				Commands.runOnce(() -> Drive.getInstance().getCtreDrive().getPigeon2().reset()));
 
-		// controller.x().whileTrue(Intake.getInstance().outtake());
+		controller.x().whileTrue(Intake.getInstance().outtake());
 
-	
 		controller.rightBumper()
 			.whileTrue(shootAll())
 			.onFalse(stopShoot());
@@ -61,7 +60,8 @@ public class ControlsMapping {
 		// controller.x().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().dynamic(SysIdRoutine.Direction.kReverse));
 		// controller.b().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kForward));
 		// controller.a().and(controller.back().negate()).whileTrue(Shooter.getRightInstance().sysId().quasistatic(SysIdRoutine.Direction.kReverse));
-		// // controller.a().whileTrue(
+		
+		// controller.a().whileTrue(
 		// 	Intake.getInstance().agitate()
 		// ).onFalse(Intake.getInstance().lower());
 
@@ -87,10 +87,11 @@ public class ControlsMapping {
 			Shooter.getRightInstance().shoot(),
 			Shooter.getLeftInstance().shoot());
 	}
+	
 	public static Command shootAllTable() {
 		return Commands.parallel(
-			Shooter.getRightInstance().shoot(speed::getAsDouble, speed::getAsDouble),
-			Shooter.getLeftInstance().shoot(speed::getAsDouble, speed::getAsDouble));
+			Shooter.getRightInstance().shoot(speed::getAsDouble, () -> speed.getAsDouble() - spin.getAsDouble()),
+			Shooter.getLeftInstance().shoot(speed::getAsDouble, () -> speed.getAsDouble() - spin.getAsDouble()));
 	}
 
 	public static Command stopShoot() {
