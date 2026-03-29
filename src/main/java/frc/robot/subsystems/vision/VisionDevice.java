@@ -6,7 +6,10 @@ import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
@@ -17,10 +20,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.targeting.PhotonTrackedTarget;
+import edu.wpi.first.math.util.Units;
 
 public class VisionDevice {
 	private final VisionDeviceConstants constants;
@@ -72,10 +81,105 @@ public class VisionDevice {
 			() -> botPose);
 
 		hasTarget = false;
+		xOffset = new LoggedNetworkNumber(constants.tableName + "xoffset", constants.robotToCamera.getX());;
+		yOffset = new LoggedNetworkNumber(constants.tableName + "yoffset", constants.robotToCamera.getY());;
 	}
+
+	LoggedNetworkNumber xOffset;
+	LoggedNetworkNumber yOffset;
 
 	@SuppressWarnings("removal")
 	private void processFrames() {
+		var result = camera.getLatestResult();
+		if (!result.hasTargets()) {
+			robotField.setRobotPose(Pose2d.kZero);
+			// System.out.println("No target");
+			return;
+		}
+		
+		Pose2d visionPose;
+		double xStdev, yStdev, thetaStdev;
+		double timestamp = result.getTimestampSeconds();
+		
+		// Get current state for fallbacks
+		Rotation2d currentGyroRotation = Drive.getInstance().getPose().getRotation();
+
+		var multiTagResult = result.getMultiTagResult();
+		
+		if (multiTagResult.isPresent()) {
+			// --- MULTI-TAG CASE ---
+			var multiTag = multiTagResult.get();
+			Pose3d cameraPose = new Pose3d(
+					multiTag.estimatedPose.best.getTranslation(), 
+					multiTag.estimatedPose.best.getRotation()
+				);
+			
+			// Adjust for the Camera-to-Robot offset to get the ROBOT's pose
+			// We multiply the Camera Pose by the inverse of the Robot-to-Camera transform
+			var offsets = constants.robotToCamera;
+			offsets = new Transform3d(new Translation3d(
+				xOffset.get(),
+				yOffset.get(),
+				offsets.getZ()
+			), offsets.getRotation());
+			visionPose = cameraPose.plus(offsets.inverse()).toPose2d();			
+			
+			// Even in multi-tag, we check the distance to the primary target
+			double bestTargetDist = result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm();
+
+			xStdev = 0.05;
+			yStdev = 0.05;
+
+			// Condition: Distance <= 2.5m (Ambiguity is usually ~0 in Multi-Tag), tune it in real field 
+			if (bestTargetDist <= 2.5) {
+				thetaStdev = Units.degreesToRadians(0.1); // Trust vision rotation
+				// System.out.println("closer");
+			} else {
+				thetaStdev = Double.POSITIVE_INFINITY; // Trust Gyro rotation
+				// System.out.println("farther");
+				// visionPose = new Pose2d(visionPose.getTranslation(), currentGyroRotation);
+			}
+
+		} else {
+			// --- SINGLE-TAG CASE ---
+			var target = result.getBestTarget();
+			double distance = target.getBestCameraToTarget().getTranslation().getNorm();
+			double ambiguity = target.getPoseAmbiguity();
+
+			visionPose = PhotonUtils.estimateFieldToRobotAprilTag(
+				target.getBestCameraToTarget(),
+				FieldLayout.APRILTAG_MAP.getTagPose(target.getFiducialId()).get(),
+				constants.robotToCamera.inverse()
+			).toPose2d();
+
+			// Condition: Distance <= 2.5m AND Ambiguity <= 0.2
+			if (distance <= 2.5 && ambiguity <= 0.2) {
+				// High trust: Update both Translation and Rotation
+				xStdev = 0.1 * Math.pow(distance, 2);
+				yStdev = 0.1 * Math.pow(distance, 2);
+				thetaStdev = 0.2 * Math.pow(distance, 2);
+			} else {
+				// Low trust or Far away: Translation only, keep Gyro Rotation
+				xStdev = 0.2 * Math.pow(distance, 2);
+				yStdev = 0.2 * Math.pow(distance, 2);
+				thetaStdev = 99999.0;
+				visionPose = new Pose2d(visionPose.getTranslation(), currentGyroRotation);
+			}
+			// System.out.println("single tag");
+		}
+
+		// Apply to Estimator
+		if (Robot.isReal()) {
+			Drive.getInstance().addVisionUpdate(
+				visionPose, 
+				timestamp,
+				VecBuilder.fill(xStdev, yStdev, thetaStdev)
+			);
+		}
+		
+		robotField.setRobotPose(visionPose);
+		botPose = visionPose;
+
 		// var results = camera.getAllUnreadResults();
 		// for (var result : results) {
 		// 	var multiTagResult = result.getMultiTagResult();
@@ -89,41 +193,48 @@ public class VisionDevice {
 		// 	botPose = sim.process(0.01, constants.robotToCamera);
 		// }
 		
-		var result = camera.getLatestResult();
-		if (result.hasTargets()) {
-			var target = result.getBestTarget();
-			if (target.getPoseAmbiguity() > 0.2) {
-				return;
-			}
+		// var result = camera.getLatestResult();
+		// if (result.hasTargets()) {
+		// 	List<PhotonTrackedTarget> targets = result.getTargets();
+		// 	double bestAmbig = 0.2;
+		// 	double bestDist = 4.0;
+		// 	Optional<PhotonTrackedTarget> bestTarget = Optional.empty();
+		// 	for (int x = 0; x < targets.size(); x++) {
+		// 		if (targets.get(x).getPoseAmbiguity() < bestAmbig && targets.get(0).getBestCameraToTarget().getTranslation().getNorm() < bestDist) {
+		// 			bestTarget = Optional.of(targets.get(x));
+		// 		}
+		// 	}
+		// 	if (bestTarget.isPresent()) {
+		// 		var target = bestTarget.get();
 
-			var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
-				target.getBestCameraToTarget(), 
-				FieldLayout.APRILTAG_MAP.getTagPose(
-					target.getFiducialId()).get(), 
-					constants.robotToCamera.inverse());
-			// var estimatedPose = poseEstimator.update(result);
+		// 		var initBotPose = PhotonUtils.estimateFieldToRobotAprilTag(
+		// 			target.getBestCameraToTarget(), 
+		// 			FieldLayout.APRILTAG_MAP.getTagPose(
+		// 				target.getFiducialId()).get(), 
+		// 				constants.robotToCamera.inverse());
+		// 		// var estimatedPose = poseEstimator.update(result);
 
-			// if (estimatedPose.isEmpty()) {
-			// 	botPose = initBotPose.toPose2d();
-			// } else {
-			// 	botPose = estimatedPose.get().estimatedPose.toPose2d();
-			// }
+		// 		// if (estimatedPose.isEmpty()) {
+		// 		// 	botPose = initBotPose.toPose2d();
+		// 		// } else {
+		// 		// 	botPose = estimatedPose.get().estimatedPose.toPose2d();
+		// 		// }
 
-			botPose = initBotPose.toPose2d();
-			if (Robot.isReal()) {
-				if (result.hasTargets()) {
-					Drive.getInstance().addVisionUpdate(botPose, result.getTimestampSeconds());
-				}
-			}
-			
-			if (result.hasTargets()) {
-				robotField.setRobotPose(botPose);
-			} else {
-				robotField.setRobotPose(Pose2d.kZero);
-			}
-			// poseEstimator.setReferencePose(Drive.getInstance().getPose());
-
-		};
+		// 		botPose = initBotPose.toPose2d();
+		// 		if (Robot.isReal()) {
+		// 			if (result.hasTargets()) {
+		// 				Drive.getInstance().addVisionUpdate(botPose, result.getTimestampSeconds());
+		// 			}
+		// 		}
+				
+		// 		if (result.hasTargets()) {
+		// 			robotField.setRobotPose(botPose);
+		// 		} else {
+		// 			robotField.setRobotPose(Pose2d.kZero);
+		// 		}
+		// 		// poseEstimator.setReferencePose(Drive.getInstance().getPose());
+		// 	}
+		// };
 
 		// int[] validIds = { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 };
 
