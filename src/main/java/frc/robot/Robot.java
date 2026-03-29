@@ -1,6 +1,7 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.sim.FuelSim;
 import frc.robot.lib.util.MovingAverageDouble;
 
@@ -165,6 +166,7 @@ public class Robot extends LoggedRobot {
 			.getDistance(
 				Constants.FieldConstants.allianceCorrected(
 					FieldPoses.HUB.pose3d.getTranslation()).toTranslation2d()));
+		Logger.recordOutput("thing", FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().minus(Drive.getInstance().getPose().getTranslation()));
 		commandScheduler.run();
 		double now = Timer.getFPGATimestamp();
 		fpsTracker.add(1.0 / (now - lastTime));
