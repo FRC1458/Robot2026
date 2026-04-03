@@ -64,9 +64,20 @@ public final class AutoRoutines {
 			return Commands.none();
 		}
 
+		var tBackToNeutralRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER, 
+			"BackToNeutralRight");
+
+		if (tBackToNeutralRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+
 		var crossTrench = tTrenchRight.get();
 		var swipe = tSwipeRight.get();
 		var back = tReturnTrenchRight.get();
+		var backToNeutral = tBackToNeutralRight.get();
 		return Commands.print(Timer.getFPGATimestamp() + ": Time start")
 			.andThen(Intake.getInstance().calibrateZero())
 				.alongWith(
@@ -88,16 +99,40 @@ public final class AutoRoutines {
 							.andThen(
 								Automation.indexAll())
 							.andThen(
-								Commands.waitSeconds(3))
+								Intake.getInstance().onShoot())
 							.andThen(
-								Intake.getInstance().stow())
+								Commands.waitSeconds(3)))
+					.raceWith(
+						Commands.waitSeconds(4)))
+			.andThen(
+				Commands.parallel(
+					Intake.getInstance().lower(),
+					Automation.stopShoot(),
+					Automation.stopIndex()))
+			.andThen(
+				new TrajectoryCommand(backToNeutral))
+			.andThen(
+				new TrajectoryCommand(crossTrench))
+			.andThen(
+				Intake.getInstance().intake())
+			.andThen(
+				new TrajectoryCommand(swipe))
+			.andThen(
+				Intake.getInstance().lower()
+					.alongWith(
+						new TrajectoryCommand(back)))
+			.andThen(
+				Drive.getInstance().headingLockToHub()
+					.raceWith(
+						Automation.shootAll()
+							.andThen(
+								Commands.waitSeconds(0.5))
+							.andThen(
+								Automation.indexAll())
+							.andThen(
+								Intake.getInstance().onShoot())
 							.andThen(
 								Commands.waitSeconds(3))))
-			// .andThen(
-			// 	new AutopilotCommand(
-			// 		new APTarget(
-			// 			new Pose2d(Constants.FieldConstants.Tower.rightUpright, Rotation2d.kCCW_90deg))
-			// 			.withEntryAngle(Rotation2d.kZero)))
 			.andThen(
 				Commands.print(Timer.getFPGATimestamp() + ": Time end"),
 				Commands.idle())
@@ -160,16 +195,16 @@ public final class AutoRoutines {
 						new TrajectoryCommand(back)))
 			.andThen(
 				Drive.getInstance().headingLockToHub()
-					.alongWith(
+					.raceWith(
 						Automation.shootAll()
 							.andThen(
 								Commands.waitSeconds(0.5))
 							.andThen(
-								Automation.indexAll()
-									.andThen(
-										Commands.waitSeconds(3))
-									.andThen(
-										Intake.getInstance().stow()))))
+								Automation.indexAll())
+							.andThen(
+								Intake.getInstance().onShoot())
+							.andThen(
+								Commands.waitSeconds(3))))
 			.andThen(
 				Commands.print(Timer.getFPGATimestamp() + ": Time end"),
 				Commands.idle())

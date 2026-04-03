@@ -1,6 +1,7 @@
 package frc.robot;
 
 import frc.robot.auto.AutoSelector;
+import frc.robot.auto.Automation;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.sim.FuelSim;
 import frc.robot.lib.util.MovingAverageDouble;
@@ -226,6 +227,13 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
+		commandScheduler.schedule(
+			Commands.parallel(
+				Automation.stopIndex(),
+				Automation.stopShoot(),
+				Intake.getInstance().lower()
+			)
+		);
 		Drive.getInstance().getCtreDrive().setVisionMeasurementStdDevs(VisionConstants.LOCAL_MEASUREMENT_STD_DEVS);
 	
 		commandScheduler.schedule(
