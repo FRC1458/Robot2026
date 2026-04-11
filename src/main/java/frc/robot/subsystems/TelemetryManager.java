@@ -119,6 +119,11 @@ public class TelemetryManager extends SubsystemBase {
                 .getValue()
                 .in(Units.Celsius),
             null);
+        builder.addStringProperty(name + "/Request", 
+            () -> motor
+                .getAppliedControl()
+                .getName(),
+            null);
     }
 
     public void addSendable(Sendable sendable) {
