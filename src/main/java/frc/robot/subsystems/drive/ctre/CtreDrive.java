@@ -4,12 +4,12 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -68,7 +68,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
             // state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
-            (state) -> Logger.recordOutput("SysIdDrive", state.toString())        
+            (state) -> DogLog.log("SysIdDrive", state.toString())        
             ),
         new SysIdRoutine.Mechanism(
             output -> {
@@ -87,7 +87,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             Volts.of(7), // Use dynamic voltage of 7 V
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
-            (state) -> Logger.recordOutput("SysIdSteer", state.toString())        
+            (state) -> DogLog.log("SysIdSteer", state.toString())        
         ),
         new SysIdRoutine.Mechanism(
             volts -> setControl(m_steerCharacterization.withVolts(volts)),
@@ -110,7 +110,7 @@ public class CtreDrive extends TunerSwerveDrivetrain implements Subsystem {
             null, // Use default timeout (10 s)
             // Log state with SignalLogger class
             //state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-            (state) -> Logger.recordOutput("SysIdRotation", state.toString())
+            (state) -> DogLog.log("SysIdRotation", state.toString())
         ),
         new SysIdRoutine.Mechanism(
             output -> {

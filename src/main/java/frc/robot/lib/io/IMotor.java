@@ -18,6 +18,8 @@ public interface IMotor {
 
 	void setRunMode(RunMode mode);
 
+	void setNeutral();
+
 	void setDutyCycle(double dutyCycle);
 
 	void setVoltage(Voltage voltage);

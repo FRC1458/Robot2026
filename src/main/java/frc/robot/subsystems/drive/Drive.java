@@ -4,7 +4,6 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -68,11 +67,9 @@ public class Drive extends SubsystemBase {
 
 	private final LocalADStarWrapper pathfinder;
 
-	private final DriveIO io;
 
 	private Drive() {
 		drivetrain = CompCtreDriveConstants.createDrivetrain();
-		// telemetry = new CtreDriveTelemetry(MAX_SPEED);
 		teleopRequest = new SwerveRequest.FieldCentric();
 		driveRequest = teleopRequest;
 		lastReadState = drivetrain.getState();
@@ -86,8 +83,6 @@ public class Drive extends SubsystemBase {
 		drivetrain.getOdometryThread().setThreadPriority(31);
 		TelemetryManager.getInstance().addStructPublisher("Mechanisms/Drive", Pose3d.struct,
 				() -> new Pose3d(getPose()));
-		io = new DriveIO(getName(), drivetrain);
-		// TelemetryManager.getInstance().addSendable(this);
 	}
 
 	/** @return the ctre generated drivetrain */
@@ -105,8 +100,6 @@ public class Drive extends SubsystemBase {
 	public void outputTelemetry() {
 		// telemetry.telemeterize(lastReadState);
 		FieldLayout.field.setRobotPose(getPose());
-		io.updateInputs(driveRequest, lastReadState, getCurrentCommand(), getDefaultCommand());
-		io.process();
 
 		// SmartDashboard.putNumber("toShooter",
 		// FieldLayout.APRILTAG_MAP.getTagPose(10).get().toPose2d().getTranslation().getDistance(getPose().getTranslation()));
@@ -169,10 +162,6 @@ public class Drive extends SubsystemBase {
 			double yFancy = xy[1];
 			double rotFancy = Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
-			// SmartDashboard.putNumber("Sticks/vX", xDesiredRaw);
-			// SmartDashboard.putNumber("Sticks/vY", yDesiredRaw);
-			// SmartDashboard.putNumber("Sticks/vW", rotDesiredRaw);
-
 			teleopRequest
 					.withVelocityX(xFancy * MAX_SPEED)
 					.withVelocityY(yFancy * MAX_SPEED)
@@ -231,7 +220,6 @@ public class Drive extends SubsystemBase {
 									180));
 
 					request
-							// .withHeadingPID(p.get(), i.get(), d.get())
 							.withVelocityX(xFancy * MAX_SPEED)
 							.withVelocityY(yFancy * MAX_SPEED)
 							.withRotationalRate(rotation);
@@ -284,10 +272,7 @@ public class Drive extends SubsystemBase {
 							.setMeasurement(state.Pose.getRotation().getRadians(), state.Speeds.omegaRadiansPerSecond)
 							.getOutput();
 
-					Logger.recordOutput("Tracking Error",
-							MathUtil.inputModulus(state.Pose.getRotation().minus(targetDirection).getDegrees(), -180,
-									180));
-
+				
 					request
 							// .withHeadingPID(p.get(), i.get(), d.get())
 							.withVelocityX(xFancy * MAX_SPEED)
@@ -301,18 +286,10 @@ public class Drive extends SubsystemBase {
 	 * Utilizes feedforwards derived from the current chassis speeds
 	 */
 	public Command headingLockToHub() {
-		// TelemetryManager.getInstance().addStructPublisher(
-		// "thing", Pose2d.struct, () -> new
-		// Pose2d(Constants.FieldConstants.allianceCorrected(
-		// FieldPoses.HUB.pose3d.getTranslation()
-		// // Constants.FieldConstants.Hub.topCenterPoint
-		// ).toTranslation2d(), Rotation2d.kZero));
-
 		return headingLockToPose(
 				Constants.FieldConstants
 						.allianceCorrected(
 								FieldPoses.HUB.pose3d.getTranslation()
-						// Constants.FieldConstants.Hub.topCenterPoint
 						)
 						.toTranslation2d());
 	}
@@ -429,47 +406,4 @@ public class Drive extends SubsystemBase {
 						.lte(MAX_SPEED_SCORING_TRANSLATION)
 				&& Units.RadiansPerSecond.of(speeds.omegaRadiansPerSecond).lte(MAX_ROTATION_SPEED_SCORING);
 	}
-
-	// @Override
-	// public void initSendable(SendableBuilder builder) {
-	// super.initSendable(builder);
-	// builder.addDoubleProperty(
-	// "Pitch Velocity Degrees Per Second",
-	// () -> drivetrain
-	// .getPigeon2()
-	// .getAngularVelocityYDevice()
-	// .getValue()
-	// .in(Units.DegreesPerSecond),
-	// null);
-	// builder.addDoubleProperty(
-	// "Pitch Degrees",
-	// () -> drivetrain.getPigeon2().getPitch().getValue().in(Units.Degrees),
-	// null);
-
-	// builder.addDoubleProperty(
-	// "Roll Velocity Degrees Per Second",
-	// () -> drivetrain
-	// .getPigeon2()
-	// .getAngularVelocityXDevice()
-	// .getValue()
-	// .in(Units.DegreesPerSecond),
-	// null);
-	// builder.addDoubleProperty(
-	// "Roll Degrees",
-	// () -> drivetrain.getPigeon2().getRoll().getValue().in(Units.Degrees),
-	// null);
-
-	// addModuleToBuilder(builder, 0);
-	// addModuleToBuilder(builder, 1);
-	// addModuleToBuilder(builder, 2);
-	// addModuleToBuilder(builder, 3);
-	// }
-
-	// /** Telemeterizes a module */
-	// private void addModuleToBuilder(SendableBuilder builder, int module) {
-	// TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Drive",
-	// drivetrain.getModules()[module].getDriveMotor(), builder);
-	// TelemetryManager.makeSendableTalonFX("Modules/" + module + "/Angle",
-	// drivetrain.getModules()[module].getSteerMotor(), builder);
-	// }
 }

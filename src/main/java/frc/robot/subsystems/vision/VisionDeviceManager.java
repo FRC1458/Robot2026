@@ -1,129 +1,109 @@
 package frc.robot.subsystems.vision;
 
-import frc.robot.lib.util.TunableNumber;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
-import frc.robot.Robot;
-import frc.robot.lib.field.FieldLayout;
-import frc.robot.lib.util.MovingAverageDouble;
+import java.util.List;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.util.List;
 import org.photonvision.simulation.VisionSystemSim;
 
+import frc.robot.Robot;
+import frc.robot.lib.field.FieldLayout;
+import frc.robot.lib.util.MovingAverageDouble;
+import frc.robot.lib.util.TunableNumber;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
+
 public class VisionDeviceManager extends SubsystemBase {
-    public static boolean enabled;
-	public static VisionDeviceManager visionDeviceManagerInstance;
-	public static VisionDeviceManager getInstance() {
-		if (visionDeviceManagerInstance == null) {
-			visionDeviceManagerInstance = new VisionDeviceManager();
-		}
-		return visionDeviceManagerInstance;
-	}
+    private static VisionDeviceManager instance;
+    private static boolean visionDisabled = false;
+    
+    private static final TunableNumber timestampOffset = new TunableNumber("VisionTimestampOffset", 0.1, false);
 
-	// private VisionDevice leftCamera;
-	@SuppressWarnings("unused")
-	private VisionDevice rightCamera;
-	private VisionDevice frontrCamera;
-	private VisionDevice frontlCamera;
+    private final VisionDevice frontRightCamera;
+    private final VisionDevice frontLeftCamera;
+    private final List<VisionDevice> cameras;
 
-	public List<VisionDevice> cameras;
+    private final MovingAverageDouble headingAvg = new MovingAverageDouble(100);
+    private double movingAvgRead = 0.0;
 
-	private static TunableNumber timestampOffset = new TunableNumber("VisionTimestampOffset", (0.1), false);
+    private VisionSystemSim visionSim;
 
-	private MovingAverageDouble headingAvg = new MovingAverageDouble(100);
-	private double movingAvgRead = 0.0;
+    private VisionDeviceManager() {
+        frontRightCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
+        frontLeftCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
+        
+        cameras = List.of(frontRightCamera, frontLeftCamera);
 
-	private static boolean visionDisabled = false;
+        if (Robot.isSimulation()) {
+            visionSim = new VisionSystemSim(getName());
+            visionSim.addAprilTags(FieldLayout.APRILTAG_MAP);
+            cameras.forEach(camera -> 
+                visionSim.addCamera(camera.getSimulation(), camera.getConstants().robotToCamera)
+            );
+        }
+    }
 
-	public VisionSystemSim visionSim;
+    public static VisionDeviceManager getInstance() {
+        if (instance == null) {
+            instance = new VisionDeviceManager();
+        }
+        return instance;
+    }
 
-	public VisionIO io;
+    @Override
+    public void periodic() {
+        cameras.forEach(VisionDevice::periodic);
+        movingAvgRead = headingAvg.getAverage();
+    }
+    
+    @Override
+    public void simulationPeriodic() {
+        if (visionSim != null) {
+            visionSim.update(Drive.getInstance().getPose());
+        }
+    }
+    
+    public double getMovingAvgRead() {
+        return movingAvgRead;
+    }
 
-	public VisionDeviceManager() {
-		// leftCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.L_CONSTANTS);
-		// rightCamera = new VisionDevice(Constants.Limelight.VisionDeviceConstants.R_CONSTANTS);
-		frontrCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS);
-		frontlCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS);
-		cameras = List.of(frontrCamera, frontlCamera);
-		// cameras = List.of(rightCamera);
-		if (Robot.isSimulation()) {
-			visionSim = new VisionSystemSim(getName());
-			visionSim.addAprilTags(FieldLayout.APRILTAG_MAP);
-			cameras.forEach((camera) -> visionSim.addCamera(camera.getSimulation(), camera.getConstants().robotToCamera));
-		}
-		io = new VisionIO(getName(), this);
-		// TelemetryManager.getInstance().addSendable(this);
-	}
+    public synchronized MovingAverageDouble getMovingAverage() {
+        return headingAvg;
+    }
 
-	@Override
-	public void periodic() {
-		cameras.forEach(VisionDevice::periodic);
-		movingAvgRead = headingAvg.getAverage();
-		
-		io.updateInputs(getCurrentCommand(), getDefaultCommand());
-		io.process();
-		// SmartDashboard.putNumber("Vision heading moving avg", getMovingAvgRead());
-		// SmartDashboard.putBoolean("vision disabled", getVisionDisabled());
-	}
-	
-	@Override
-	public void simulationPeriodic() {
-		visionSim.update(Drive.getInstance().getPose());
-	}
-	
-	public double getMovingAvgRead() {
-		return movingAvgRead;
-	}
+    public synchronized boolean isFullyConnected() {
+        // TODO: Replace with actual connection check if needed
+        // return cameras.stream().allMatch(VisionDevice::isConnected);
+        return true; 
+    }
 
-	public synchronized MovingAverageDouble getMovingAverage() {
-		return headingAvg;
-	}
+    public Command bootUp() {
+        Command[] bootCommands = cameras.stream()
+            .map(VisionDevice::bootUpSequence)
+            .toArray(Command[]::new);
 
-	public synchronized boolean isFullyConnected() {
-		return true; 
-		// frontlCamera.isConnected()
-		// 	&& frontrCamera.isConnected();
-			// && rightCamera.isConnected();
-			// && backCamera.isConnected();
-	}
+        return Commands.parallel(bootCommands)
+            .withTimeout(4.0)
+            .andThen(Commands.print("Finished vision bootup"));
+    }
 
-	public Command bootUp() {
-		return Commands.parallel(
-				frontlCamera.bootUpSequence(),
-				frontrCamera.bootUpSequence()
-			)
-			.withTimeout(4)
-			.andThen(Commands.print("Finished vision bootup"));
-	}
+    public synchronized VisionDevice getFrontRightVision() {
+        return frontRightCamera;
+    }
 
-	// public synchronized VisionDevice getLeftVision() {z
-	// 	return leftCamera;
-	// }
+    public synchronized VisionDevice getFrontLeftVision() {
+        return frontLeftCamera;
+    }
 
-	// public synchronized VisionDevice getRightVision() {
-	// 	return rightCamera;
-	// }
+    public static double getTimestampOffset() {
+        return timestampOffset.get();
+    }
 
-	public synchronized VisionDevice getFrontRVision() {
-		return frontrCamera;
-	}
+    public static boolean isVisionDisabled() {
+        return visionDisabled;
+    }
 
-	public synchronized VisionDevice getFrontLVision() {
-		return frontlCamera;
-	}
-
-	public static double getTimestampOffset() {
-		return timestampOffset.get();
-	}
-
-	public static boolean getVisionDisabled() {
-		return visionDisabled;
-	}
-
-	public static void setDisableVision(boolean disable) {
-		visionDisabled = disable;
-	}
+    public static void setVisionDisabled(boolean disabled) {
+        visionDisabled = disabled;
+    }
 }

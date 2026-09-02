@@ -1,216 +1,33 @@
 package frc.robot.subsystems.indexer;
 
-import static frc.robot.subsystems.indexer.IndexerConstants.*;
-
-import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.CoastOut;
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Robot;
 
-// TODO (ethan): only activate if shooter ready
-// TODO (ethan): ask tommy setControl(request)
 public class Indexer extends SubsystemBase {
-    /** getInstance of indexer */
-    private static Indexer leftInstance;
-    public static Indexer getLeftInstance() {
-        if (leftInstance == null) {
-            leftInstance = new Indexer(true);
-        }
-        return leftInstance;
-    }
-    private static Indexer rightInstance;
-    public static Indexer getRightInstance() {
-        if (rightInstance == null) {
-            rightInstance = new Indexer(false);
-        }
-        return rightInstance;
-    }
-    private ControlRequest request;
+    public LeftIndexer lIndex;
+    public RightIndexer rIndex;
+    public Roller roller;
 
-    private TalonFX motor;
-    // private LaserCan lc;
-
-    /** boolean that's modified by checkForBall() */
-    // private boolean hasBall;
-
-    private FlywheelSim wheelSim;
-
-    // private boolean shooterReady = false;
-    // COMMENTED OUT /** boolean that's modified by checkForBallTwo() */
-    // private boolean hasBallTwo;
-
-    /** boolean that's modified by shooter */
-
-    private IndexerIO io;
-
-    /** setup, adding motor and laser */
-    private Indexer(boolean isLeft) {
-        super();
-        setName("Indexer " + (isLeft ? "Left" : "Right"));
-        motor = new TalonFX(isLeft ? L_MOTOR_ID : R_MOTOR_ID);
-        
-        var config = getConfig();
-
-        if (isLeft) {
-            config = config.clone().withMotorOutput(
-                new MotorOutputConfigs()
-                    .withInverted(InvertedValue.Clockwise_Positive));
-        }
-        motor.getConfigurator().apply(config);
-
-        if (Robot.isSimulation()) {
-            wheelSim = new FlywheelSim(
-                LinearSystemId.createFlywheelSystem(
-                    DCMotor.getKrakenX44(1),
-                    0.000189000861,
-                    2), 
-                DCMotor.getKrakenX44(1), 
-                0.0);
-        }
-        io = new IndexerIO(getName(), motor);
-        // TelemetryManager.getInstance().addSendable(this);
+    public Indexer(LeftIndexer lIndex, RightIndexer rIndex, Roller roller) {
+        this.lIndex = lIndex;
+        this.rIndex = rIndex;
+        this.roller = roller;
     }
 
-    @Override
-    /* check for balls and makes sure motor is constantly running at desired speed */
-    public void periodic() {
-        motor.setControl(request);
-        
-        // checkForBall();
-        // checkForBallTwo();
-        // if (shooterReady == true) {
-        //     activateIndexer();
-        // }
-        io.updateInputs(motor.getVelocity().getValueAsDouble(), getCurrentCommand(), getDefaultCommand());
-        io.process();
+    public Command indexAll() {
+        return Commands.parallel(
+            lIndex.index(),
+            rIndex.index(),
+            roller.index()
+        );
     }
 
-    @Override
-    public void simulationPeriodic() {
-        
-
-        motor.getSimState().setSupplyVoltage(12);
-
-        wheelSim.setInput(motor.getSimState().getMotorVoltage());
-        wheelSim.update(0.020);
-		motor.getSimState()
-            .setRotorVelocity(wheelSim.getAngularVelocityRPM() / 60.0);
-        motor.getSimState().addRotorPosition(wheelSim.getAngularVelocityRPM() / 60.0 * 0.020);
+    public Command stopAll() {
+        return Commands.parallel(
+            lIndex.stop(),
+            rIndex.stop(),
+            roller.stop()
+        );
     }
-
-    /** type conversion/abstraction */
-    public void setRequest(ControlRequest request) {
-        this.request = request;
-    }
-
-    /** sets speed (duh) */
-    public Command setSpeed(double speed) {
-        return runOnce(() -> setRequest(new VelocityVoltage(speed)));
-    }
-    
-    /** moves motor to speed if sense ball */
-    // public Command loadIndexer() {
-    //     return Commands.either(
-    //         deactivateIndexer(),
-    //         activateIndexer(),
-    //         this::hasBall
-    //     ).repeatedly();
-    // }
-
-    public Command activateIndexer() {
-        return setSpeed(ROLLING_SPEED);
-    }
-
-    public Command back() {
-        return setSpeed(-ROLLING_SPEED);
-    }
-
-    /** turn motor down to zero */
-    public Command deactivateIndexer() {
-        return runOnce(() -> setRequest(new CoastOut()));
-    }
-
-    /** command to sense distance from LaserCAN; used to sense if bol */
-    // private double getDistanceMm() {
-    //     LaserCan.Measurement measurement = lc.getMeasurement();
-    //     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-    //         return measurement.distance_mm;
-    //     } else {
-    //         return Double.POSITIVE_INFINITY;
-    //     }
-    // }
-
-    /** command that modifies hasBall, uses getDistanceMm() */
-    // private void checkForBall() {
-    //     double x = getDistanceMm();
-    //     if (x <= MAXIMUM_LASER_DIST) {
-    //         hasBall = false;
-    //     }
-    // }
-
-    // /** setup formatting for boolean hasBall so it can be used in activateIndexer().either */
-    // private boolean hasBall() {
-    //     return hasBall;
-    // }
-    // COMMENTED OUT /** setup formatting for boolean hasBall so that it can be used to tell if shooter ready */
-    // private boolean hasBallTwo() {
-    //     return hasBallTwo;
-    // }
-    // COMMENTED OUT /** command to sense if bol going into shooter */
-    // private double getDistanceMmTwo() {
-    //     LaserCan.Measurement measurement = lc.getMeasurement();
-    //     if (measurement != null && measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-    //         return measurement.distance_mm;
-    //     } else {
-    //         return -1;
-    //     }
-    // }
-    // COMMENTED OUT //** command that checks if bol is boutta be shot */
-    // private void checkForBallTwo() {
-    //     double x = getDistanceMmTwo();
-    //     if (x >= LaserCan_DefaultMeasurement) {
-    //         hasBallTwo = false;
-    //     } else if (x != -1) { /* (x != -1) is checking that the camera isn't just returning an error as ball sensed */
-    //         hasBallTwo = true;
-    //     }
-    // }
-    
-    // TODO: AdvantageKit!
-    /** ????????? */
-    // @Override
-    // public void initSendable(SendableBuilder builder) {
-    //     super.initSendable(builder);
-    //     // builder.addBooleanProperty("Has Ball", () -> hasBall, null);
-    //     TelemetryManager.makeSendableTalonFX("Indexer Motor", motor, builder);
-    // }
-
-    public void runVolts(Voltage voltage) {
-        setRequest(new VoltageOut(voltage));
-    }
-
-    public SysIdRoutine sysId() {
-        return new SysIdRoutine(
-                new SysIdRoutine.Config(
-                        null, null, null, // Use default config
-                        (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(
-                        this::runVolts,
-                        null, // No log consumer, since data is recorded by AdvantageKit
-                        this));
-    }
-
 }

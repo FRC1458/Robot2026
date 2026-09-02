@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -42,7 +43,7 @@ public class ITalonFX implements IMotor {
 	protected TalonFX talonFx;
 
 	protected RunMode mode = RunMode.VOLTAGE;
-
+	protected NeutralOut neutralOut = new NeutralOut();
 	protected DutyCycleOut dutyCycleOut = new DutyCycleOut(0.0);
 	protected VoltageOut voltageOut = new VoltageOut(0.0);
 	protected PositionVoltage positionVoltage = new PositionVoltage(0.0);
@@ -91,14 +92,19 @@ public class ITalonFX implements IMotor {
 		supplyCurrentSignal = talonFx.getSupplyCurrent();
 		temperatureSignal = talonFx.getDeviceTemp();
 
-		Notifier thread = new Notifier(() -> refresh());
-
-		thread.startPeriodic(0.02);
+		try (Notifier thread = new Notifier(() -> refresh())) {
+			thread.startPeriodic(0.02);
+		}
 	}
 
 	@Override
 	public void setRunMode(RunMode mode) {
 		this.mode = mode;
+	}
+
+	@Override
+	public void setNeutral() {
+		talonFx.setControl(neutralOut);
 	}
 
 	@Override
@@ -245,5 +251,9 @@ public class ITalonFX implements IMotor {
 
 	public void configure(TalonFXConfiguration config) {
 		CtreUtil.applyConfiguration(talonFx, config);
+	}
+
+	public TalonFX getMotor() {
+		return talonFx;
 	}
 }

@@ -1,260 +1,50 @@
 package frc.robot.subsystems.intake;
 
-import static frc.robot.subsystems.intake.IntakeConstants.*;
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix6.controls.CoastOut;
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.Robot;
-import frc.robot.subsystems.intake.IntakeConstants.Motors;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-
 
 public class Intake extends SubsystemBase {
-    private static Intake intakeInstance;
+    public IntakePivot pivot;
+    public IntakeRoller roller;
 
-    public static Intake getInstance() {
-        if (intakeInstance == null) {
-            intakeInstance = new Intake(); 
-        }
-        return intakeInstance;
+    public Intake(IntakePivot pivot, IntakeRoller roller) {
+        this.pivot = pivot;
+        this.roller = roller;
     }
-
-    private final TalonFX wheelMotor;
-    private final TalonFX barMotor;
-
-    private double wheelSpeed;
-    private double barPosition;
-
-    private ControlRequest wheelRequest = new NeutralOut();
-    private ControlRequest barRequest = new NeutralOut();
-
-    private SingleJointedArmSim sim;
-    private FlywheelSim wheelSim;
-
-    private IntakeIO io;
-
-    private Intake() {
-        super();
-        wheelMotor = new TalonFX(Motors.WHEEL.id);
-        barMotor = new TalonFX(Motors.BAR.id);
-        wheelMotor.getConfigurator().apply(getWheelConfig());
-		barMotor.getConfigurator().apply(getBarConfig());
-        wheelMotor.setNeutralMode(NeutralModeValue.Coast);
-		barMotor.setNeutralMode(NeutralModeValue.Brake); 
-
-        barMotor.setPosition(BAR_POSITION_UP);
-
-        if (Robot.isSimulation()) {
-            sim = new SingleJointedArmSim(
-                DCMotor.getKrakenX60(1),
-                BAR_GEAR_RATIO,
-                0.1756163, 
-                INTAKE_LENGTH,
-                BAR_POS_MIN,
-                BAR_POS_MAX,
-                true,
-                BAR_POSITION_UP,
-                0.0, 0.0);
-
-            barMotor.getSimState()
-                .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU));
-            
-            wheelSim = new FlywheelSim(
-                LinearSystemId.createFlywheelSystem(
-                    DCMotor.getKrakenX44(1),
-                    0.000189000861,
-                    2), 
-                DCMotor.getKrakenX44(1), 
-                0.0);
-        }
-        
-        io = new IntakeIO(getName(), wheelMotor, barMotor);
-    }
-
-    @Override
-    public void periodic(){
-        wheelSpeed = wheelMotor.getVelocity().getValueAsDouble();
-        barPosition = barMotor.getPosition().getValue().in(Degrees);
-        barMotor.setControl(barRequest);
-        wheelMotor.setControl(wheelRequest);
-        io.updateInputs(wheelSpeed, barPosition, getCurrentCommand(), getDefaultCommand());
-        io.process();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        barMotor.getSimState().setSupplyVoltage(12.0);
-        sim.setInput(barMotor.getSimState().getMotorVoltage());
-        sim.update(0.020);
-        barMotor.getSimState()
-            .setRotorVelocity(sim.getVelocityRadPerSec() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
-        barMotor.getSimState()
-            .setRawRotorPosition(sim.getAngleRads() * (1 / Constants.TAU) * BAR_GEAR_RATIO);
-
-
-        wheelMotor.getSimState().setSupplyVoltage(12);
-
-        wheelSim.setInput(wheelMotor.getSimState().getMotorVoltage());
-        wheelSim.update(0.020);
-		wheelMotor.getSimState()
-            .setRotorVelocity(wheelSim.getAngularVelocityRPM() / 60.0);
-        wheelMotor.getSimState().addRotorPosition(wheelSim.getAngularVelocityRPM() / 60.0 * 0.020);
-        RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(wheelSim.getCurrentDrawAmps()));
-        RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
-    }
-
 
     public Command intake() {
-        return setSetpoint(INTAKE_SPEED, BAR_POSITION_DOWN);
-            // .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
-    }
-
-    public Command outtake() {
-        return setSetpoint(-INTAKE_SPEED, BAR_POSITION_DOWN)
-            .andThen(waitUntilBarIsAtPosition(BAR_POSITION_DOWN));
-    }
-
-    public Command stow() {
-        return setSetpoint(0.0, BAR_POSITION_UP);
-            // .andThen(waitUntilBarIsAtPosition(BAR_POSITION_UP));
-    }
-
-    public Command agitate() {
-        return setSetpoint(0.0, BAR_POSITION_DOWN)
-            .andThen(setSetpoint(0.0, BAR_POSITION_MID))
-            .repeatedly();
-    }
-    
-    public Command lower() {
-        return setSetpoint(0.0, BAR_POSITION_DOWN);
-    }
-
-    //----------------set request---------------
-    private void setRequestWheel(ControlRequest request) {
-        this.wheelRequest = request;
-    }
-
-    private void setRequestBar(ControlRequest request) {
-        this.barRequest = request;
-    }
-
-    public Command setSetpoint(double wheelSpeed, double barPosition) {
-        if (Math.abs(wheelSpeed) <= 0.1) {
-            return stopWheel()
-                .andThen(setBarPosition(barPosition)) 
-                .withName("Setpoint: " + wheelSpeed + "rps, " + barPosition + "rot");
-        }
-
-        return 
-            setWheelSpeed(wheelSpeed)
-            .andThen(setBarPosition(barPosition)) 
-            .withName("Setpoint: " + wheelSpeed + "rps, " + barPosition + "rot");
-    }
-
-    //---------bar-----------
-
-    /**
-     * sets request to the bar down voltage
-     * @return
-     */
-    public Command setBarDown() {
-        return setBarPosition(BAR_POSITION_DOWN);
-    }
-
-    /**
-     * sets request to the bar up voltage
-     * @return
-     */
-    public Command setBarUp() {
-        return setBarPosition(BAR_POSITION_UP);
-    }
-    
-    /**
-     * sets position request within limits and then requests that position (in rotations)
-     * @param position
-     * @return
-     */
-    public Command setBarPosition(double position) {
-        double checkedPos = MathUtil.clamp(position, BAR_POS_MIN, BAR_POS_MAX);
-
-        var req = new MotionMagicVoltage(checkedPos);
-        return runOnce(() ->
-            setRequestBar(req)
-        ).withName("bar pos set" + (checkedPos));
-    }
-
-    public Command setWheelSpeed(double speed) {
-        var req = new VelocityVoltage(speed);
-        return runOnce(
-            () -> setRequestWheel(req)
-        ).withName("wheel speed set "+ (speed));
-    }
-
-    public Command stopWheel() {
-        return runOnce(() -> setRequestWheel(new CoastOut()));
-    }
-
-    public Command waitUntilBarIsAtPosition(double target) {
-        return Commands.waitUntil(() -> Math.abs(target - barPosition) < BAR_EPSILON);
-    }
-
-    /**
-     * Recalibrates the elevator zero point. This slowly drives the elevator
-     * down until we see a drop in velocity and a spike in stator current,
-     * indicating that we've hit a hard stop.
-     *
-     * @return Command to run
-     */
-    public Command calibrateZero() {
-        VoltageOut calibrationRequest = new VoltageOut(-1.5)
-            .withIgnoreHardwareLimits(true)
-            .withIgnoreSoftwareLimits(true);
-
-        /** Trigger to detect when the elevator drives into a hard stop. */
-        Trigger isHardStop = new Trigger(() -> {
-            return barMotor.getVelocity().getValue().abs(RotationsPerSecond) < 1 &&
-                barMotor.getTorqueCurrent().getValue().abs(Amps) > 15;
-        }).debounce(0.10);
-
-        return run(() -> {
-            barMotor.setControl(calibrationRequest);
-        })
-        .until(isHardStop)
-        .andThen(
-            runOnce(() -> setRequestBar(new NeutralOut())).withTimeout(1)
-                .finallyDo(() -> {
-                    barMotor.setPosition(Degrees.of(0)); 
-                })
+        return Commands.parallel(
+            pivot.lower(),
+            roller.intake()
         );
     }
 
-    public Command onShoot() {
-        return Commands.sequence(
-            setSetpoint(INTAKE_SPEED, BAR_POSITION_UP),
-            Commands.waitSeconds(1.0),
-            setSetpoint(INTAKE_SPEED, BAR_POSITION_MID),
-            Commands.waitSeconds(0.5)
-        ).repeatedly();
+    public Command raise() {
+        return Commands.parallel(
+            pivot.raise(),
+            roller.intake()
+        );
+    }
+
+    public Command agitate() {
+        return Commands.parallel(
+            pivot.shake(),
+            roller.intake()
+        );
+    }
+
+    public Command outtake() {
+        return Commands.parallel(
+            pivot.lower(),
+            roller.outtake()
+        );
+    }
+
+    public Command stop() {
+        return Commands.parallel(
+            pivot.stop(),
+            roller.stop()
+        );
     }
 }
