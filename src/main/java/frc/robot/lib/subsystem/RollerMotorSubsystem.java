@@ -21,8 +21,8 @@ public class RollerMotorSubsystem extends LoggedSubsystem {
 
 	protected Command runVel(
 			AngularVelocity angularVelocity, AngularVelocity eps, IMotor.RunMode mode) {
-		return run(() -> io.setRunMode(mode))
-				.andThen(() -> io.setVelocity(angularVelocity))
+		return runOnce(() -> io.setRunMode(mode))
+				.andThen(runOnce(() -> io.setVelocity(angularVelocity)))
 				.andThen(
 						Commands.waitUntil(() -> Util.epsilonEquals(angularVelocity, io.getVelocity(), eps)));
 	}

@@ -91,9 +91,9 @@ public class ITalonFX implements IMotor {
 		supplyCurrentSignal = motor.getSupplyCurrent();
 		temperatureSignal = motor.getDeviceTemp();
 
-		try (Notifier thread = new Notifier(() -> refresh())) {
-			thread.startPeriodic(0.02);
-		}
+		Notifier thread = new Notifier(() -> refresh());
+		thread.startPeriodic(0.02);
+		
 	}
 
 	@Override

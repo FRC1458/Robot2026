@@ -20,8 +20,8 @@ public class HomingMotorSubsystem extends LoggedSubsystem {
 	}
 
 	protected Command runPos(Angle angle, Angle eps, IMotor.RunMode mode) {
-		return run(() -> io.setRunMode(mode))
-				.andThen(() -> io.setPosition(angle))
+		return runOnce(() -> io.setRunMode(mode))
+				.andThen(runOnce(() -> io.setPosition(angle)))
 				.andThen(Commands.waitUntil(() -> Util.epsilonEquals(angle, io.getPosition(), eps)));
 	}
 

@@ -31,5 +31,6 @@ public class ISimTalonFX extends ITalonFX {
 		simState.setRawRotorPosition(simulation.getPosition() * simulation.getRatio());
 		simState.setRotorVelocity(simulation.getVelocity() * simulation.getRatio());
 		simState.setRotorAcceleration(simulation.getAcceleration() * simulation.getRatio());
+    	refresh();
 	}
 }

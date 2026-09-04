@@ -39,6 +39,8 @@ public class IntakePivot extends HomingMotorSubsystem {
 					}
 				});
 		((ITalonFX) io).configure(PIVOT_CONFIG);
+
+		setDefaultCommand(stop());
 	}
 
 	public Command lower() {
@@ -53,7 +55,7 @@ public class IntakePivot extends HomingMotorSubsystem {
 		return Commands.repeatingSequence(
 				runOnce(() -> io.setPosition(PIVOT_POS_MID)),
 				Commands.waitSeconds(0.3),
-				runOnce(() -> io.setPosition(PIVOT_POS_MID)),
+				runOnce(() -> io.setPosition(PIVOT_POS_UP)),
 				Commands.waitSeconds(0.3));
 	}
 

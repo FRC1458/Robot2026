@@ -31,7 +31,7 @@ public class ShooterBR extends RollerMotorSubsystem {
 					}
 				});
 
-		((ITalonFX) io).configure(BL_CONFIG);
+		((ITalonFX) io).configure(BR_CONFIG);
 
 		setDefaultCommand(stop());
 	}

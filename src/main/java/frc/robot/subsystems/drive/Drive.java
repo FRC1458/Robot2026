@@ -238,7 +238,7 @@ public class Drive extends SubsystemBase {
 
 	public Command waitUntilAligned() {
 		return Commands.waitUntil(
-				() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, EPSILON_ROTATION));
+				() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, 10));
 	}
 
 	public Command autoAlign(Pose2d targetPose) {

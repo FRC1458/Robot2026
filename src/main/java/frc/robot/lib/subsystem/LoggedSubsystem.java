@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.HashSet;
 import java.util.Set;
 
+import dev.doglog.DogLog;
+
 public abstract class LoggedSubsystem extends SubsystemBase {
 	private static final Set<LoggedSubsystem> subsystems = new HashSet<>();
 
@@ -18,5 +20,7 @@ public abstract class LoggedSubsystem extends SubsystemBase {
 		}
 	}
 
-	abstract void log();
+	void log() {
+		DogLog.log("Commands/" + getName(), getCurrentCommand() != null ? getCurrentCommand().getName() : "None");;
+	}
 }

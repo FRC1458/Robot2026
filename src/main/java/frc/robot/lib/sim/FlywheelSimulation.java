@@ -1,6 +1,7 @@
 package frc.robot.lib.sim;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -12,6 +13,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 public class FlywheelSimulation implements Simulation {
 	FlywheelSim sim;
 	double ratio;
+	double acc;
 
 	public FlywheelSimulation(
 			Angle output,
@@ -19,7 +21,7 @@ public class FlywheelSimulation implements Simulation {
 			MomentOfInertia moi,
 			DCMotor gearbox,
 			double... measurementStdDevs) {
-		ratio = input.in(Rotations) / output.in(Rotations);
+		ratio = input.in(Rotations) / output.in(Radians);
 		sim =
 				new FlywheelSim(
 						LinearSystemId.createFlywheelSystem(gearbox, moi.in(KilogramSquareMeters), ratio),
@@ -40,11 +42,12 @@ public class FlywheelSimulation implements Simulation {
 	@Override
 	public void update(double dt) {
 		sim.update(dt);
+		acc += dt * sim.getAngularVelocityRPM();
 	}
 
 	@Override
 	public double getPosition() {
-		return 0.0;
+		return acc;
 	}
 
 	@Override
