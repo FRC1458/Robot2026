@@ -1,11 +1,10 @@
 package frc.robot.lib.util.interpolation;
 
+import edu.wpi.first.math.interpolation.Interpolator;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-
-import edu.wpi.first.math.interpolation.Interpolator;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
 
 /**
  * Interpolating Tree Maps are used to get values at points that are not defined by making a guess
@@ -32,7 +31,7 @@ public class InterpolatingTreeMap<K, V> {
 	 * @param interpolator Function to use for interpolation of the values.
 	 */
 	public InterpolatingTreeMap(
-		InverseInterpolator<K> inverseInterpolator, Interpolator<V> interpolator, int max) {
+			InverseInterpolator<K> inverseInterpolator, Interpolator<V> interpolator, int max) {
 		map = new TreeMap<>();
 		this.inverseInterpolator = inverseInterpolator;
 		this.interpolator = interpolator;
@@ -47,10 +46,10 @@ public class InterpolatingTreeMap<K, V> {
 	 * @param comparator Comparator to use on keys.
 	 */
 	public InterpolatingTreeMap(
-		InverseInterpolator<K> inverseInterpolator,
-		Interpolator<V> interpolator,
-		Comparator<K> comparator,
-		int max) {
+			InverseInterpolator<K> inverseInterpolator,
+			Interpolator<V> interpolator,
+			Comparator<K> comparator,
+			int max) {
 		this.inverseInterpolator = inverseInterpolator;
 		this.interpolator = interpolator;
 		map = new TreeMap<>(comparator);
@@ -83,23 +82,23 @@ public class InterpolatingTreeMap<K, V> {
 	public V get(K key) {
 		V val = map.get(key);
 		if (val == null) {
-		K ceilingKey = map.ceilingKey(key);
-		K floorKey = map.floorKey(key);
+			K ceilingKey = map.ceilingKey(key);
+			K floorKey = map.floorKey(key);
 
-		if (ceilingKey == null && floorKey == null) {
-			return null;
-		}
-		if (ceilingKey == null) {
-			return map.get(floorKey);
-		}
-		if (floorKey == null) {
-			return map.get(ceilingKey);
-		}
-		V floor = map.get(floorKey);
-		V ceiling = map.get(ceilingKey);
+			if (ceilingKey == null && floorKey == null) {
+				return null;
+			}
+			if (ceilingKey == null) {
+				return map.get(floorKey);
+			}
+			if (floorKey == null) {
+				return map.get(ceilingKey);
+			}
+			V floor = map.get(floorKey);
+			V ceiling = map.get(ceilingKey);
 
-		return interpolator.interpolate(
-			floor, ceiling, inverseInterpolator.inverseInterpolate(floorKey, ceilingKey, key));
+			return interpolator.interpolate(
+					floor, ceiling, inverseInterpolator.inverseInterpolate(floorKey, ceilingKey, key));
 		} else {
 			return val;
 		}

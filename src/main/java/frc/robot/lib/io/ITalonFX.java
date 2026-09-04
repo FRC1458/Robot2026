@@ -21,7 +21,6 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import dev.doglog.DogLog;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -40,7 +39,7 @@ public class ITalonFX implements IMotor {
 	protected String supplyCurrentKey;
 	protected String temperatureKey;
 
-	protected TalonFX talonFx;
+	protected TalonFX motor;
 
 	protected RunMode mode = RunMode.VOLTAGE;
 	protected NeutralOut neutralOut = new NeutralOut();
@@ -75,7 +74,7 @@ public class ITalonFX implements IMotor {
 	protected StatusSignal<Current> supplyCurrentSignal;
 	protected StatusSignal<Temperature> temperatureSignal;
 
-	public ITalonFX(TalonFX talonFx, String key) {
+	public ITalonFX(TalonFX motor, String key) {
 		this.key = key;
 		positionKey = key + "/Position";
 		velocityKey = key + "/Velocity";
@@ -84,13 +83,13 @@ public class ITalonFX implements IMotor {
 		supplyCurrentKey = key + "/SupplyCurrent";
 		temperatureKey = key + "/Temperature";
 
-		this.talonFx = talonFx;
-		positionSignal = talonFx.getPosition();
-		velocitySignal = talonFx.getVelocity();
-		voltageSignal = talonFx.getMotorVoltage();
-		statorCurrentSignal = talonFx.getStatorCurrent();
-		supplyCurrentSignal = talonFx.getSupplyCurrent();
-		temperatureSignal = talonFx.getDeviceTemp();
+		this.motor = motor;
+		positionSignal = motor.getPosition();
+		velocitySignal = motor.getVelocity();
+		voltageSignal = motor.getMotorVoltage();
+		statorCurrentSignal = motor.getStatorCurrent();
+		supplyCurrentSignal = motor.getSupplyCurrent();
+		temperatureSignal = motor.getDeviceTemp();
 
 		try (Notifier thread = new Notifier(() -> refresh())) {
 			thread.startPeriodic(0.02);
@@ -104,19 +103,19 @@ public class ITalonFX implements IMotor {
 
 	@Override
 	public void setNeutral() {
-		talonFx.setControl(neutralOut);
+		motor.setControl(neutralOut);
 	}
 
 	@Override
 	public void setDutyCycle(double dutyCycle) {
 		dutyCycleOut.withOutput(dutyCycle);
-		talonFx.setControl(dutyCycleOut);
+		motor.setControl(dutyCycleOut);
 	}
 
 	@Override
 	public void setVoltage(Voltage voltage) {
 		voltageOut.withOutput(voltage);
-		talonFx.setControl(voltageOut);
+		motor.setControl(voltageOut);
 	}
 
 	@Override
@@ -124,31 +123,31 @@ public class ITalonFX implements IMotor {
 		switch (mode) {
 			case VOLTAGE:
 				positionVoltage.withPosition(position).withFeedForward(positionVoltageFeedforward);
-				talonFx.setControl(positionVoltage);
+				motor.setControl(positionVoltage);
 				break;
 			case VOLTAGE_TRAPEZOIDAL:
 				motionMagicVoltage.withPosition(position).withFeedForward(positionVoltageFeedforward);
-				talonFx.setControl(motionMagicVoltage);
+				motor.setControl(motionMagicVoltage);
 				break;
 			case VOLTAGE_EXPONENTIAL:
 				motionMagicExpoVoltage.withPosition(position).withFeedForward(positionVoltageFeedforward);
-				talonFx.setControl(motionMagicExpoVoltage);
+				motor.setControl(motionMagicExpoVoltage);
 				break;
 			case CURRENT:
 				positionTorqueCurrentFOC.withPosition(position).withFeedForward(positionCurrentFeedforward);
-				talonFx.setControl(positionTorqueCurrentFOC);
+				motor.setControl(positionTorqueCurrentFOC);
 				break;
 			case CURRENT_TRAPEZOIDAL:
 				motionMagicTorqueCurrentFOC
 						.withPosition(position)
 						.withFeedForward(positionCurrentFeedforward);
-				talonFx.setControl(motionMagicTorqueCurrentFOC);
+				motor.setControl(motionMagicTorqueCurrentFOC);
 				break;
 			case CURRENT_EXPONENTIAL:
 				motionMagicExpoTorqueCurrentFOC
 						.withPosition(position)
 						.withFeedForward(positionCurrentFeedforward);
-				talonFx.setControl(motionMagicExpoTorqueCurrentFOC);
+				motor.setControl(motionMagicExpoTorqueCurrentFOC);
 		}
 	}
 
@@ -157,23 +156,23 @@ public class ITalonFX implements IMotor {
 		switch (mode) {
 			case VOLTAGE:
 				velocityVoltage.withVelocity(velocity).withFeedForward(velocityVoltageFeedforward);
-				talonFx.setControl(velocityVoltage);
+				motor.setControl(velocityVoltage);
 				break;
 			case VOLTAGE_TRAPEZOIDAL:
 				motionMagicVelocityVoltage
 						.withVelocity(velocity)
 						.withFeedForward(velocityVoltageFeedforward);
-				talonFx.setControl(motionMagicVelocityVoltage);
+				motor.setControl(motionMagicVelocityVoltage);
 				break;
 			case CURRENT:
 				velocityTorqueCurrentFOC.withVelocity(velocity).withFeedForward(velocityCurrentFeedforward);
-				talonFx.setControl(velocityTorqueCurrentFOC);
+				motor.setControl(velocityTorqueCurrentFOC);
 				break;
 			case CURRENT_TRAPEZOIDAL:
 				motionMagicVelocityTorqueCurrentFOC
 						.withVelocity(velocity)
 						.withFeedForward(velocityCurrentFeedforward);
-				talonFx.setControl(motionMagicVelocityTorqueCurrentFOC);
+				motor.setControl(motionMagicVelocityTorqueCurrentFOC);
 				break;
 			default:
 				System.err.println("Velocity control is not supported for Motion Magic Expo");
@@ -183,7 +182,7 @@ public class ITalonFX implements IMotor {
 	@Override
 	public void setCurrent(Current current) {
 		torqueCurrentFOC.withOutput(current);
-		talonFx.setControl(torqueCurrentFOC);
+		motor.setControl(torqueCurrentFOC);
 	}
 
 	@Override
@@ -250,10 +249,10 @@ public class ITalonFX implements IMotor {
 	}
 
 	public void configure(TalonFXConfiguration config) {
-		CtreUtil.applyConfiguration(talonFx, config);
+		CtreUtil.applyConfiguration(motor, config);
 	}
 
 	public TalonFX getMotor() {
-		return talonFx;
+		return motor;
 	}
 }

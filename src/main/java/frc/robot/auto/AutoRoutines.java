@@ -1,40 +1,31 @@
 package frc.robot.auto;
 
-import frc.robot.auto.AutoSelector.Auto;
-import frc.robot.lib.trajectory.RedTrajectory;
-import frc.robot.lib.trajectory.TrajectoryLoader;
-import frc.robot.lib.trajectory.RedTrajectory.TrajectoryType;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
-import frc.robot.subsystems.drive.commands.TrajectoryCommand;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Robot;
+import frc.robot.auto.AutoSelector.Auto;
+import frc.robot.lib.trajectory.RedTrajectory;
+import frc.robot.lib.trajectory.RedTrajectory.TrajectoryType;
+import frc.robot.lib.trajectory.TrajectoryLoader;
 
 public final class AutoRoutines {
-	// @Auto(name = "Pid Test")
+	@Auto(name = "Pid Test")
 	public static Command testPidToPose() {
-		return new PIDToPoseCommand(
-			new Pose2d(2.0, 1.0, Rotation2d.fromDegrees(120)));
+		return Robot.getInstance().drive.autoAlign(new Pose2d(0, 0, Rotation2d.fromDegrees(90)));
 	}
 
-	// @Auto(name = "Trajectory Test")
+	@Auto(name = "Trajectory Test")
 	public static Command testTrajectoryAuto() {
-		RedTrajectory traj = TrajectoryLoader.loadAutoTrajectory(
-			TrajectoryType.CHOREO, 
-			"testPath3").get();
-		return new TrajectoryCommand(traj);
+		RedTrajectory traj =
+				TrajectoryLoader.loadAutoTrajectory(TrajectoryType.CHOREO, "testPath3").get();
+		return Robot.getInstance().drive.trajectory(traj);
 	}
 
 	// @Auto(name = "right neutral auto")
 	// public static Command rightAutoNeutral() {
 	// 	var tTrenchRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"TrenchRight");
 
 	// 	if (tTrenchRight.isEmpty()) {
@@ -44,7 +35,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tSwipeRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"SwipeRight");
 
 	// 	if (tSwipeRight.isEmpty()) {
@@ -54,7 +45,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tReturnTrenchRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"ReturnTrenchRight");
 
 	// 	if (tReturnTrenchRight.isEmpty()) {
@@ -64,7 +55,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tBackToNeutralRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"BackToNeutralRight");
 
 	// 	if (tBackToNeutralRight.isEmpty()) {
@@ -148,7 +139,7 @@ public final class AutoRoutines {
 	// @Auto(name = "left neutral auto")
 	// public static Command leftAutoNeutral() {
 	// 	var tTrenchLeft = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"TrenchLeft");
 
 	// 	if (tTrenchLeft.isEmpty()) {
@@ -158,7 +149,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tSwipeLeft = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"SwipeLeft");
 
 	// 	if (tSwipeLeft.isEmpty()) {
@@ -168,7 +159,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tReturnTrenchLeft = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"ReturnTrenchLeft");
 
 	// 	if (tReturnTrenchLeft.isEmpty()) {
@@ -220,7 +211,7 @@ public final class AutoRoutines {
 	// @Auto(name = "center auto")
 	// public static Command centerAuto() {
 	// 	var tDepotCenter = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"DepotCenter");
 
 	// 	if (tDepotCenter.isEmpty()) {
@@ -230,7 +221,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tDepotShootCenter = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"DepotShootCenter");
 
 	// 	if (tDepotShootCenter.isEmpty()) {
@@ -240,7 +231,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tStationCenter = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"StationCenter");
 
 	// 	if (tStationCenter.isEmpty()) {
@@ -250,7 +241,7 @@ public final class AutoRoutines {
 	// 	}
 
 	// 	var tStationShootCenter = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER, 
+	// 		TrajectoryType.PATHPLANNER,
 	// 		"StationShootCenter");
 
 	// 	if (tStationCenter.isEmpty()) {
@@ -315,4 +306,3 @@ public final class AutoRoutines {
 	// 			});
 	// }
 }
-

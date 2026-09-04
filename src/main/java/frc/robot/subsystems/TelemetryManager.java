@@ -1,10 +1,6 @@
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
@@ -14,122 +10,94 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.ArrayList;
+import java.util.function.Supplier;
 
 public class TelemetryManager extends SubsystemBase {
-    private static TelemetryManager telemetryManagerInstance;
-    public static TelemetryManager getInstance() {
-        if (telemetryManagerInstance == null) {
-            telemetryManagerInstance = new TelemetryManager();
-        }
-        return telemetryManagerInstance;
-    }
+	private static TelemetryManager telemetryManagerInstance;
 
-    private final ArrayList<StructArrayPublisherEntry<?>> structArrayPublishers = new ArrayList<>();
+	public static TelemetryManager getInstance() {
+		if (telemetryManagerInstance == null) {
+			telemetryManagerInstance = new TelemetryManager();
+		}
+		return telemetryManagerInstance;
+	}
 
-    public static record StructArrayPublisherEntry<T> (
-        StructArrayPublisher<T> publisher, Supplier<T[]> supplier
-    ) {
-        public void publish() {
-            publisher.set(supplier.get());
-        }
-    }
+	private final ArrayList<StructArrayPublisherEntry<?>> structArrayPublishers = new ArrayList<>();
 
-    private final ArrayList<StructPublisherEntry<?>> structPublishers;
+	public static record StructArrayPublisherEntry<T>(
+			StructArrayPublisher<T> publisher, Supplier<T[]> supplier) {
+		public void publish() {
+			publisher.set(supplier.get());
+		}
+	}
 
-    public static record StructPublisherEntry<T> (
-        StructPublisher<T> publisher, Supplier<T> supplier
-    ) {
-        public void publish() {
-            publisher.set(supplier.get());
-        }
-    }
+	private final ArrayList<StructPublisherEntry<?>> structPublishers;
 
-    private final ArrayList<Sendable> sendables;
+	public static record StructPublisherEntry<T>(StructPublisher<T> publisher, Supplier<T> supplier) {
+		public void publish() {
+			publisher.set(supplier.get());
+		}
+	}
 
-    private TelemetryManager() {
-        structPublishers = new ArrayList<>();
-        sendables = new ArrayList<>();
-    }
+	private final ArrayList<Sendable> sendables;
 
-    @Override
-    public void periodic() {
-        for (StructArrayPublisherEntry<?> entry : structArrayPublishers) {
-            entry.publish();
-        }
+	private TelemetryManager() {
+		structPublishers = new ArrayList<>();
+		sendables = new ArrayList<>();
+	}
 
-        for (StructPublisherEntry<?> entry : structPublishers) {
-            entry.publish();
-        }
-    }
-    
-    public <T> void addStructPublisher(String name, Struct<T> struct, Supplier<T> supplier) {
-        structPublishers.add(
-            new StructPublisherEntry<T>(
-                NetworkTableInstance.getDefault()
-                    .getStructTopic("SmartDashboard/" + name, struct).publish(), 
-                supplier));
-    }
+	@Override
+	public void periodic() {
+		for (StructArrayPublisherEntry<?> entry : structArrayPublishers) {
+			entry.publish();
+		}
 
-    public <T> void addStructArrayPublisher(String name, Struct<T> struct, Supplier<T[]> supplier) {
-        structArrayPublishers.add(
-            new StructArrayPublisherEntry<>(
-                NetworkTableInstance.getDefault()
-                    .getStructArrayTopic("SmartDashboard/" + name, struct).publish(), 
-                supplier));
-    }
+		for (StructPublisherEntry<?> entry : structPublishers) {
+			entry.publish();
+		}
+	}
 
-    public static void makeSendableTalonFX(String name, TalonFX motor, SendableBuilder builder) {
+	public <T> void addStructPublisher(String name, Struct<T> struct, Supplier<T> supplier) {
+		structPublishers.add(
+				new StructPublisherEntry<T>(
+						NetworkTableInstance.getDefault()
+								.getStructTopic("SmartDashboard/" + name, struct)
+								.publish(),
+						supplier));
+	}
+
+	public <T> void addStructArrayPublisher(String name, Struct<T> struct, Supplier<T[]> supplier) {
+		structArrayPublishers.add(
+				new StructArrayPublisherEntry<>(
+						NetworkTableInstance.getDefault()
+								.getStructArrayTopic("SmartDashboard/" + name, struct)
+								.publish(),
+						supplier));
+	}
+
+	public static void makeSendableTalonFX(String name, TalonFX motor, SendableBuilder builder) {
 		builder.addDoubleProperty(
-            name + "/Rotations",
-            () -> motor
-                .getPosition()
-                .getValueAsDouble(),
-            null);
-        builder.addDoubleProperty(
-            name + "/Velocity RPS",
-            () -> motor
-                .getVelocity()
-                .getValueAsDouble(),
-            null);
+				name + "/Rotations", () -> motor.getPosition().getValueAsDouble(), null);
 		builder.addDoubleProperty(
-            name + "/Volts",
-            () -> motor
-                .getMotorVoltage()
-                .getValue()
-                .in(Units.Volts),
-            null);
+				name + "/Velocity RPS", () -> motor.getVelocity().getValueAsDouble(), null);
 		builder.addDoubleProperty(
-            name + "/Stator Current",
-            () -> motor
-                .getStatorCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
+				name + "/Volts", () -> motor.getMotorVoltage().getValue().in(Units.Volts), null);
 		builder.addDoubleProperty(
-            name + "/Supply Current",
-            () -> motor
-                .getSupplyCurrent()
-                .getValue()
-                .in(Units.Amps),
-            null);
+				name + "/Stator Current", () -> motor.getStatorCurrent().getValue().in(Units.Amps), null);
 		builder.addDoubleProperty(
-            name + "/Temperature Celsius",
-            () -> motor
-                .getDeviceTemp()
-                .getValue()
-                .in(Units.Celsius),
-            null);
-        builder.addStringProperty(name + "/Request", 
-            () -> motor
-                .getAppliedControl()
-                .getName(),
-            null);
-    }
+				name + "/Supply Current", () -> motor.getSupplyCurrent().getValue().in(Units.Amps), null);
+		builder.addDoubleProperty(
+				name + "/Temperature Celsius",
+				() -> motor.getDeviceTemp().getValue().in(Units.Celsius),
+				null);
+		builder.addStringProperty(name + "/Request", () -> motor.getAppliedControl().getName(), null);
+	}
 
-    public void addSendable(Sendable sendable) {
-        sendables.add(sendable);
-        SmartDashboard.putData(sendable);
-    }
+	public void addSendable(Sendable sendable) {
+		sendables.add(sendable);
+		SmartDashboard.putData(sendable);
+	}
 
-    public void addNumber(Number number) {}
+	public void addNumber(Number number) {}
 }

@@ -25,9 +25,7 @@ public class ProfiledPIDVController {
 		return this;
 	}
 
-	/**
-	 * Makes the controller continuous, which means that values repeat.
-	 */
+	/** Makes the controller continuous, which means that values repeat. */
 	public ProfiledPIDVController enableContinuousInput(double minInput, double maxInput) {
 		controller.enableContinuousInput(minInput, maxInput);
 		return this;
@@ -59,9 +57,11 @@ public class ProfiledPIDVController {
 			double errorBound = (controller.maxRange - controller.minRange) / 2.0;
 
 			double goalDelta =
-				MathUtil.inputModulus(goal.position - controller.positionMeasurement, -errorBound, errorBound);
+					MathUtil.inputModulus(
+							goal.position - controller.positionMeasurement, -errorBound, errorBound);
 			double setpointDelta =
-				MathUtil.inputModulus(setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
+					MathUtil.inputModulus(
+							setpoint.position - controller.positionMeasurement, -errorBound, errorBound);
 
 			goal.position = goalDelta + controller.positionMeasurement;
 			setpoint.position = setpointDelta + controller.positionMeasurement;
@@ -76,9 +76,7 @@ public class ProfiledPIDVController {
 
 	public double getError() {
 		return MathUtil.inputModulus(
-			goal.position - controller.positionMeasurement, 
-			controller.minRange, 
-			controller.maxRange);
+				goal.position - controller.positionMeasurement, controller.minRange, controller.maxRange);
 	}
 
 	/** Resets the controller. */
@@ -86,8 +84,8 @@ public class ProfiledPIDVController {
 		controller.reset();
 		setpoint = new TrapezoidProfile.State(pos, vel);
 		return this;
-	}	
-	
+	}
+
 	public PIDVController getController() {
 		return controller;
 	}

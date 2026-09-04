@@ -1,30 +1,32 @@
 package frc.robot.lib.util;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MomentOfInertiaUnit;
 import edu.wpi.first.units.Unit;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import java.util.List;
 
-/**
- * Contains basic functions that are used often.
- */
+/** Contains basic functions that are used often. */
 public class Util {
 	public static final double EPSILON = 1e-12;
+	public static final MomentOfInertiaUnit InchSqPounds =
+			Pounds.mult(InchesPerSecond).mult(Inches).per(RadiansPerSecond);
 
-	/**
-	 * Prevent this class from being instantiated.
-	 */
+	/** Prevent this class from being instantiated. */
 	private Util() {}
 
 	public static class MathUtils {
-		/**
-		 * Limits the given input to the given magnitude.
-		 */
+		/** Limits the given input to the given magnitude. */
 		public static double limit(double v, double maxMagnitude) {
 			return limit(v, -maxMagnitude, maxMagnitude);
 		}
@@ -37,9 +39,7 @@ public class Util {
 			return inRange(v, -maxMagnitude, maxMagnitude);
 		}
 
-		/**
-		 * Checks if the given input is within the range (min, max), both exclusive.
-		 */
+		/** Checks if the given input is within the range (min, max), both exclusive. */
 		public static boolean inRange(double v, double min, double max) {
 			return v > min && v < max;
 		}
@@ -88,6 +88,7 @@ public class Util {
 			return Math.max(min, Math.min(value, max));
 		}
 	}
+
 	public static double placeInAppropriate0To360Scope(double scopeReference, double newAngle) {
 		double lowerBound;
 		double upperBound;
@@ -130,21 +131,22 @@ public class Util {
 	public static double applyJoystickDeadband(double stickValue, double stickDeadband) {
 		double deadbandedValue = (Math.abs(stickValue) > Math.abs(stickDeadband)) ? stickValue : 0.0;
 		if (MathUtils.epsilonEquals(deadbandedValue, 0.0)) return 0.0;
-		return Math.signum(deadbandedValue) * ((Math.abs(deadbandedValue) - stickDeadband) / (1.0 - stickDeadband)); //joystick max is always 1.0
+		return Math.signum(deadbandedValue)
+				* ((Math.abs(deadbandedValue) - stickDeadband)
+						/ (1.0 - stickDeadband)); // joystick max is always 1.0
 	}
 
 	// dc 12.15.25, apply radial deadband instead of axis-based ones
 	public static double[] applyRadialDeadband(double x, double y, double deadband) {
 		double mag = Math.hypot(x, y);
 		if (mag <= deadband) return new double[] {0.0, 0.0};
-	  
+
 		// Rescale so output reaches 1.0 when mag==1.0
 		double scaledMag = (mag - deadband) / (1.0 - deadband);
 		double ux = x / mag;
 		double uy = y / mag;
 		return new double[] {ux * scaledMag, uy * scaledMag};
 	}
-	  
 
 	public static Rotation2d robotToFieldRelative(Rotation2d rot, boolean is_red_alliance) {
 		if (is_red_alliance) {
@@ -190,74 +192,86 @@ public class Util {
 	public static Pose2d inversePose2d(Pose2d curPose) {
 		// Invert the rotation
 		Rotation2d inverseRotation = curPose.getRotation().unaryMinus();
-		
+
 		// Invert the translation by applying the inverse rotation to the negative translation
-		Translation2d inverseTranslation = curPose.getTranslation().unaryMinus().rotateBy(inverseRotation);
-		
+		Translation2d inverseTranslation =
+				curPose.getTranslation().unaryMinus().rotateBy(inverseRotation);
+
 		// Return a new Pose2d with the inverted translation and rotation
 		return new Pose2d(inverseTranslation, inverseRotation);
 	}
 
 	/**
-     * Obtain a new Pose2d from a curvature velocity. See:
-     * https://github.com/strasdat/Sophus/blob/master/sophus/se2.hpp
-     */
-	private final static double kEps = 1E-9;	//only used by exp() and log() mapping functions
-    public static Pose2d expMap(final Twist2d delta) {
-        double sin_theta = Math.sin(delta.dtheta);
-        double cos_theta = Math.cos(delta.dtheta);
-        double s, c;
-        if (Math.abs(delta.dtheta) < kEps) {
-            s = 1.0 - 1.0 / 6.0 * delta.dtheta * delta.dtheta;
-            c = .5 * delta.dtheta;
-        } else {
-            s = sin_theta / delta.dtheta;
-            c = (1.0 - cos_theta) / delta.dtheta;
-        }
-        return new Pose2d(new Translation2d(delta.dx * s - delta.dy * c, delta.dx * c + delta.dy * s),
-                new Rotation2d(cos_theta, sin_theta));
-    }
-	
-    /**
-     * Logical inverse of the exp() function above.
-     */
-    public static Twist2d logMap(final Pose2d transform) {
-        final double dtheta = transform.getRotation().getRadians();
-        final double half_dtheta = 0.5 * dtheta;
-        final double cos_minus_one = transform.getRotation().getCos() - 1.0;
-        double halftheta_by_tan_of_halfdtheta;
-        if (Math.abs(cos_minus_one) < kEps) {
-            halftheta_by_tan_of_halfdtheta = 1.0 - 1.0 / 12.0 * dtheta * dtheta;
-        } else {
-            halftheta_by_tan_of_halfdtheta = -(half_dtheta * transform.getRotation().getSin()) / cos_minus_one;
-        }
-        final Translation2d translation_part = transform.getTranslation()
-                .rotateBy(new Rotation2d(halftheta_by_tan_of_halfdtheta, -half_dtheta)); //take out the normalize: false parameter from citrus code
-        return new Twist2d(translation_part.getX(), translation_part.getY(), dtheta);
-    }
+	 * Obtain a new Pose2d from a curvature velocity. See:
+	 * https://github.com/strasdat/Sophus/blob/master/sophus/se2.hpp
+	 */
+	private static final double kEps = 1E-9; // only used by exp() and log() mapping functions
+
+	public static Pose2d expMap(final Twist2d delta) {
+		double sin_theta = Math.sin(delta.dtheta);
+		double cos_theta = Math.cos(delta.dtheta);
+		double s, c;
+		if (Math.abs(delta.dtheta) < kEps) {
+			s = 1.0 - 1.0 / 6.0 * delta.dtheta * delta.dtheta;
+			c = .5 * delta.dtheta;
+		} else {
+			s = sin_theta / delta.dtheta;
+			c = (1.0 - cos_theta) / delta.dtheta;
+		}
+		return new Pose2d(
+				new Translation2d(delta.dx * s - delta.dy * c, delta.dx * c + delta.dy * s),
+				new Rotation2d(cos_theta, sin_theta));
+	}
+
+	/** Logical inverse of the exp() function above. */
+	public static Twist2d logMap(final Pose2d transform) {
+		final double dtheta = transform.getRotation().getRadians();
+		final double half_dtheta = 0.5 * dtheta;
+		final double cos_minus_one = transform.getRotation().getCos() - 1.0;
+		double halftheta_by_tan_of_halfdtheta;
+		if (Math.abs(cos_minus_one) < kEps) {
+			halftheta_by_tan_of_halfdtheta = 1.0 - 1.0 / 12.0 * dtheta * dtheta;
+		} else {
+			halftheta_by_tan_of_halfdtheta =
+					-(half_dtheta * transform.getRotation().getSin()) / cos_minus_one;
+		}
+		final Translation2d translation_part =
+				transform
+						.getTranslation()
+						.rotateBy(
+								new Rotation2d(
+										halftheta_by_tan_of_halfdtheta,
+										-half_dtheta)); // take out the normalize: false parameter from citrus code
+		return new Twist2d(translation_part.getX(), translation_part.getY(), dtheta);
+	}
 
 	// ported from citrus Twist2d.scaled() method
 	public static Twist2d scaledTwist2d(Twist2d twist, double scale) {
-        return new Twist2d(twist.dx * scale, twist.dy * scale, twist.dtheta * scale);
-    }
+		return new Twist2d(twist.dx * scale, twist.dy * scale, twist.dtheta * scale);
+	}
 
-	//compare delta of two chassisspeeds is less than epsilon
-	public static boolean chassisSpeedsEpsilonEquals(ChassisSpeeds speed1, ChassisSpeeds other, double epsilon) {
+	// compare delta of two chassisspeeds is less than epsilon
+	public static boolean chassisSpeedsEpsilonEquals(
+			ChassisSpeeds speed1, ChassisSpeeds other, double epsilon) {
 		return MathUtils.epsilonEquals(speed1.vxMetersPerSecond, other.vxMetersPerSecond, epsilon)
 				&& MathUtils.epsilonEquals(speed1.vyMetersPerSecond, other.vyMetersPerSecond, epsilon)
-				&& MathUtils.epsilonEquals(speed1.omegaRadiansPerSecond, other.omegaRadiansPerSecond, epsilon);
+				&& MathUtils.epsilonEquals(
+						speed1.omegaRadiansPerSecond, other.omegaRadiansPerSecond, epsilon);
 	}
 
 	public static double chassisSpeedsMagnitude(ChassisSpeeds other) {
-		return Math.sqrt(other.vxMetersPerSecond * other.vxMetersPerSecond
-			+ other.vyMetersPerSecond * other.vyMetersPerSecond);
+		return Math.sqrt(
+				other.vxMetersPerSecond * other.vxMetersPerSecond
+						+ other.vyMetersPerSecond * other.vyMetersPerSecond);
 	}
 
-	public static Translation2d translateBy(Translation2d a, Translation2d b){
-		return new Translation2d(a.getX()+b.getX(),a.getY()+b.getY());
+	public static Translation2d translateBy(Translation2d a, Translation2d b) {
+		return new Translation2d(a.getX() + b.getX(), a.getY() + b.getY());
 	}
-	public static Pose2d translateBy(Pose2d a, Pose2d b){
-		return new Pose2d(translateBy(a.getTranslation(), b.getTranslation()),a.getRotation().plus(b.getRotation()));
+
+	public static Pose2d translateBy(Pose2d a, Pose2d b) {
+		return new Pose2d(
+				translateBy(a.getTranslation(), b.getTranslation()), a.getRotation().plus(b.getRotation()));
 	}
 
 	public static double twist2dMagnitude(Twist2d t) {
@@ -269,9 +283,11 @@ public class Util {
 	}
 
 	public static double trapezoidProfileTimeToTarget(
-        double currentPosition, double currentSpeed,
-        double target, double maxSpeed, double maxAccel
-	) {
+			double currentPosition,
+			double currentSpeed,
+			double target,
+			double maxSpeed,
+			double maxAccel) {
 		double delta = target - currentPosition;
 		double distance = Math.abs(delta);
 		double direction = Math.signum(delta);
@@ -283,7 +299,7 @@ public class Util {
 			return v0 / maxAccel; // time to stop
 		}
 		double accelDist = (maxSpeed * maxSpeed - v0 * v0) / (2 * maxAccel);
-		if (accelDist < 0) accelDist = 0; 
+		if (accelDist < 0) accelDist = 0;
 		double decelDist = (maxSpeed * maxSpeed) / (2 * maxAccel);
 		double minDistance = accelDist + decelDist;
 

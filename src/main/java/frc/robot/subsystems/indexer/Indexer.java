@@ -5,29 +5,22 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Indexer extends SubsystemBase {
-    public LeftIndexer lIndex;
-    public RightIndexer rIndex;
-    public Roller roller;
+	public LeftIndexer lIndex;
+	public RightIndexer rIndex;
+	public Roller roller;
 
-    public Indexer(LeftIndexer lIndex, RightIndexer rIndex, Roller roller) {
-        this.lIndex = lIndex;
-        this.rIndex = rIndex;
-        this.roller = roller;
-    }
+	public Indexer(LeftIndexer lIndex, RightIndexer rIndex, Roller roller) {
+		super();
+		this.lIndex = lIndex;
+		this.rIndex = rIndex;
+		this.roller = roller;
+	}
 
-    public Command indexAll() {
-        return Commands.parallel(
-            lIndex.index(),
-            rIndex.index(),
-            roller.index()
-        );
-    }
+	public Command indexAll() {
+		return Commands.parallel(lIndex.index(), rIndex.index(), roller.index());
+	}
 
-    public Command stopAll() {
-        return Commands.parallel(
-            lIndex.stop(),
-            rIndex.stop(),
-            roller.stop()
-        );
-    }
+	public Command stopAll() {
+		return Commands.parallel(lIndex.stop(), rIndex.stop(), roller.stop());
+	}
 }

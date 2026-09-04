@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.io.IMotor;
 import frc.robot.lib.util.Util;
+import java.util.function.Supplier;
 
 public class RollerMotorSubsystem extends LoggedSubsystem {
 	protected IMotor io;
@@ -14,14 +15,20 @@ public class RollerMotorSubsystem extends LoggedSubsystem {
 		this.io = io;
 	}
 
-	protected Command roll(AngularVelocity angularVelocity, AngularVelocity eps, IMotor.RunMode mode) {
-		return run(() -> io.setRunMode(mode))
-			.andThen(() -> io.setVelocity(angularVelocity))
-			.andThen(Commands.waitUntil(() -> Util.epsilonEquals(angularVelocity, io.getVelocity(), eps)));
+	protected RollerMotorSubsystem(Supplier<IMotor> io) {
+		this(io.get());
 	}
 
-    @Override
-    protected void log() {
-        io.log();
-    }
+	protected Command runVel(
+			AngularVelocity angularVelocity, AngularVelocity eps, IMotor.RunMode mode) {
+		return run(() -> io.setRunMode(mode))
+				.andThen(() -> io.setVelocity(angularVelocity))
+				.andThen(
+						Commands.waitUntil(() -> Util.epsilonEquals(angularVelocity, io.getVelocity(), eps)));
+	}
+
+	@Override
+	protected void log() {
+		io.log();
+	}
 }

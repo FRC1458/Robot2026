@@ -2,7 +2,6 @@ package frc.robot.lib.io;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-
 import edu.wpi.first.wpilibj.Notifier;
 import frc.robot.lib.sim.Simulation;
 
@@ -20,6 +19,7 @@ public class ISimTalonFX extends ITalonFX {
 						() -> {
 							updateSim(0.01);
 						});
+		simNotifier.setName(key);
 		simNotifier.startPeriodic(0.01);
 	}
 

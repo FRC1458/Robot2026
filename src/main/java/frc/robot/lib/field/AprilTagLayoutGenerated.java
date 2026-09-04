@@ -1,54 +1,280 @@
 package frc.robot.lib.field;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AprilTagLayoutGenerated {
 	public static final List<AprilTag> APRILTAG_FIELD_POSES = new ArrayList<>();
+
 	static {
-		APRILTAG_FIELD_POSES.add(new AprilTag(1, new Pose3d(new Translation3d(11.877979800000D, 7.424775600000D, 0.889000000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(2, new Pose3d(new Translation3d(11.915419400000D, 4.638040000000D, 1.123950000000D), new Rotation3d(new Quaternion(0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(3, new Pose3d(new Translation3d(11.311864600000D, 4.390237600000D, 1.123950000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(4, new Pose3d(new Translation3d(11.311864600000D, 4.034637600000D, 1.123950000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(5, new Pose3d(new Translation3d(11.915419400000D, 3.431235200000D, 1.123950000000D), new Rotation3d(new Quaternion(-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(6, new Pose3d(new Translation3d(11.877979800000D, 0.644499600000D, 0.889000000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(7, new Pose3d(new Translation3d(11.952884400000D, 0.644499600000D, 0.889000000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(8, new Pose3d(new Translation3d(12.271019400000D, 3.431235200000D, 1.123950000000D), new Rotation3d(new Quaternion(-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(9, new Pose3d(new Translation3d(12.519177400000D, 3.679037600000D, 1.123950000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(10, new Pose3d(new Translation3d(12.519177400000D, 4.034637600000D, 1.123950000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(11, new Pose3d(new Translation3d(12.271019400000D, 4.638040000000D, 1.123950000000D), new Rotation3d(new Quaternion(0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(12, new Pose3d(new Translation3d(11.952884400000D, 7.424775600000D, 0.889000000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(13, new Pose3d(new Translation3d(16.533317200000D, 7.403312600000D, 0.552450000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(14, new Pose3d(new Translation3d(16.533317200000D, 6.971512600000D, 0.552450000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(15, new Pose3d(new Translation3d(16.532961600000D, 4.323562600000D, 0.552450000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(16, new Pose3d(new Translation3d(16.532961600000D, 3.891762600000D, 0.552450000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(17, new Pose3d(new Translation3d(4.663084400000D, 0.644499600000D, 0.889000000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(18, new Pose3d(new Translation3d(4.625619400000D, 3.431235200000D, 1.123950000000D), new Rotation3d(new Quaternion(-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(19, new Pose3d(new Translation3d(5.229174200000D, 3.679037600000D, 1.123950000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(20, new Pose3d(new Translation3d(5.229174200000D, 4.034637600000D, 1.123950000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(21, new Pose3d(new Translation3d(4.625619400000D, 4.638040000000D, 1.123950000000D), new Rotation3d(new Quaternion(0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(22, new Pose3d(new Translation3d(4.663084400000D, 7.424775600000D, 0.889000000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(23, new Pose3d(new Translation3d(4.588179800000D, 7.424775600000D, 0.889000000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(24, new Pose3d(new Translation3d(4.270019400000D, 4.638040000000D, 1.123950000000D), new Rotation3d(new Quaternion(0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(25, new Pose3d(new Translation3d(4.021861400000D, 4.390237600000D, 1.123950000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(26, new Pose3d(new Translation3d(4.021861400000D, 4.034637600000D, 1.123950000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(27, new Pose3d(new Translation3d(4.270019400000D, 3.431235200000D, 1.123950000000D), new Rotation3d(new Quaternion(-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(28, new Pose3d(new Translation3d(4.588179800000D, 0.644499600000D, 0.889000000000D), new Rotation3d(new Quaternion(0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(29, new Pose3d(new Translation3d(0.007747000000D, 0.665962600000D, 0.552450000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(30, new Pose3d(new Translation3d(0.007747000000D, 1.097762600000D, 0.552450000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(31, new Pose3d(new Translation3d(0.008077200000D, 3.745712600000D, 0.552450000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-		APRILTAG_FIELD_POSES.add(new AprilTag(32, new Pose3d(new Translation3d(0.008077200000D, 4.177512600000D, 0.552450000000D), new Rotation3d(new Quaternion(1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
-	};
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						1,
+						new Pose3d(
+								new Translation3d(11.877979800000D, 7.424775600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						2,
+						new Pose3d(
+								new Translation3d(11.915419400000D, 4.638040000000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						3,
+						new Pose3d(
+								new Translation3d(11.311864600000D, 4.390237600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						4,
+						new Pose3d(
+								new Translation3d(11.311864600000D, 4.034637600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						5,
+						new Pose3d(
+								new Translation3d(11.915419400000D, 3.431235200000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						6,
+						new Pose3d(
+								new Translation3d(11.877979800000D, 0.644499600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						7,
+						new Pose3d(
+								new Translation3d(11.952884400000D, 0.644499600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						8,
+						new Pose3d(
+								new Translation3d(12.271019400000D, 3.431235200000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						9,
+						new Pose3d(
+								new Translation3d(12.519177400000D, 3.679037600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						10,
+						new Pose3d(
+								new Translation3d(12.519177400000D, 4.034637600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						11,
+						new Pose3d(
+								new Translation3d(12.271019400000D, 4.638040000000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						12,
+						new Pose3d(
+								new Translation3d(11.952884400000D, 7.424775600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						13,
+						new Pose3d(
+								new Translation3d(16.533317200000D, 7.403312600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						14,
+						new Pose3d(
+								new Translation3d(16.533317200000D, 6.971512600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						15,
+						new Pose3d(
+								new Translation3d(16.532961600000D, 4.323562600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						16,
+						new Pose3d(
+								new Translation3d(16.532961600000D, 3.891762600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						17,
+						new Pose3d(
+								new Translation3d(4.663084400000D, 0.644499600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						18,
+						new Pose3d(
+								new Translation3d(4.625619400000D, 3.431235200000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						19,
+						new Pose3d(
+								new Translation3d(5.229174200000D, 3.679037600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						20,
+						new Pose3d(
+								new Translation3d(5.229174200000D, 4.034637600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						21,
+						new Pose3d(
+								new Translation3d(4.625619400000D, 4.638040000000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						22,
+						new Pose3d(
+								new Translation3d(4.663084400000D, 7.424775600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						23,
+						new Pose3d(
+								new Translation3d(4.588179800000D, 7.424775600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						24,
+						new Pose3d(
+								new Translation3d(4.270019400000D, 4.638040000000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						25,
+						new Pose3d(
+								new Translation3d(4.021861400000D, 4.390237600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						26,
+						new Pose3d(
+								new Translation3d(4.021861400000D, 4.034637600000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						27,
+						new Pose3d(
+								new Translation3d(4.270019400000D, 3.431235200000D, 1.123950000000D),
+								new Rotation3d(
+										new Quaternion(
+												-0.707106781187D, 0.000000000000D, 0.000000000000D, 0.707106781187D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						28,
+						new Pose3d(
+								new Translation3d(4.588179800000D, 0.644499600000D, 0.889000000000D),
+								new Rotation3d(
+										new Quaternion(
+												0.000000000000D, 0.000000000000D, 0.000000000000D, 1.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						29,
+						new Pose3d(
+								new Translation3d(0.007747000000D, 0.665962600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						30,
+						new Pose3d(
+								new Translation3d(0.007747000000D, 1.097762600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						31,
+						new Pose3d(
+								new Translation3d(0.008077200000D, 3.745712600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+		APRILTAG_FIELD_POSES.add(
+				new AprilTag(
+						32,
+						new Pose3d(
+								new Translation3d(0.008077200000D, 4.177512600000D, 0.552450000000D),
+								new Rotation3d(
+										new Quaternion(
+												1.000000000000D, 0.000000000000D, 0.000000000000D, 0.000000000000D)))));
+	}
+	;
+
 	public static final double FIELD_LENGTH_METERS = 16.541D;
 	public static final double FIELD_WIDTH_METERS = 8.069D;
+
 	public static AprilTagFieldLayout getLayout() {
 		return new AprilTagFieldLayout(APRILTAG_FIELD_POSES, FIELD_LENGTH_METERS, FIELD_WIDTH_METERS);
 	}

@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id "com.peterabeles.gversion" version "1.10"
+	id 'com.diffplug.spotless' version "8.10.1"
 }
 
 
@@ -30,14 +31,14 @@ deploy {
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
                     // Enable VisualVM connection
-                    jvmArgs.add("-Dcom.sun.management.jmxremote=true")
-                    jvmArgs.add("-Dcom.sun.management.jmxremote.port=1198")
-                    jvmArgs.add("-Dcom.sun.management.jmxremote.local.only=false")
-                    jvmArgs.add("-Dcom.sun.management.jmxremote.ssl=false")
-                    jvmArgs.add("-Dcom.sun.management.jmxremote.authenticate=false")
-                    jvmArgs.add("-Djava.rmi.server.hostname=10.14.58.2") // Replace TE.AM with team number
-                    jvmArgs.add("-XX:+HeapDumpOnOutOfMemoryError")
-                    jvmArgs.add("-XX:HeapDumpPath=/home/lvuser/dumps/")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote=true")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.port=1198")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.local.only=false")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.ssl=false")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.authenticate=false")
+                    // jvmArgs.add("-Djava.rmi.server.hostname=10.14.58.2") // Replace TE.AM with team number
+                    // jvmArgs.add("-XX:+HeapDumpOnOutOfMemoryError")
+                    // jvmArgs.add("-XX:HeapDumpPath=/home/lvuser/dumps/")
                 }
 
                 // Static files artifact
@@ -157,4 +158,28 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+spotless {
+	// Java formatting configuration
+	java {
+        googleJavaFormat("1.28.0")
+		removeUnusedImports()
+		leadingSpacesToTabs(2)
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	format 'misc', {
+		// Define files to target
+		target '*.gradle', '*.md', '.gitignore'
+
+		// Define formatting steps
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}
+
+tasks.named("build") {
+	dependsOn("spotlessApply")
 }
