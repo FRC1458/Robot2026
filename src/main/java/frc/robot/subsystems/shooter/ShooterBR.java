@@ -48,10 +48,10 @@ public class ShooterBR extends RollerMotorSubsystem {
 	}
 
 	public Command pass() {
-		return runVel(PASSING_SPEED, RotationsPerSecond.of(10), RunMode.VOLTAGE);
+		return runVel(PASSING_SPEED, RotationsPerSecond.of(10), RunMode.VOLTAGE).withTimeout(1);
 	}
 
 	public Command stop() {
-		return runVel(RotationsPerSecond.of(0), RotationsPerSecond.of(10), RunMode.VOLTAGE);
+		return runOnce(() -> io.setNeutral());
 	}
 }

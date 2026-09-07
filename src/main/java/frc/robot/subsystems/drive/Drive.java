@@ -35,6 +35,8 @@ import frc.robot.subsystems.drive.commands.PIDToPoseCommand;
 import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 public class Drive extends SubsystemBase {
 	private SwerveDriveState lastReadState;
@@ -221,6 +223,74 @@ public class Drive extends SubsystemBase {
 				.withName("Heading Lock");
 	}
 
+	/** Locks the robot onto a pose. Utilizes feedforwards derived from the current chassis speeds */
+	public Command headingLockToPose(Supplier<Translation2d> poseSupplier) {
+		SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
+
+		ProfiledPIDVController thetaController =
+				new ProfiledPIDVController(
+						new ProfiledPIDVConstants(
+								new PIDVConstants(10.0, 0.0, 1),
+								new TrapezoidProfile.Constraints(Math.PI * 16, Math.PI * 5)));
+		thetaController.enableContinuousInput(-Math.PI, Math.PI);
+		AtomicReference<Translation2d> pose = new AtomicReference<Translation2d>(Translation2d.kZero);
+
+		return runOnce(
+						() -> {
+							request.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+							setSwerveRequest(request);
+
+							thetaController.setInitialSetpoint(
+									getPose().getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+							pose.set(poseSupplier.get());
+						})
+				.andThen(
+						run(() -> {
+									double xDesiredRaw = -Robot.controller.getLeftY();
+									double yDesiredRaw = -Robot.controller.getLeftX();
+
+									double[] xy =
+											Util.applyRadialDeadband(
+													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+									double xFancy = xy[0];
+									double yFancy = xy[1];
+
+									var state = getState();
+									var delta = pose.get().minus(getPose().getTranslation());
+									var targetDirection = delta.getAngle();
+
+									var normSq = delta.getNorm() * delta.getNorm();
+									var fieldSpeeds =
+											ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
+									var rotationalRate =
+											normSq > 1e-4
+													? (-delta.getX() * fieldSpeeds.vyMetersPerSecond
+																	+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
+															/ (normSq)
+													: 0.0;
+
+									var rotation =
+											thetaController
+													.setTarget(targetDirection.getRadians(), rotationalRate)
+													.setMeasurement(
+															state.Pose.getRotation().getRadians(),
+															state.Speeds.omegaRadiansPerSecond)
+													.getOutput();
+
+									SmartDashboard.putNumber(
+											"error tracking",
+											MathUtil.inputModulus(
+													state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180));
+
+									request
+											.withVelocityX(xFancy * MAX_SPEED)
+											.withVelocityY(yFancy * MAX_SPEED)
+											.withRotationalRate(rotation);
+								})
+								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
+				.withName("Heading Lock");
+	}
+
 	public boolean isPointedTowardsPos(Translation2d pos, double eps) {
 		var direction = pos.minus(getPose().getTranslation()).getAngle();
 		var current = getPose().getRotation();
@@ -233,12 +303,12 @@ public class Drive extends SubsystemBase {
 	 * chassis speeds
 	 */
 	public Command headingLockToHub() {
-		return headingLockToPose(Constants.FieldConstants.hubLocation);
+		return headingLockToPose(() -> Constants.FieldConstants.hubLocation);
 	}
 
 	public Command waitUntilAligned() {
-		return Commands.waitUntil(
-				() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, 10));
+		return Commands.waitUntil(() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, 10))
+				.andThen();
 	}
 
 	public Command autoAlign(Pose2d targetPose) {

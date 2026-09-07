@@ -93,7 +93,6 @@ public class ITalonFX implements IMotor {
 
 		Notifier thread = new Notifier(() -> refresh());
 		thread.startPeriodic(0.02);
-		
 	}
 
 	@Override

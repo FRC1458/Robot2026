@@ -9,13 +9,12 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib.control.*;
 import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
-
+import dev.doglog.DogLog;
 /** A command that moves the drivetrain to a pose. */
 public class PIDToPoseCommand extends Command {
 	public final Drive drive;
@@ -120,9 +119,11 @@ public class PIDToPoseCommand extends Command {
 						-MAX_ROTATION_SPEED,
 						MAX_ROTATION_SPEED);
 
-		SmartDashboard.putNumber("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
-		SmartDashboard.putNumber("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
-		SmartDashboard.putNumber("Debug/PIDToPose/vrotation", rotation);
+		DogLog.log("Debug/PIDToPose/vx", vMagnitude * deltaRotation.getCos());
+		DogLog.log("Debug/PIDToPose/vy", vMagnitude * deltaRotation.getSin());
+		DogLog.log("Debug/PIDToPose/vrotation", rotation);
+		DogLog.log("translationerror", translationController.getError());
+		DogLog.log("rotationerror", thetaController.getError());
 
 		return new ChassisSpeeds(
 				vMagnitude * deltaRotation.getCos(), // convert from polar to rectangular

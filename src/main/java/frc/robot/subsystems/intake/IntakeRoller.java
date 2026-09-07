@@ -1,7 +1,6 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.lib.util.Util.InchSqPounds;
 import static frc.robot.subsystems.intake.IntakeConstants.*;
 
@@ -36,19 +35,17 @@ public class IntakeRoller extends RollerMotorSubsystem {
 				});
 
 		((ITalonFX) io).configure(ROLLER_CONFIG);
-
-		setDefaultCommand(stop());
 	}
 
 	public Command intake() {
-		return runVel(ROLLER_SPEED, EPS, RunMode.VOLTAGE).andThen(idle());
+		return runVel(ROLLER_SPEED, EPS, RunMode.VOLTAGE).withTimeout(1);
 	}
 
 	public Command outtake() {
-		return runVel(OUTTAKE_SPEED, EPS, RunMode.VOLTAGE).andThen(idle());
+		return runVel(OUTTAKE_SPEED, EPS, RunMode.VOLTAGE).withTimeout(1);
 	}
 
 	public Command stop() {
-		return runVel(RotationsPerSecond.of(0), EPS, RunMode.VOLTAGE);
+		return runOnce(() -> io.setNeutral());
 	}
 }

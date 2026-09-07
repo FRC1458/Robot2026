@@ -2,139 +2,180 @@ package frc.robot.auto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Robot;
 import frc.robot.auto.AutoSelector.Auto;
 import frc.robot.lib.trajectory.RedTrajectory;
 import frc.robot.lib.trajectory.RedTrajectory.TrajectoryType;
 import frc.robot.lib.trajectory.TrajectoryLoader;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 
 public final class AutoRoutines {
 	@Auto(name = "Pid Test")
 	public static Command testPidToPose() {
-		return Robot.getInstance().drive.autoAlign(new Pose2d(0, 0, Rotation2d.fromDegrees(90)));
+		final Robot robot = Robot.getInstance();
+		final Drive drive = robot.drive;
+		return drive.autoAlign(new Pose2d(0, 0, Rotation2d.fromDegrees(90)));
 	}
 
 	@Auto(name = "Trajectory Test")
 	public static Command testTrajectoryAuto() {
+		final Robot robot = Robot.getInstance();
+		final Drive drive = robot.drive;
 		RedTrajectory traj =
 				TrajectoryLoader.loadAutoTrajectory(TrajectoryType.CHOREO, "testPath3").get();
 		return Robot.getInstance().drive.trajectory(traj);
 	}
 
-	// @Auto(name = "right neutral auto")
-	// public static Command rightAutoNeutral() {
-	// 	var tTrenchRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER,
-	// 		"TrenchRight");
+	@Auto(name = "right neutral auto")
+	public static Command rightAutoNeutral() {
+		final Robot robot = Robot.getInstance();
+		final Drive drive = robot.drive;
+		final Intake intake = robot.intake;
+		final Indexer indexer = robot.indexer;
+		final Shooter shooter = robot.shooter;
 
-	// 	if (tTrenchRight.isEmpty()) {
-	// 		DriverStation.reportWarning(
-	// 			"Something happened", true);
-	// 		return Commands.none();
-	// 	}
+		var tTrenchRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER,
+			"TrenchRight");
 
-	// 	var tSwipeRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER,
-	// 		"SwipeRight");
+		if (tTrenchRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
 
-	// 	if (tSwipeRight.isEmpty()) {
-	// 		DriverStation.reportWarning(
-	// 			"Something happened", true);
-	// 		return Commands.none();
-	// 	}
+		var tSwipeRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER,
+			"SwipeRight");
 
-	// 	var tReturnTrenchRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER,
-	// 		"ReturnTrenchRight");
+		if (tSwipeRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
 
-	// 	if (tReturnTrenchRight.isEmpty()) {
-	// 		DriverStation.reportWarning(
-	// 			"Something happened", true);
-	// 		return Commands.none();
-	// 	}
+		var tReturnTrenchRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER,
+			"ReturnTrenchRight");
 
-	// 	var tBackToNeutralRight = TrajectoryLoader.loadAutoTrajectory(
-	// 		TrajectoryType.PATHPLANNER,
-	// 		"BackToNeutralRight");
+		if (tReturnTrenchRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+		var tReturnBumpRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER,
+			"ReturnBumpRight");
 
-	// 	if (tBackToNeutralRight.isEmpty()) {
-	// 		DriverStation.reportWarning(
-	// 			"Something happened", true);
-	// 		return Commands.none();
-	// 	}
+		if (tReturnBumpRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
 
-	// 	var crossTrench = tTrenchRight.get();
-	// 	var swipe = tSwipeRight.get();
-	// 	var back = tReturnTrenchRight.get();
-	// 	var backToNeutral = tBackToNeutralRight.get();
-	// 	return Commands.print(Timer.getFPGATimestamp() + ": Time start")
-	// 		.andThen(Intake.getInstance().calibrateZero())
-	// 			.alongWith(
-	// 				new TrajectoryCommand(crossTrench))
-	// 		.andThen(
-	// 			Intake.getInstance().intake())
-	// 		.andThen(
-	// 			new TrajectoryCommand(swipe))
-	// 		.andThen(
-	// 			Intake.getInstance().lower()
-	// 				.alongWith(
-	// 					new TrajectoryCommand(back)))
-	// 		.andThen(
-	// 			Drive.getInstance().headingLockToHub()
-	// 				.raceWith(
-	// 					Automation.shootAll()
-	// 						.andThen(
-	// 							Commands.waitSeconds(0.5))
-	// 						.andThen(
-	// 							Automation.indexAll())
-	// 						.andThen(
-	// 							Intake.getInstance().onShoot())
-	// 						.andThen(
-	// 							Commands.waitSeconds(3)))
-	// 				.raceWith(
-	// 					Commands.waitSeconds(4)))
-	// 		.andThen(
-	// 			Commands.parallel(
-	// 				Intake.getInstance().lower(),
-	// 				Automation.stopShoot(),
-	// 				Automation.stopIndex()))
-	// 		.andThen(
-	// 			new TrajectoryCommand(backToNeutral))
-	// 		.andThen(
-	// 			new TrajectoryCommand(crossTrench))
-	// 		.andThen(
-	// 			Intake.getInstance().intake())
-	// 		.andThen(
-	// 			new TrajectoryCommand(swipe))
-	// 		.andThen(
-	// 			Intake.getInstance().lower()
-	// 				.alongWith(
-	// 					new TrajectoryCommand(back)))
-	// 		.andThen(
-	// 			Drive.getInstance().headingLockToHub()
-	// 				.raceWith(
-	// 					Automation.shootAll()
-	// 						.andThen(
-	// 							Commands.waitSeconds(0.5))
-	// 						.andThen(
-	// 							Automation.indexAll())
-	// 						.andThen(
-	// 							Intake.getInstance().onShoot())
-	// 						.andThen(
-	// 							Commands.waitSeconds(3))))
-	// 		.andThen(
-	// 			Commands.print(Timer.getFPGATimestamp() + ": Time end"),
-	// 			Commands.idle())
-	// 		.finallyDo(
-	// 			() -> {
-	// 				CommandScheduler.getInstance().schedule(
-	// 					Drive.getInstance().openLoopControl(),
-	// 					Intake.getInstance().lower(),
-	// 					Automation.stopShoot(),
-	// 					Automation.stopIndex());
-	// 			});
-	// }
+		var tBackToNeutralRight = TrajectoryLoader.loadAutoTrajectory(
+			TrajectoryType.PATHPLANNER,
+			"BackToNeutralRight");
+
+		if (tBackToNeutralRight.isEmpty()) {
+			DriverStation.reportWarning(
+				"Something happened", true);
+			return Commands.none();
+		}
+
+		var crossTrench = tTrenchRight.get();
+		var swipe = tSwipeRight.get();
+		var back = tReturnBumpRight.get();
+		var backToNeutral = tBackToNeutralRight.get();
+		return Commands.sequence(
+			Commands.print(Timer.getFPGATimestamp() + ": Time start"),
+			Commands.race(
+				intake.calibrate(),
+				drive.trajectory(crossTrench)
+			),
+			Commands.race(
+				drive.trajectory(swipe),
+				intake.intake()
+			),
+			drive.trajectory(back),
+			Commands.parallel(
+				drive.headingLockToHub(),
+				Commands.sequence(
+					drive.waitUntilAligned().asProxy(),
+					Commands.parallel(
+						intake.agitate(),
+						indexer.indexAll(),
+						shooter.shootAll(drive::getDistanceToHub)
+					)
+				))
+				.raceWith(Commands.waitSeconds(4)),
+			drive.trajectory(backToNeutral),
+			drive.trajectory(crossTrench)
+		);
+
+
+			// .andThen(Robot.getInstance().intake.calibrate())
+			// 	.alongWith(
+			// 		Robot.getInstance().drive.trajectory(crossTrench))
+			// .andThen(
+			// 	Robot.getInstance().intake.intake())
+			// .andThen(
+			// 	Robot.getInstance().drive.trajectory(swipe))
+			// .andThen(
+			// 	Robot.getInstance().intake.lower()
+			// 		.alongWith(
+			// 			Robot.getInstance().drive.trajectory(back)))
+			// .andThen(
+			// 	Robot.getInstance().drive.headingLockToHub()
+			// 		.alongWith(
+			// 			Robot.getInstance().drive.waitUntilAligned().asProxy().andThen(
+			// 				Robot.getInstance().shooter.shootAll(Robot.getInstance().drive::getDistanceToHub)
+			// 					.andThen(
+			// 						Commands.waitSeconds(0.5))
+			// 					.andThen(
+			// 						Robot.getInstance().indexer.indexAll())
+			// 					.andThen(
+			// 						Robot.getInstance().intake.agitate())
+			// 					.andThen(
+			// 						Commands.waitSeconds(3))))
+			// 		.raceWith(
+			// 			Commands.waitSeconds(4)))
+			// .andThen(
+			// 	Robot.getInstance().drive.trajectory(backToNeutral))
+			// .andThen(
+			// 	Robot.getInstance().drive.trajectory(crossTrench))
+			// .andThen(
+			// 	Robot.getInstance().intake.intake())
+			// .andThen(
+			// 	Robot.getInstance().drive.trajectory(swipe))
+			// .andThen(
+			// 	Robot.getInstance().intake.lower()
+			// 		.alongWith(
+			// 			Robot.getInstance().drive.trajectory(back)))
+			// .andThen(
+			// 	Robot.getInstance().drive.headingLockToHub()
+			// 		.raceWith(
+			// 			Robot.getInstance().shooter.shootAll(Robot.getInstance().drive::getDistanceToHub)
+			// 				.andThen(
+			// 					Commands.waitSeconds(0.5))
+			// 				.andThen(
+			// 					Robot.getInstance().indexer.indexAll())
+			// 				.andThen(
+			// 					Robot.getInstance().intake.agitate())
+			// 				.andThen(
+			// 					Commands.waitSeconds(3))))
+			// .andThen(
+			// 	Commands.print(Timer.getFPGATimestamp() + ": Time end"),
+			// 	Commands.idle());
+	}
 
 	// @Auto(name = "left neutral auto")
 	// public static Command leftAutoNeutral() {
@@ -172,27 +213,27 @@ public final class AutoRoutines {
 	// 	var swipe = tSwipeLeft.get();
 	// 	var back = tReturnTrenchLeft.get();
 	// 	return Commands.print(Timer.getFPGATimestamp() + ": Time start")
-	// 		.andThen(Intake.getInstance().calibrateZero())
+	// 		.andThen(Robot.getInstance().intake.calibrate())
 	// 		.alongWith(
-	// 			new TrajectoryCommand(crossTrench))
+	// 			Robot.getInstance().drive.trajectory(crossTrench))
 	// 		.andThen(
-	// 			Intake.getInstance().intake())
+	// 			Robot.getInstance().intake.intake())
 	// 		.andThen(
-	// 			new TrajectoryCommand(swipe))
+	// 			Robot.getInstance().drive.trajectory(swipe))
 	// 		.andThen(
-	// 			Intake.getInstance().lower()
+	// 			Robot.getInstance().intake.lower()
 	// 				.alongWith(
-	// 					new TrajectoryCommand(back)))
+	// 					Robot.getInstance().drive.trajectory(back)))
 	// 		.andThen(
-	// 			Drive.getInstance().headingLockToHub()
+	// 			Robot.getInstance().drive.headingLockToHub()
 	// 				.raceWith(
-	// 					Automation.shootAll()
+	// 					Robot.getInstance().shooter.shootAll(Robot.getInstance().drive::getDistanceToHub)
 	// 						.andThen(
 	// 							Commands.waitSeconds(0.5))
 	// 						.andThen(
-	// 							Automation.indexAll())
+	// 							Robot.getInstance().indexer.indexAll())
 	// 						.andThen(
-	// 							Intake.getInstance().onShoot())
+	// 							Robot.getInstance().intake.agitate())
 	// 						.andThen(
 	// 							Commands.waitSeconds(3))))
 	// 		.andThen(
@@ -201,8 +242,8 @@ public final class AutoRoutines {
 	// 		.finallyDo(
 	// 			() -> {
 	// 				CommandScheduler.getInstance().schedule(
-	// 					Drive.getInstance().openLoopControl(),
-	// 					Intake.getInstance().lower(),
+	// 					Robot.getInstance().drive.openLoopControl(),
+	// 					Robot.getInstance().intake.lower(),
 	// 					Automation.stopShoot(),
 	// 					Automation.stopIndex());
 	// 			});
@@ -256,51 +297,51 @@ public final class AutoRoutines {
 	// 	var stationShootCenter = tStationShootCenter.get();
 
 	// 	return Commands.print(Timer.getFPGATimestamp() + ": Time start")
-	// 		.andThen(Intake.getInstance().calibrateZero())
-	// 		.andThen(Intake.getInstance().intake())
-	// 		.alongWith(new TrajectoryCommand(depotCenter))
+	// 		.andThen(Robot.getInstance().intake.calibrateZero())
+	// 		.andThen(Robot.getInstance().intake.intake())
+	// 		.alongWith(Robot.getInstance().drive.trajectory(depotCenter))
 	// 		.andThen(
-	// 			new TrajectoryCommand(depotShootCenter))
+	// 			Robot.getInstance().drive.trajectory(depotShootCenter))
 	// 		.andThen(
-	// 			Drive.getInstance().headingLockToHub()
+	// 			Robot.getInstance().drive.headingLockToHub()
 	// 				.raceWith(
-	// 					Automation.shootAll()
+	// 					Robot.getInstance().shooter.shootAll(Robot.getInstance().drive::getDistanceToHub)
 	// 						.andThen(
 	// 							Commands.waitSeconds(0.5))
 	// 						.andThen(
-	// 							Automation.indexAll())
+	// 							Robot.getInstance().indexer.indexAll())
 	// 						.andThen(
 	// 							Commands.waitSeconds(3))))
 	// 		.andThen(
-	// 			Intake.getInstance().lower(),
+	// 			Robot.getInstance().intake.lower(),
 	// 			Automation.stopShoot(),
 	// 			Automation.stopIndex())
 	// 		.andThen(
-	// 			new TrajectoryCommand(stationCenter))
+	// 			Robot.getInstance().drive.trajectory(stationCenter))
 	// 		.andThen(
 	// 			Commands.waitSeconds(3))
 	// 		.andThen(
-	// 			new TrajectoryCommand(stationShootCenter))
+	// 			Robot.getInstance().drive.trajectory(stationShootCenter))
 	// 		.andThen(
-	// 			Drive.getInstance().headingLockToHub()
+	// 			Robot.getInstance().drive.headingLockToHub()
 	// 				.alongWith(
-	// 					Automation.shootAll()
+	// 					Robot.getInstance().shooter.shootAll(Robot.getInstance().drive::getDistanceToHub)
 	// 						.andThen(
 	// 							Commands.waitSeconds(0.5))
 	// 						.andThen(
-	// 							Automation.indexAll())
+	// 							Robot.getInstance().indexer.indexAll())
 	// 						.andThen(
 	// 							Commands.waitSeconds(3))
 	// 						.andThen(
-	// 							Intake.getInstance().stow())))
+	// 							Robot.getInstance().intake.stow())))
 	// 		.andThen(
 	// 			Commands.print(Timer.getFPGATimestamp() + ": Time end"),
 	// 			Commands.idle())
 	// 		.finallyDo(
 	// 			() -> {
 	// 				CommandScheduler.getInstance().schedule(
-	// 					Drive.getInstance().openLoopControl(),
-	// 					Intake.getInstance().lower(),
+	// 					Robot.getInstance().drive.openLoopControl(),
+	// 					Robot.getInstance().intake.lower(),
 	// 					Automation.stopShoot(),
 	// 					Automation.stopIndex());
 	// 			});

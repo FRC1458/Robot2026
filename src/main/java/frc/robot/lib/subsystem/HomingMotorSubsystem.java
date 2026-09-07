@@ -27,6 +27,7 @@ public class HomingMotorSubsystem extends LoggedSubsystem {
 
 	@Override
 	protected void log() {
+		super.log();
 		io.log();
 	}
 }

@@ -12,25 +12,34 @@ public class Intake extends LoggedSubsystem {
 		super();
 		this.pivot = pivot;
 		this.roller = roller;
+		setDefaultCommand(lower());
 	}
 
 	public Command intake() {
-		return Commands.parallel(pivot.lower(), roller.intake());
+		return Commands.parallel(pivot.lower(), roller.intake()).andThen(idle());
 	}
 
 	public Command raise() {
-		return Commands.parallel(pivot.raise(), roller.intake());
+		return Commands.parallel(pivot.raise(), roller.stop()).andThen(idle());
+	}
+
+	public Command lower() {
+		return Commands.parallel(pivot.lower(), roller.stop()).andThen(idle());
 	}
 
 	public Command agitate() {
-		return Commands.parallel(pivot.shake(), roller.intake());
+		return Commands.parallel(pivot.shake(), roller.intake()).andThen(idle());
 	}
 
 	public Command outtake() {
-		return Commands.parallel(pivot.lower(), roller.outtake());
+		return Commands.parallel(pivot.lower(), roller.outtake()).andThen(idle());
 	}
 
 	public Command stop() {
-		return Commands.parallel(pivot.stop(), roller.stop());
+		return Commands.parallel(pivot.stop(), roller.stop()).andThen(idle());
+	}
+
+	public Command calibrate() {
+		return Commands.parallel(pivot.calibrateZero(), roller.stop()).andThen(lower());
 	}
 }

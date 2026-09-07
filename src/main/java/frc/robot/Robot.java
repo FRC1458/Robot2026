@@ -69,7 +69,7 @@ public class Robot extends TimedRobot {
 		autoChooser = new AutoSelector();
 		DogLog.setOptions(
 				new DogLogOptions().withCaptureDs(true).withLogExtras(true).withNtTunables(true));
-		try (Notifier thread =
+		Notifier thread =
 				new Notifier(
 						() -> {
 							while (true) {
@@ -89,9 +89,8 @@ public class Robot extends TimedRobot {
 									e.printStackTrace();
 								}
 							}
-						})) {
-			thread.startSingle(0);
-		}
+						});
+		thread.startSingle(0);
 
 		drive = new Drive();
 		intakePivot = new IntakePivot();
@@ -154,7 +153,9 @@ public class Robot extends TimedRobot {
 	public void autonomousExit() {}
 
 	@Override
-	public void teleopInit() {}
+	public void teleopInit() {
+		CommandScheduler.getInstance().cancelAll();
+	}
 
 	/** This function is called periodically during operator control. */
 	@Override

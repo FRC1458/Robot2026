@@ -29,6 +29,7 @@ public class RollerMotorSubsystem extends LoggedSubsystem {
 
 	@Override
 	protected void log() {
+		super.log();
 		io.log();
 	}
 }

@@ -42,10 +42,10 @@ public class LeftIndexer extends RollerMotorSubsystem {
 	}
 
 	public Command index() {
-		return runVel(FEEDER_SPEED, RotationsPerSecond.of(10), RunMode.VOLTAGE).andThen(idle());
+		return runVel(FEEDER_SPEED, RotationsPerSecond.of(10), RunMode.VOLTAGE).withTimeout(1);
 	}
 
 	public Command stop() {
-		return runVel(RotationsPerSecond.of(0), RotationsPerSecond.of(10), RunMode.VOLTAGE);
+		return runOnce(() -> io.setNeutral());
 	}
 }

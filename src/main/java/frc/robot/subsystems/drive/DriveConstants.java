@@ -43,7 +43,7 @@ public final class DriveConstants {
 	public static final Time POSE_RESET_PREVENTION_TIME = Units.Seconds.of(0.15);
 
 	// Trajectory and snap constants
-	public static final PIDVConstants TRANSLATION_CONSTANTS = new PIDVConstants(3, 0.0, 0.1);
+	public static final PIDVConstants TRANSLATION_CONSTANTS = new PIDVConstants(10, 0.0, 0.1);
 	public static final PIDVConstants ROTATION_CONSTANTS = new PIDVConstants(16.0, 0.0, 0.1);
 	public static final ProfiledPIDVConstants PROFILED_ROTATION_CONSTANTS =
 			new ProfiledPIDVConstants(

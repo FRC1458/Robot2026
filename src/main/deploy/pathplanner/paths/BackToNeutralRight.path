@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.1931444444444446,
-        "y": 2.9825999999999997
+        "x": 2.758131241084165,
+        "y": 1.9842225392296724
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5381740370898713,
-        "y": 1.544308131241085
+        "x": 2.103160833729592,
+        "y": 0.5459306704707574
       },
       "isLocked": false,
       "linkedName": "ReturnTrenchRightEnd"
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 2.0,
-    "rotation": -32.90524292298786
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "Neutral Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 34.835830364154894
+    "rotation": 47.27545643825419
   },
   "useDefaultConstraints": true
 }

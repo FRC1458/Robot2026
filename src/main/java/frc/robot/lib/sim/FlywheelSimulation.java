@@ -21,12 +21,13 @@ public class FlywheelSimulation implements Simulation {
 			MomentOfInertia moi,
 			DCMotor gearbox,
 			double... measurementStdDevs) {
-		ratio = input.in(Rotations) / output.in(Radians);
+		var gearRatio = input.in(Rotations) / output.in(Rotations);
 		sim =
 				new FlywheelSim(
-						LinearSystemId.createFlywheelSystem(gearbox, moi.in(KilogramSquareMeters), ratio),
+						LinearSystemId.createFlywheelSystem(gearbox, moi.in(KilogramSquareMeters), gearRatio),
 						gearbox,
 						measurementStdDevs);
+		ratio = input.in(Rotations) / output.in(Radians);
 	}
 
 	@Override
@@ -42,7 +43,7 @@ public class FlywheelSimulation implements Simulation {
 	@Override
 	public void update(double dt) {
 		sim.update(dt);
-		acc += dt * sim.getAngularVelocityRPM();
+		acc += dt * sim.getAngularVelocityRadPerSec();
 	}
 
 	@Override
