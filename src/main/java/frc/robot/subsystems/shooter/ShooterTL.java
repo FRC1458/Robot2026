@@ -31,7 +31,7 @@ public class ShooterTL extends RollerMotorSubsystem {
 					}
 				});
 
-		((ITalonFX) io).configure(BL_CONFIG);
+		((ITalonFX) io).configure(TL_CONFIG);
 
 		setDefaultCommand(stop());
 	}
