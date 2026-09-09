@@ -1,8 +1,11 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControlsMapping {
+	static AtomicBoolean switcher = new AtomicBoolean(false);
+
 	public static void bind() {
 		Robot.controller
 				.y()
@@ -40,5 +43,33 @@ public class ControlsMapping {
 								.withName("pass"));
 
 		Robot.controller.povDown().whileTrue(Robot.getInstance().intake.calibrate());
+
+		Robot.controller
+				.b()
+				.whileTrue(
+						Commands.runOnce(() -> switcher.set(!switcher.get()))
+								.andThen(
+										Commands.either(
+												Robot.getInstance()
+														.intake
+														.lower()
+														.alongWith(
+																Commands.runOnce(
+																		() ->
+																				Robot.getInstance()
+																						.intake
+																						.setDefaultCommand(
+																								Robot.getInstance().intake.lower()))),
+												Robot.getInstance()
+														.intake
+														.raise()
+														.alongWith(
+																Commands.runOnce(
+																		() ->
+																				Robot.getInstance()
+																						.intake
+																						.setDefaultCommand(
+																								Robot.getInstance().intake.raise()))),
+												switcher::get)));
 	}
 }

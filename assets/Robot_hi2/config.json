@@ -1,0 +1,10 @@
+{
+  "name": "hi2",
+  "rotations": [{"axis": "z", "degrees": -90}],
+  "components": [
+    {
+      "zeroedRotations": [{"axis": "z", "degrees": -90}],
+      "zeroedPosition": [0.349, 0.293225, 0]
+    }
+  ]
+}

@@ -7,7 +7,13 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -43,6 +49,22 @@ public class IntakePivot extends HomingMotorSubsystem {
 					}
 				});
 		((ITalonFX) io).configure(PIVOT_CONFIG);
+
+		StructPublisher<Pose3d> publisher =
+				NetworkTableInstance.getDefault()
+						.getStructTopic("SmartDashboard/Mechanisms/Intake", Pose3d.struct)
+						.publish();
+
+		var thread =
+				new Notifier(
+						() -> {
+							publisher.accept(
+									new Pose3d(
+											new Translation3d(-0.349, -0.293225, 0),
+											new Rotation3d(Rotations.of(0), io.getPosition(), Rotations.of(0))));
+						});
+
+		thread.startPeriodic(1.0 / 60.0);
 	}
 
 	public Command lower() {

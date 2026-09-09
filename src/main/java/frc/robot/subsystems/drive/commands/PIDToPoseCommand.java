@@ -3,6 +3,7 @@ package frc.robot.subsystems.drive.commands;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -14,7 +15,7 @@ import frc.robot.lib.control.*;
 import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.drive.Drive;
-import dev.doglog.DogLog;
+
 /** A command that moves the drivetrain to a pose. */
 public class PIDToPoseCommand extends Command {
 	public final Drive drive;
