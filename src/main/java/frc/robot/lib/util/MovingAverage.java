@@ -1,13 +1,13 @@
 package frc.robot.lib.util;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.function.BiFunction;
 
 /**
  * Helper class for storing and calculating a moving average
  */
 public class MovingAverage<T> {
-    private ArrayList<T> current = new ArrayList<T>();
+    private LinkedList<T> current = new LinkedList<T>();
     private int maxSize;
     private BiFunction<T, T, T> addFunction;
     private BiFunction<T, Integer, T> divideFunction;
@@ -34,7 +34,7 @@ public class MovingAverage<T> {
     public void add(T other) {
         current.add(other);
         if (current.size() > maxSize) {
-            current.remove(0);
+            current.removeFirst();
         }
     }
 

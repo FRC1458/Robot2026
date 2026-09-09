@@ -73,10 +73,15 @@ public class TrajectoryCommand extends Command {
         setName(trajectory.name + " :Trajectory");
     }
 
+    public Command withPIDToPoseAtEnd() {
+        return this.andThen(new PIDToPoseCommand(trajectory.getFinalState().pose).withTimeout(AUTO_ALIGN_TIMEOUT));
+    }
+
     @Override
     public void initialize() {
         timer.start(); // actually starts the timer
         drive.setSwerveRequest(request);
+        thetaController.setInitialSetpoint(drive.getPose().getRotation().getRadians(), drive.getFieldSpeeds().omegaRadiansPerSecond);
     }
 
     @Override
