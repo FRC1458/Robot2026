@@ -43,7 +43,7 @@ public class ControlMap {
 		controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.b().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
+		controller.b().onTrue(HangCommand()); // TODO: Implement hang from armaaan
 		controller.leftTrigger().whileTrue(intakeCommand());
 		controller.rightTrigger().whileTrue(shooterCommand());
 	}
@@ -59,7 +59,7 @@ public class ControlMap {
 		controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
 		controller.y().whileTrue(intakeCommand());
 		controller.b().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.leftTrigger().whileTrue(HangCommand()); // TODO: Implement hang from armaaan
+		controller.leftTrigger().onTrue(HangCommand()); // TODO: Implement hang from armaaan
 		controller.rightTrigger().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
 	}
 
