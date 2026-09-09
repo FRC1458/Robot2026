@@ -36,8 +36,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class FieldLayout {
 	//TODO: this must be tuned to the specific year's field
 	public static Field2d field;
-	public static final double FIELD_LENGTH = Units.inchesToMeters(651.223);
-	public static final double FIELD_WIDTH = Units.inchesToMeters(323.277);
+	public static final double FIELD_LENGTH;
+	public static final double FIELD_WIDTH;
 
 	public static final double APRITAG_WIDTH = Units.inchesToMeters(6.50);
 	public static AprilTagFieldLayout APRILTAG_MAP;
@@ -54,6 +54,9 @@ public class FieldLayout {
 			DriverStation.reportError(e.getMessage(), false);
 			APRILTAG_MAP = AprilTagLayoutGenerated.getLayout();
 		}
+
+		FIELD_LENGTH = APRILTAG_MAP.getFieldLength();
+		FIELD_WIDTH = APRILTAG_MAP.getFieldWidth();
 		// APRILTAG_MAP = AprilTagLayoutGenerated.getLayout();
 		field = new Field2d();
 		SmartDashboard.putData(field);

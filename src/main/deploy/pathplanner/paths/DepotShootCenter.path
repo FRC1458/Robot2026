@@ -1,0 +1,65 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.7914550641940081,
+        "y": 6.072838801711842
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7914550641940081,
+        "y": 6.072838801711842
+      },
+      "isLocked": false,
+      "linkedName": "DepotCenterEnd"
+    },
+    {
+      "anchor": {
+        "x": 2.8487018544935796,
+        "y": 4.015592011412268
+      },
+      "prevControl": {
+        "x": 2.7840085592011405,
+        "y": 5.1800713266761775
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "DepotShootCenterEnd"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [
+    {
+      "fieldPosition": {
+        "x": 4.623,
+        "y": 4.05
+      },
+      "rotationOffset": 0.0,
+      "minWaypointRelativePos": 0.25,
+      "maxWaypointRelativePos": 1.0,
+      "name": "Point Towards Zone"
+    }
+  ],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 540.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Alliance Center",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

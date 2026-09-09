@@ -8,26 +8,27 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.Constants;
 import frc.robot.lib.control.ControlConstants.*;
 import frc.robot.lib.field.FieldLayout;
-import frc.robot.subsystems.drive.ctre.CtreDriveConstants;
+import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 
 public final class DriveConstants {		
     public static final double EPSILON_TRANSLATION = 0.015; // cm
     public static final double EPSILON_ROTATION = Units.Degrees.of(1.5).in(Units.Radians);
     
     // Maximums
-    public static final double MAX_SPEED = Units.MetersPerSecond.of(4.5).in(Units.MetersPerSecond);
+    public static final double MAX_SPEED = Units.MetersPerSecond.of(4.0).in(Units.MetersPerSecond);
     public static final double MAX_ACCEL = Units.MetersPerSecondPerSecond.of(9.0).in(Units.MetersPerSecondPerSecond);
     public static final double MAX_ROTATION_SPEED = 
-        Units.RotationsPerSecond.of(2.0).in(Units.RadiansPerSecond);
+        Units.RotationsPerSecond.of(1.5).in(Units.RadiansPerSecond);
     public static final double MAX_ROTATION_ACCEL = 
         Units.RotationsPerSecondPerSecond.of(4.0).in(Units.RadiansPerSecondPerSecond);
 
     // Swerve dimensions
     public static final double TRACK_WIDTH = Units.Inches.of(24).in(Units.Meters);
     public static final double WHEEL_BASE =	Units.Inches.of(24).in(Units.Meters);
-    public static final double WHEEL_DIAMETER = 2 * CtreDriveConstants.kWheelRadius.in(Units.Meters);
+    public static final double WHEEL_DIAMETER = 2 * CompCtreDriveConstants.kWheelRadius.in(Units.Meters);
     public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
 
     // Stability constants
@@ -52,13 +53,11 @@ public final class DriveConstants {
     public static final double ACCELERATION_CONSTANT = 0.1;
 
     public static final double AUTO_ALIGN_TIMEOUT = 0.5;
-
     public static enum FieldPoses {
         HUB(
-            new Pose3d(
-                Units.Inches.of(182.11), 
-                Units.Inches.of(158.84),
-                Units.Inches.of(72), Rotation3d.kZero)),
+            
+            new Pose3d(Constants.FieldConstants.Hub.topCenterPoint, Rotation3d.kZero)
+        ),
         TRENCH(
             FieldLayout.APRILTAG_MAP.getTagPose(12).orElse(Pose3d.kZero)),
         TAG(
@@ -74,4 +73,5 @@ public final class DriveConstants {
             this.pose3d = pose3d;
         }
     }
+
 }

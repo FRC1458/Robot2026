@@ -81,6 +81,7 @@ public class TrajectoryCommand extends Command {
     public void initialize() {
         timer.start(); // actually starts the timer
         drive.setSwerveRequest(request);
+        thetaController.setInitialSetpoint(drive.getPose().getRotation().getRadians(), drive.getFieldSpeeds().omegaRadiansPerSecond);
     }
 
     @Override

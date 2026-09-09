@@ -1,0 +1,76 @@
+package frc.robot.subsystems.shooter;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.VoltageConfigs;
+
+import edu.wpi.first.math.geometry.Transform3d;
+
+public final class ShooterConstants {		
+    public static final double GEAR_RATIO = 1;
+
+    public static final double TOPSPIN_FACTOR = 0;
+
+    public static final Transform3d OFFSET = new Transform3d();
+    
+    /** Motor ids */
+    public static enum Motors {
+        TOPLEFT(24),
+        BOTTOMLEFT(25),
+        TOPRIGHT(23),
+        BOTTOMRIGHT(22);
+        public final int id;
+        private Motors(int id) {
+            this.id = id;
+        }
+    }
+    
+    /** Config for shooter motors */
+    public static TalonFXConfiguration getTopConfig() {
+        return new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs()
+                .withKP(0.3)
+                .withKI(0.0)
+                .withKD(0.0)
+                .withKA(0.00766)
+                .withKS(0.18188)
+                .withKV(0.12378)) // placeholder values
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
+            .withVoltage(new VoltageConfigs()
+                .withPeakForwardVoltage(12.0)
+                .withPeakReverseVoltage(-12.0))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(120) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(120)
+                .withMotionMagicJerk(120));
+    }
+    /** Config for shooter motors */
+    public static TalonFXConfiguration getBottomConfig() {
+        return new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs()
+                .withKP(0.3)
+                .withKI(0.0)
+                .withKD(0.0)
+                .withKA(0.0077352)
+                .withKS(0.29729)
+                .withKV(0.12292)) // placeholder values
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(60)
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimitEnable(true))
+            .withVoltage(new VoltageConfigs()
+                .withPeakForwardVoltage(12.0)
+                .withPeakReverseVoltage(-12.0))
+            .withMotionMagic(new MotionMagicConfigs()
+                .withMotionMagicAcceleration(120) // 1.0 m/s^2
+                .withMotionMagicCruiseVelocity(120)
+                .withMotionMagicJerk(120));
+    }
+}

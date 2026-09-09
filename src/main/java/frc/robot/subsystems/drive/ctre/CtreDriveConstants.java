@@ -26,7 +26,7 @@ import frc.robot.Constants;
 // https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
 public class CtreDriveConstants {
     // which set of robot constants we are deploy 
-    private static final boolean kIs2ndBot = false; //true for the 2nd bot we built for 2026; false for 2025 bot
+    private static final boolean kCompBot = true; //true for the 2nd bot we built for 2026; false for 2025 bot
 
     // mechanical and geometric parameters of drive train 
     public static final double kDriveGearRatio = 6.122448979591837;
@@ -65,7 +65,7 @@ public class CtreDriveConstants {
     private static final Slot0Configs driveGains = new Slot0Configs()
         .withKP(kP_ctre_drive)
         .withKI(0)
-        .withKD(kD_ctre_drive)
+        .withKD(0)
         .withKS(kS_ctre_drive)
         .withKV(kV_ctre_drive);
 
@@ -91,13 +91,18 @@ public class CtreDriveConstants {
 
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
-    private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
+    private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
+        .withCurrentLimits(
+            new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimitEnable(true)   
+        );
     private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
             new CurrentLimitsConfigs()
                 // Swerve azimuth does not require much torque output, so we can set a relatively low
                 // stator current limit to help avoid brownouts without impacting performance.
-                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimit(Amps.of(40))
                 .withStatorCurrentLimitEnable(true)
         );
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
@@ -161,7 +166,7 @@ public class CtreDriveConstants {
     private static final int kFrontLeftDriveMotorId = 8;
     private static final int kFrontLeftSteerMotorId = 10;
     private static final int kFrontLeftEncoderId = 7;
-    private static final Angle kFrontLeftEncoderOffset = Rotations.of(kIs2ndBot ? -0.462890625: 0.355224609375);
+    private static final Angle kFrontLeftEncoderOffset = Rotations.of(kCompBot ? -0.419922 : 0.355224609375);
     private static final boolean kFrontLeftSteerMotorInverted = true;
     private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -172,7 +177,7 @@ public class CtreDriveConstants {
     private static final int kFrontRightDriveMotorId = 9;
     private static final int kFrontRightSteerMotorId = 11;
     private static final int kFrontRightEncoderId = 6;
-    private static final Angle kFrontRightEncoderOffset = Rotations.of(kIs2ndBot ? 0.025390625: -0.4296875);
+    private static final Angle kFrontRightEncoderOffset = Rotations.of(kCompBot ? 0.141113 : -0.4296875);
     private static final boolean kFrontRightSteerMotorInverted = true;
     private static final boolean kFrontRightEncoderInverted = false;
 
@@ -183,7 +188,7 @@ public class CtreDriveConstants {
     private static final int kBackLeftDriveMotorId = 3;
     private static final int kBackLeftSteerMotorId = 5;
     private static final int kBackLeftEncoderId = 14;
-    private static final Angle kBackLeftEncoderOffset = Rotations.of(kIs2ndBot ? 0.1435546875: 0.326416015625);
+    private static final Angle kBackLeftEncoderOffset = Rotations.of(kCompBot ? -0.460693 : 0.326416015625);
     private static final boolean kBackLeftSteerMotorInverted = true;
     private static final boolean kBackLeftEncoderInverted = false;
 
@@ -194,7 +199,7 @@ public class CtreDriveConstants {
     private static final int kBackRightDriveMotorId = 4;
     private static final int kBackRightSteerMotorId = 2;
     private static final int kBackRightEncoderId = 1;
-    private static final Angle kBackRightEncoderOffset = Rotations.of(kIs2ndBot ? 0.183837890625: 0.0869140625);
+    private static final Angle kBackRightEncoderOffset = Rotations.of(kCompBot ? 0.193604 : 0.0869140625);
     private static final boolean kBackRightSteerMotorInverted = true;
     private static final boolean kBackRightEncoderInverted = false;
 
