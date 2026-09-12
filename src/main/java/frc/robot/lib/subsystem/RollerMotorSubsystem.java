@@ -32,4 +32,8 @@ public class RollerMotorSubsystem extends LoggedSubsystem {
 		super.log();
 		io.log();
 	}
+
+	public IMotor getIo() {
+		return io;
+	}
 }

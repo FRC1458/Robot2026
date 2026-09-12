@@ -97,6 +97,11 @@ public final class AutoRoutines {
 												indexer.indexAll(),
 												shooter.shootAll(drive::getDistanceToHub))))
 						.raceWith(Commands.waitSeconds(4)),
+				Commands.parallel(
+						intake.lower(),
+						indexer.stopAll(),
+						shooter.stopAll())
+					.raceWith(Commands.waitSeconds(0.3)),
 				drive.trajectory(backToNeutral),
 				drive.trajectory(crossTrench));
 

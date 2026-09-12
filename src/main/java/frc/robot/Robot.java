@@ -1,10 +1,24 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -12,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
 import frc.robot.auto.AutoSelector;
 import frc.robot.lib.subsystem.LoggedSubsystem;
+import frc.robot.lib.util.FuelSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.LeftIndexer;
@@ -60,6 +75,9 @@ public class Robot extends TimedRobot {
 	public final ShooterTL shooterTL;
 	public final ShooterTR shooterTR;
 
+	public FuelSim fuelSim;
+	int hopper = 0;
+
 	/**
 	 * This function is run when the robot is first started up and should be used for any
 	 * initialization code.
@@ -107,6 +125,29 @@ public class Robot extends TimedRobot {
 		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR);
 
 		ControlsMapping.bind();
+
+		if (Robot.isSimulation()) {
+			fuelSim = new FuelSim("Fuel");
+			fuelSim.spawnStartingFuel();
+			fuelSim.registerIntake(
+				Inches.of(-24.248542), 
+				Inches.of(-16.625000), 
+				Inches.of(-12.687500), 
+				Inches.of(10.250000),
+				() -> intakePivot.getIo().getPosition().lt(Degrees.of(5)) 
+						&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
+						&& hopper < 60,
+				() -> hopper++);
+			fuelSim.registerRobot(
+				Inches.of(33), 
+				Inches.of(33), 
+				Inches.of(10.36), 
+				drive::getPose, 
+				drive::getFieldSpeeds);
+			fuelSim.start();
+			fuelSim.setLoggingFrequency(50);
+			fuelSim.setSubticks(5);
+		}
 	}
 
 	/**
@@ -168,7 +209,88 @@ public class Robot extends TimedRobot {
 	@Override
 	public void testPeriodic() {}
 
+	Timer lastShotLeft = new Timer();
+	Timer lastShotRight = new Timer();
+
 	/** This function is called once when the robot is first started up. */
 	@Override
-	public void simulationInit() {}
+	public void simulationInit() {
+		lastShotLeft.start();
+		lastShotRight.start();
+	}
+
+	Translation3d l = new Translation3d(
+		Inches.of(7.300000),
+		Inches.of(8.562500),
+		Inches.of(15.829364)
+	);
+	Translation3d r = new Translation3d(
+		Inches.of(7.300000),
+		Inches.of(-8.562500),
+		Inches.of(15.829364)
+	);
+
+	Rotation3d rotation = new Rotation3d(0, -77.5 / 180.0 * Math.PI, 0);
+
+	@Override
+	public void simulationPeriodic() {
+		fuelSim.updateSim();
+		if (leftIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+			if (lastShotLeft.get() > 0.4 * Math.random() && hopper > 0) {
+				double shooterVelocity =
+						(shooterBL.getIo().getVelocity()
+								.plus(shooterTL.getIo().getVelocity()))
+								.div(2)
+								.in(RadiansPerSecond);
+
+				double wheelRadius = Inches.of(4).in(Meters) / 2.0;
+				double speed = shooterVelocity * wheelRadius * 0.65;
+
+				Translation3d shotPosition =
+						new Pose3d(drive.getPose())
+								.plus(new Transform3d(l, Rotation3d.kZero))
+								.getTranslation();
+
+				fuelSim.spawnFuel(
+						shotPosition,
+						new Translation3d(
+								speed,
+								rotation.plus(new Rotation3d(drive.getPose().getRotation()))));
+
+				lastShotLeft.reset();
+
+				hopper--;
+			}
+		}
+		if (rightIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+			if (lastShotRight.get() > 0.4 * Math.random() && hopper > 0) {
+				double shooterVelocity =
+						(shooterBR.getIo().getVelocity()
+								.plus(shooterTR.getIo().getVelocity()))
+								.div(2)
+								.in(RadiansPerSecond);
+
+				double wheelRadius = Inches.of(4).in(Meters) / 2.0;
+				double speed = shooterVelocity * wheelRadius * 0.65;
+
+				Translation3d shotPosition =
+						new Pose3d(drive.getPose())
+								.plus(new Transform3d(r, Rotation3d.kZero))
+								.getTranslation();
+
+				fuelSim.spawnFuel(
+						shotPosition,
+						new Translation3d(
+								speed,
+								rotation.plus(new Rotation3d(drive.getPose().getRotation()))));
+
+				lastShotRight.reset();
+
+				hopper--;
+			}
+		}
+
+		DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+		DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
+	}
 }
