@@ -19,13 +19,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.lib.io.IMotor.RunMode;
-import frc.robot.lib.io.IMotor;
 import frc.robot.lib.io.ISimTalonFX;
 import frc.robot.lib.io.ITalonFX;
 import frc.robot.lib.sim.SingleJointedArmSimulation;
 import frc.robot.lib.subsystem.HomingMotorSubsystem;
 
 public class IntakePivot extends HomingMotorSubsystem {
+	private Notifier visualizerThread;
+
 	public IntakePivot() {
 		super(
 				() -> {
@@ -56,7 +57,7 @@ public class IntakePivot extends HomingMotorSubsystem {
 						.getStructTopic("SmartDashboard/Mechanisms/Intake", Pose3d.struct)
 						.publish();
 
-		var thread =
+		visualizerThread =
 				new Notifier(
 						() -> {
 							publisher.accept(
@@ -65,7 +66,7 @@ public class IntakePivot extends HomingMotorSubsystem {
 											new Rotation3d(Rotations.of(0), io.getPosition(), Rotations.of(0))));
 						});
 
-		thread.startPeriodic(1.0 / 60.0);
+		visualizerThread.startPeriodic(1.0 / 60.0);
 	}
 
 	public Command lower() {

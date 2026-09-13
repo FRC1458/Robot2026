@@ -30,7 +30,7 @@ public final class AutoRoutines {
 		final Drive drive = robot.drive;
 		RedTrajectory traj =
 				TrajectoryLoader.loadAutoTrajectory(TrajectoryType.CHOREO, "testPath3").get();
-		return Robot.getInstance().drive.trajectory(traj);
+		return drive.trajectory(traj);
 	}
 
 	@Auto(name = "right neutral auto")
@@ -90,18 +90,14 @@ public final class AutoRoutines {
 				drive.trajectory(back),
 				Commands.parallel(
 								drive.headingLockToHub(),
-								Commands.sequence(
-										drive.waitUntilAligned().asProxy(),
-										Commands.parallel(
-												intake.agitate(),
-												indexer.indexAll(),
-												shooter.shootAll(drive::getDistanceToHub))))
+								Commands.parallel(
+										shooter.shootAll(drive::getDistanceToHub),
+										Commands.sequence(
+												shooter.waitForAll().asProxy(),
+												Commands.parallel(intake.agitate(), indexer.indexAll()))))
 						.raceWith(Commands.waitSeconds(4)),
-				Commands.parallel(
-						intake.lower(),
-						indexer.stopAll(),
-						shooter.stopAll())
-					.raceWith(Commands.waitSeconds(0.3)),
+				Commands.parallel(intake.lower(), indexer.stopAll(), shooter.stopAll())
+						.raceWith(Commands.waitSeconds(0.3)),
 				drive.trajectory(backToNeutral),
 				drive.trajectory(crossTrench));
 

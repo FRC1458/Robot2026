@@ -138,6 +138,10 @@ public class RedTrajectory {
 						(second.vyMetersPerSecond - first.vyMetersPerSecond) / dt,
 						(second.omegaRadiansPerSecond - first.omegaRadiansPerSecond) / dt);
 			}
+
+			public ChassisSpeeds times(double dt) {
+				return new ChassisSpeeds(ax * dt, ay * dt, alpha * dt);
+			}
 		}
 	}
 

@@ -6,8 +6,10 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.io.IMotor.RunMode;
 import frc.robot.lib.io.ISimTalonFX;
 import frc.robot.lib.io.ITalonFX;
@@ -42,13 +44,24 @@ public class ShooterBL extends RollerMotorSubsystem {
 						run(
 								() -> {
 									double rps = VEL_MAP.get(distance.getAsDouble());
-
 									io.setVelocity(RotationsPerSecond.of(rps));
 								}));
 	}
 
 	public Command pass() {
-		return runVel(PASSING_SPEED, RotationsPerSecond.of(10), RunMode.VOLTAGE).withTimeout(1);
+		return runVel(PASSING_SPEED, EPS, RunMode.VOLTAGE).withTimeout(1);
+	}
+
+	public Command waitUntilAtSpeed(AngularVelocity eps) {
+		return Commands.waitUntil(
+				() ->
+						RotationsPerSecond.of(
+										((ITalonFX) io).getMotor().getClosedLoopError().getValueAsDouble())
+								.isNear(RotationsPerSecond.of(0), eps));
+	}
+
+	public Command waitUntilAtSpeed() {
+		return waitUntilAtSpeed(EPS);
 	}
 
 	public Command stop() {

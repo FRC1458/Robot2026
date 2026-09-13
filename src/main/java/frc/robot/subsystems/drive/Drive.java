@@ -10,6 +10,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -28,6 +29,7 @@ import frc.robot.lib.control.ControlConstants.ProfiledPIDVConstants;
 import frc.robot.lib.control.ProfiledPIDVController;
 import frc.robot.lib.field.FieldLayout;
 import frc.robot.lib.trajectory.RedTrajectory;
+import frc.robot.lib.trajectory.RedTrajectory.State.ChassisAccels;
 import frc.robot.lib.util.Util;
 import frc.robot.subsystems.TelemetryManager;
 import frc.robot.subsystems.drive.commands.AutopilotCommand;
@@ -42,6 +44,7 @@ public class Drive extends SubsystemBase {
 	private SwerveDriveState lastReadState;
 	public static SwerveRequest.FieldCentric teleopRequest = new SwerveRequest.FieldCentric();
 	public SwerveRequest driveRequest = teleopRequest;
+	private ChassisSpeeds prevSpeeds = new ChassisSpeeds();
 
 	private final CtreDrive drivetrain;
 
@@ -73,6 +76,7 @@ public class Drive extends SubsystemBase {
 
 	@Override
 	public void periodic() {
+		prevSpeeds = getFieldSpeeds();
 		lastReadState = drivetrain.getState();
 		outputTelemetry();
 	}
@@ -92,7 +96,7 @@ public class Drive extends SubsystemBase {
 	 * @return the current state
 	 */
 	public SwerveDriveState getState() {
-		return drivetrain.getState();
+		return lastReadState;
 	}
 
 	/**
@@ -103,11 +107,29 @@ public class Drive extends SubsystemBase {
 	}
 
 	/**
+	 * @return the last read pose
+	 */
+	public Rotation2d getRotation() {
+		return lastReadState.Pose.getRotation();
+	}
+
+	/**
+	 * @return the chassis speeds, field relative
+	 */
+	public ChassisSpeeds getRobotSpeeds() {
+		return lastReadState.Speeds;
+	}
+
+	/**
 	 * @return the chassis speeds, field relative
 	 */
 	public ChassisSpeeds getFieldSpeeds() {
 		return ChassisSpeeds.fromRobotRelativeSpeeds(
 				lastReadState.Speeds, lastReadState.Pose.getRotation());
+	}
+
+	public ChassisAccels getAccel() {
+		return ChassisAccels.estimate(prevSpeeds, getFieldSpeeds(), 0.02);
 	}
 
 	/**
@@ -174,7 +196,7 @@ public class Drive extends SubsystemBase {
 							setSwerveRequest(request);
 
 							thetaController.setInitialSetpoint(
-									getPose().getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
 						})
 				.andThen(
 						run(() -> {
@@ -192,8 +214,7 @@ public class Drive extends SubsystemBase {
 									var targetDirection = delta.getAngle();
 
 									var normSq = delta.getNorm() * delta.getNorm();
-									var fieldSpeeds =
-											ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
+									var fieldSpeeds = getFieldSpeeds();
 									var rotationalRate =
 											normSq > 1e-4
 													? (-delta.getX() * fieldSpeeds.vyMetersPerSecond
@@ -205,8 +226,7 @@ public class Drive extends SubsystemBase {
 											thetaController
 													.setTarget(targetDirection.getRadians(), rotationalRate)
 													.setMeasurement(
-															state.Pose.getRotation().getRadians(),
-															state.Speeds.omegaRadiansPerSecond)
+															getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond)
 													.getOutput();
 
 									SmartDashboard.putNumber(
@@ -241,7 +261,7 @@ public class Drive extends SubsystemBase {
 							setSwerveRequest(request);
 
 							thetaController.setInitialSetpoint(
-									getPose().getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
 							pose.set(poseSupplier.get());
 						})
 				.andThen(
@@ -260,8 +280,7 @@ public class Drive extends SubsystemBase {
 									var targetDirection = delta.getAngle();
 
 									var normSq = delta.getNorm() * delta.getNorm();
-									var fieldSpeeds =
-											ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, getPose().getRotation());
+									var fieldSpeeds = getFieldSpeeds();
 									var rotationalRate =
 											normSq > 1e-4
 													? (-delta.getX() * fieldSpeeds.vyMetersPerSecond
@@ -273,8 +292,7 @@ public class Drive extends SubsystemBase {
 											thetaController
 													.setTarget(targetDirection.getRadians(), rotationalRate)
 													.setMeasurement(
-															state.Pose.getRotation().getRadians(),
-															state.Speeds.omegaRadiansPerSecond)
+															getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond)
 													.getOutput();
 
 									SmartDashboard.putNumber(
@@ -293,7 +311,7 @@ public class Drive extends SubsystemBase {
 
 	public boolean isPointedTowardsPos(Translation2d pos, double eps) {
 		var direction = pos.minus(getPose().getTranslation()).getAngle();
-		var current = getPose().getRotation();
+		var current = getRotation();
 		return Math.abs(MathUtil.inputModulus(direction.getDegrees() - current.getDegrees(), -180, 180))
 				< eps;
 	}
@@ -307,8 +325,70 @@ public class Drive extends SubsystemBase {
 	}
 
 	public Command waitUntilAligned() {
-		return Commands.waitUntil(() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, 10))
-				.andThen();
+		return Commands.waitUntil(() -> isPointedTowardsPos(Constants.FieldConstants.hubLocation, 10));
+	}
+
+	public Command directionHeadingLock(Supplier<Rotation2d> rotation) {
+		SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
+
+		ProfiledPIDVController thetaController =
+				new ProfiledPIDVController(
+						new ProfiledPIDVConstants(
+								new PIDVConstants(10.0, 0.0, 1),
+								new TrapezoidProfile.Constraints(Math.PI * 16, Math.PI * 5)));
+		thetaController.enableContinuousInput(-Math.PI, Math.PI);
+		AtomicReference<Rotation2d> pose = new AtomicReference<Rotation2d>(Rotation2d.kZero);
+
+		return runOnce(
+						() -> {
+							request.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+							setSwerveRequest(request);
+
+							thetaController.setInitialSetpoint(
+									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+							pose.set(rotation.get());
+						})
+				.andThen(
+						run(() -> {
+									double xDesiredRaw = -Robot.controller.getLeftY();
+									double yDesiredRaw = -Robot.controller.getLeftX();
+
+									double[] xy =
+											Util.applyRadialDeadband(
+													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+									double xFancy = xy[0];
+									double yFancy = xy[1];
+
+									var targetDirection = pose.get();
+
+									var r =
+											thetaController
+													.setTarget(targetDirection.getRadians())
+													.setMeasurement(
+															getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond)
+													.getOutput();
+
+									request
+											.withVelocityX(xFancy * MAX_SPEED)
+											.withVelocityY(yFancy * MAX_SPEED)
+											.withRotationalRate(r);
+								})
+								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
+				.withName("Heading Lock");
+	}
+
+	public Command passAlign() {
+		return directionHeadingLock(() -> Constants.isBlue ? Rotation2d.k180deg : Rotation2d.kZero);
+	}
+
+	public Command waitUntilAlignedPass() {
+		return Commands.waitUntil(() -> isPointedPass(30));
+	}
+
+	public boolean isPointedPass(double eps) {
+		return Constants.isBlue
+				? Math.abs(MathUtil.inputModulus(getRotation().getDegrees() - 180, -180, 180)) < eps
+				: Math.abs(MathUtil.inputModulus(getRotation().getDegrees(), -180, 180)) < eps;
 	}
 
 	public Command autoAlign(Pose2d targetPose) {

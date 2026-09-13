@@ -34,4 +34,13 @@ public class Shooter extends LoggedSubsystem {
 	public Command stopAll() {
 		return Commands.parallel(bl.stop(), br.stop(), tl.stop(), tr.stop()).andThen(idle());
 	}
+
+	public Command waitForAll() {
+		return Commands.parallel(
+						bl.waitUntilAtSpeed().asProxy(),
+						br.waitUntilAtSpeed().asProxy(),
+						tl.waitUntilAtSpeed().asProxy(),
+						tr.waitUntilAtSpeed().asProxy())
+				.withTimeout(2);
+	}
 }

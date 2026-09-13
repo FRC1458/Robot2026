@@ -1,13 +1,13 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.subsystems.shooter.ShooterConstants.LEFT_OFFSET;
+import static frc.robot.subsystems.shooter.ShooterConstants.RIGHT_OFFSET;
+import static frc.robot.subsystems.shooter.ShooterConstants.rotation;
 
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
@@ -75,8 +75,12 @@ public class Robot extends TimedRobot {
 	public final ShooterTL shooterTL;
 	public final ShooterTR shooterTR;
 
+	private final Notifier allianceThread;
+
 	public FuelSim fuelSim;
-	int hopper = 0;
+	private int hopper = 0;
+	private Timer lastShotLeft = new Timer();
+	private Timer lastShotRight = new Timer();
 
 	/**
 	 * This function is run when the robot is first started up and should be used for any
@@ -87,15 +91,17 @@ public class Robot extends TimedRobot {
 		autoChooser = new AutoSelector();
 		DogLog.setOptions(
 				new DogLogOptions().withCaptureDs(true).withLogExtras(true).withNtTunables(true));
-		Notifier thread =
+		allianceThread =
 				new Notifier(
 						() -> {
 							while (true) {
 								if (DriverStation.getAlliance().isPresent()) {
 									if (DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+										Constants.isBlue = false;
 										Constants.FieldConstants.hubLocation =
 												Constants.FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
 									} else {
+										Constants.isBlue = true;
 										Constants.FieldConstants.hubLocation =
 												Constants.FieldConstants.Hub.topCenterPoint.toTranslation2d();
 									}
@@ -108,7 +114,7 @@ public class Robot extends TimedRobot {
 								}
 							}
 						});
-		thread.startSingle(0);
+		allianceThread.startSingle(0);
 
 		drive = new Drive();
 		intakePivot = new IntakePivot();
@@ -127,23 +133,20 @@ public class Robot extends TimedRobot {
 		ControlsMapping.bind();
 
 		if (Robot.isSimulation()) {
-			fuelSim = new FuelSim("Fuel");
+			fuelSim = new FuelSim();
 			fuelSim.spawnStartingFuel();
 			fuelSim.registerIntake(
-				Inches.of(-24.248542), 
-				Inches.of(-16.625000), 
-				Inches.of(-12.687500), 
-				Inches.of(10.250000),
-				() -> intakePivot.getIo().getPosition().lt(Degrees.of(5)) 
-						&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
-						&& hopper < 60,
-				() -> hopper++);
+					Inches.of(-24.248542),
+					Inches.of(-16.625000),
+					Inches.of(-12.687500),
+					Inches.of(10.250000),
+					() ->
+							intakePivot.getIo().getPosition().lt(Degrees.of(5))
+									&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
+									&& hopper < 60,
+					() -> hopper++);
 			fuelSim.registerRobot(
-				Inches.of(33), 
-				Inches.of(33), 
-				Inches.of(10.36), 
-				drive::getPose, 
-				drive::getFieldSpeeds);
+					Inches.of(33), Inches.of(33), Inches.of(10.36), drive::getPose, drive::getFieldSpeeds);
 			fuelSim.start();
 			fuelSim.setLoggingFrequency(50);
 			fuelSim.setSubticks(5);
@@ -209,9 +212,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void testPeriodic() {}
 
-	Timer lastShotLeft = new Timer();
-	Timer lastShotRight = new Timer();
-
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
@@ -219,27 +219,25 @@ public class Robot extends TimedRobot {
 		lastShotRight.start();
 	}
 
-	Translation3d l = new Translation3d(
-		Inches.of(7.300000),
-		Inches.of(8.562500),
-		Inches.of(15.829364)
-	);
-	Translation3d r = new Translation3d(
-		Inches.of(7.300000),
-		Inches.of(-8.562500),
-		Inches.of(15.829364)
-	);
-
-	Rotation3d rotation = new Rotation3d(0, -77.5 / 180.0 * Math.PI, 0);
-
 	@Override
 	public void simulationPeriodic() {
 		fuelSim.updateSim();
+
+		double randomness = 1.0 / 180.0 * Math.PI;
+		var random1 =
+				new Rotation3d(
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()));
+		var random2 =
+				new Rotation3d(
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()));
 		if (leftIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
-			if (lastShotLeft.get() > 0.4 * Math.random() && hopper > 0) {
+			if (lastShotLeft.get() > 0.2 * Math.random() + 0.1 && hopper > 0) {
 				double shooterVelocity =
-						(shooterBL.getIo().getVelocity()
-								.plus(shooterTL.getIo().getVelocity()))
+						(shooterBL.getIo().getVelocity().plus(shooterTL.getIo().getVelocity()))
 								.div(2)
 								.in(RadiansPerSecond);
 
@@ -248,14 +246,13 @@ public class Robot extends TimedRobot {
 
 				Translation3d shotPosition =
 						new Pose3d(drive.getPose())
-								.plus(new Transform3d(l, Rotation3d.kZero))
+								.plus(new Transform3d(LEFT_OFFSET, Rotation3d.kZero))
 								.getTranslation();
 
 				fuelSim.spawnFuel(
 						shotPosition,
 						new Translation3d(
-								speed,
-								rotation.plus(new Rotation3d(drive.getPose().getRotation()))));
+								speed, rotation.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)));
 
 				lastShotLeft.reset();
 
@@ -263,10 +260,9 @@ public class Robot extends TimedRobot {
 			}
 		}
 		if (rightIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
-			if (lastShotRight.get() > 0.4 * Math.random() && hopper > 0) {
+			if (lastShotRight.get() > 0.2 * Math.random() + 0.1 && hopper > 0) {
 				double shooterVelocity =
-						(shooterBR.getIo().getVelocity()
-								.plus(shooterTR.getIo().getVelocity()))
+						(shooterBR.getIo().getVelocity().plus(shooterTR.getIo().getVelocity()))
 								.div(2)
 								.in(RadiansPerSecond);
 
@@ -275,14 +271,13 @@ public class Robot extends TimedRobot {
 
 				Translation3d shotPosition =
 						new Pose3d(drive.getPose())
-								.plus(new Transform3d(r, Rotation3d.kZero))
+								.plus(new Transform3d(RIGHT_OFFSET, Rotation3d.kZero))
 								.getTranslation();
 
 				fuelSim.spawnFuel(
 						shotPosition,
 						new Translation3d(
-								speed,
-								rotation.plus(new Rotation3d(drive.getPose().getRotation()))));
+								speed, rotation.plus(new Rotation3d(drive.getPose().getRotation())).plus(random2)));
 
 				lastShotRight.reset();
 

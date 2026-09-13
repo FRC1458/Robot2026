@@ -71,9 +71,9 @@ public class IntakeConstants {
 									.withSupplyCurrentLimitEnable(true))
 					.withMotionMagic(
 							new MotionMagicConfigs()
-									.withMotionMagicAcceleration(50)
-									.withMotionMagicCruiseVelocity(30)
-									.withMotionMagicJerk(160))
+									.withMotionMagicAcceleration(PIVOT_GEAR_RATIO * 5)
+									.withMotionMagicCruiseVelocity(PIVOT_GEAR_RATIO * 2)
+									.withMotionMagicJerk(PIVOT_GEAR_RATIO * 10))
 					.withVoltage(
 							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
 					.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(PIVOT_GEAR_RATIO));

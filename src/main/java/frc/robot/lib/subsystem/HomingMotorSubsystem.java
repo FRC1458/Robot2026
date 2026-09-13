@@ -30,7 +30,7 @@ public class HomingMotorSubsystem extends LoggedSubsystem {
 		super.log();
 		io.log();
 	}
-	
+
 	public IMotor getIo() {
 		return io;
 	}

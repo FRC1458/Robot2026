@@ -9,6 +9,7 @@ import frc.robot.subsystems.drive.DriveConstants;
 
 /** Miscallenous constants */
 public final class Constants {
+	public static boolean isBlue = false;
 	public static final double DT = 0.02;
 	public static final double EPSILON = 1e-6;
 	public static final double LONG_CANT_TIMEOUT_MS = 0;

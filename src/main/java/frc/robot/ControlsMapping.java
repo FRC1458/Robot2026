@@ -1,48 +1,71 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControlsMapping {
-	static AtomicBoolean switcher = new AtomicBoolean(false);
+	private static final AtomicBoolean switcher = new AtomicBoolean(false);
 
 	public static void bind() {
+		final Robot robot = Robot.getInstance();
+		final Drive drive = robot.drive;
+		final Intake intake = robot.intake;
+		final Indexer indexer = robot.indexer;
+		final Shooter shooter = robot.shooter;
+
 		Robot.controller
 				.y()
 				.whileTrue(
 						Commands.parallel(
-										Robot.getInstance().drive.headingLockToHub(),
-										Robot.getInstance()
-												.drive
+										drive.headingLockToHub(),
+										drive
 												.waitUntilAligned()
 												.asProxy()
 												.andThen(
 														Commands.parallel(
-																Robot.getInstance()
-																		.shooter
-																		.shootAll(Robot.getInstance().drive::getDistanceToHub),
-																Robot.getInstance().intake.agitate(),
-																Robot.getInstance().indexer.indexAll())))
+																shooter.shootAll(drive::getDistanceToHub),
+																Commands.sequence(
+																		shooter.waitForAll().asProxy(),
+																		Commands.parallel(intake.agitate(), indexer.indexAll())))))
 								.withName("shoot"));
 
 		Robot.controller
-				.rightBumper()
-				.whileTrue(Robot.getInstance().intake.intake().withName("intake"));
+				.y()
+				.whileTrue(
+						Commands.parallel(
+										drive.headingLockToHub(),
+										Commands.parallel(
+												drive.waitUntilAligned().asProxy(),
+												shooter.shootAll(drive::getDistanceToHub),
+												Commands.sequence(
+														shooter.waitForAll().asProxy(),
+														Commands.parallel(intake.agitate(), indexer.indexAll()))))
+								.withName("shoot"));
 
-		Robot.controller
-				.rightTrigger()
-				.whileTrue(Robot.getInstance().intake.outtake().withName("outtake"));
+		Robot.controller.rightBumper().whileTrue(intake.intake().withName("intake"));
+
+		Robot.controller.rightTrigger().whileTrue(intake.outtake().withName("outtake"));
 
 		Robot.controller
 				.a()
 				.whileTrue(
 						Commands.parallel(
-										Robot.getInstance().shooter.pass(),
-										Robot.getInstance().intake.agitate(),
-										Robot.getInstance().indexer.indexAll())
+										drive.passAlign(),
+										drive
+												.waitUntilAlignedPass()
+												.asProxy()
+												.andThen(
+														Commands.parallel(
+																shooter.pass(),
+																Commands.sequence(
+																		shooter.waitForAll().asProxy(),
+																		Commands.parallel(intake.agitate(), indexer.indexAll())))))
 								.withName("pass"));
-
-		Robot.controller.povDown().whileTrue(Robot.getInstance().intake.calibrate());
+		Robot.controller.povDown().whileTrue(intake.calibrate());
 
 		Robot.controller
 				.b()
@@ -50,26 +73,14 @@ public class ControlsMapping {
 						Commands.runOnce(() -> switcher.set(!switcher.get()))
 								.andThen(
 										Commands.either(
-												Robot.getInstance()
-														.intake
+												intake
 														.lower()
 														.alongWith(
-																Commands.runOnce(
-																		() ->
-																				Robot.getInstance()
-																						.intake
-																						.setDefaultCommand(
-																								Robot.getInstance().intake.lower()))),
-												Robot.getInstance()
-														.intake
+																Commands.runOnce(() -> intake.setDefaultCommand(intake.lower()))),
+												intake
 														.raise()
 														.alongWith(
-																Commands.runOnce(
-																		() ->
-																				Robot.getInstance()
-																						.intake
-																						.setDefaultCommand(
-																								Robot.getInstance().intake.raise()))),
+																Commands.runOnce(() -> intake.setDefaultCommand(intake.raise()))),
 												switcher::get)));
 	}
 }

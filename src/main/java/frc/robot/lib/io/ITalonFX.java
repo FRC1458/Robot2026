@@ -74,6 +74,8 @@ public class ITalonFX implements IMotor {
 	protected StatusSignal<Current> supplyCurrentSignal;
 	protected StatusSignal<Temperature> temperatureSignal;
 
+	protected final Notifier refreshThread;
+
 	public ITalonFX(TalonFX motor, String key) {
 		this.key = key;
 		positionKey = key + "/Position";
@@ -91,8 +93,8 @@ public class ITalonFX implements IMotor {
 		supplyCurrentSignal = motor.getSupplyCurrent();
 		temperatureSignal = motor.getDeviceTemp();
 
-		Notifier thread = new Notifier(() -> refresh());
-		thread.startPeriodic(0.02);
+		refreshThread = new Notifier(() -> refresh());
+		refreshThread.startPeriodic(0.02);
 	}
 
 	@Override

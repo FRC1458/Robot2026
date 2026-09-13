@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.lib.util.Util.InchSqPounds;
 
@@ -10,6 +11,8 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -25,6 +28,19 @@ public final class ShooterConstants {
 
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
 	public static final MomentOfInertia MOI = InchSqPounds.of(4.619883);
+
+	public static final AngularVelocity EPS = RotationsPerSecond.of(10);
+
+	public static final InterpolatingDoubleTreeMap TOF_MAP = new InterpolatingDoubleTreeMap();
+
+	public static final Translation3d LEFT_OFFSET =
+			new Translation3d(Inches.of(7.300000), Inches.of(8.562500), Inches.of(15.829364));
+	public static final Translation3d RIGHT_OFFSET =
+			new Translation3d(Inches.of(7.300000), Inches.of(-8.562500), Inches.of(15.829364));
+
+	public static final Translation3d OFFSET =
+			new Translation3d(Inches.of(7.300000), Inches.of(0), Inches.of(15.829364));
+	public static final Rotation3d rotation = new Rotation3d(0, -77.5 / 180.0 * Math.PI, 0);
 
 	static {
 		VEL_MAP.put(1.5, 23.0);
