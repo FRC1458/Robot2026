@@ -2,6 +2,7 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,9 +23,18 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
+import dev.doglog.DogLog;
 
 public class VisionDevice {
 	private final VisionDeviceConstants constants;
+
+	public final String key;
+	private final String posekey;
+	private final String targetKey;
+	private final String ambiguityKey;
+	private final String stdDevskey;
 
 	public Field2d robotField;
 	public PhotonCamera camera;
@@ -35,8 +45,16 @@ public class VisionDevice {
 	private boolean isConnected;
 	private double latestTimestamp = 0.0;
 	private Drive drive;
+	private double ambiguity;
+	private Vector<N3> stdDevs;
+	private PhotonTrackedTarget target;
 
-	public VisionDevice(VisionDeviceConstants constants, Drive drive) {
+	public VisionDevice(VisionDeviceConstants constants, Drive drive, String key) {
+		this.key = key;
+		posekey = key + "/Pose";
+		targetKey = key + "/Target";
+		ambiguityKey = key + "/Ambiguity";
+		stdDevskey = key + "/StdDevs";
 		this.constants = constants;
 		this.drive = drive;
 		this.robotField = new Field2d();
@@ -57,7 +75,7 @@ public class VisionDevice {
 		}
 
 		TelemetryManager.getInstance()
-				.addStructPublisher(constants.name() + "Pose", Pose2d.struct, () -> botPose);
+				.addStructPublisher(constants.tableName + "Pose", Pose2d.struct, () -> botPose);
 	}
 
 	private void processFrames() {
@@ -90,6 +108,8 @@ public class VisionDevice {
 			var offsets = constants.robotToCamera;
 			visionPose = cameraPose.plus(offsets.inverse()).toPose2d();
 
+			target = result.getBestTarget();
+
 			// Even in multi-tag, we check the distance to the primary target
 			double bestTargetDist =
 					result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm();
@@ -106,9 +126,9 @@ public class VisionDevice {
 
 		} else {
 			// --- SINGLE-TAG CASE ---
-			var target = result.getBestTarget();
+			target = result.getBestTarget();
 			double distance = target.getBestCameraToTarget().getTranslation().getNorm();
-			double ambiguity = target.getPoseAmbiguity();
+			ambiguity = target.getPoseAmbiguity();
 
 			visionPose =
 					PhotonUtils.estimateFieldToRobotAprilTag(
@@ -132,9 +152,11 @@ public class VisionDevice {
 			}
 		}
 
+		stdDevs = VecBuilder.fill(xStdev, yStdev, thetaStdev);
+
 		// Apply to Estimator
 		if (Robot.isReal()) {
-			drive.addVisionUpdate(visionPose, timestamp, VecBuilder.fill(xStdev, yStdev, thetaStdev));
+			drive.addVisionUpdate(visionPose, timestamp, stdDevs);
 		}
 
 		robotField.setRobotPose(visionPose);
@@ -200,5 +222,16 @@ public class VisionDevice {
 
 	public PhotonCameraSim getSimulation() {
 		return sim;
+	}
+
+	public void log() {
+		DogLog.log(posekey, botPose);
+		DogLog.log(ambiguityKey, ambiguity);
+		if (stdDevs != null) {
+			DogLog.log(stdDevskey, stdDevs.getData());
+		}
+		if (target != null) {
+			DogLog.log(targetKey, FieldLayout.APRILTAG_MAP.getTagPose(target.getFiducialId()).get());
+		}
 	}
 }

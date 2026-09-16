@@ -2,19 +2,16 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.lib.field.FieldLayout;
-import frc.robot.lib.util.MovingAverageDouble;
+import frc.robot.lib.subsystem.LoggedSubsystem;
 import frc.robot.lib.util.TunableNumber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.VisionConstants.VisionDeviceConstants;
 import java.util.List;
 import org.photonvision.simulation.VisionSystemSim;
 
-public class VisionDeviceManager extends SubsystemBase {
-	private static boolean visionDisabled = false;
-
+public class VisionDeviceManager extends LoggedSubsystem {
 	private static final TunableNumber timestampOffset =
 			new TunableNumber("VisionTimestampOffset", 0.1, false);
 
@@ -22,16 +19,14 @@ public class VisionDeviceManager extends SubsystemBase {
 	private final VisionDevice frontLeftCamera;
 	private final List<VisionDevice> cameras;
 
-	private final MovingAverageDouble headingAvg = new MovingAverageDouble(100);
-	private double movingAvgRead = 0.0;
-
 	private VisionSystemSim visionSim;
 	public Drive drive;
 
-	private VisionDeviceManager(Drive drive) {
+	public VisionDeviceManager(Drive drive) {
+		super();
 		this.drive = drive;
-		frontRightCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS, drive);
-		frontLeftCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS, drive);
+		frontRightCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS, drive, getName() + "/FrontRight");
+		frontLeftCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS, drive, getName() + "/FrontLeft");
 
 		cameras = List.of(frontRightCamera, frontLeftCamera);
 
@@ -47,7 +42,6 @@ public class VisionDeviceManager extends SubsystemBase {
 	@Override
 	public void periodic() {
 		cameras.forEach(VisionDevice::periodic);
-		movingAvgRead = headingAvg.getAverage();
 	}
 
 	@Override
@@ -57,18 +51,8 @@ public class VisionDeviceManager extends SubsystemBase {
 		}
 	}
 
-	public double getMovingAvgRead() {
-		return movingAvgRead;
-	}
-
-	public synchronized MovingAverageDouble getMovingAverage() {
-		return headingAvg;
-	}
-
 	public synchronized boolean isFullyConnected() {
-		// TODO: Replace with actual connection check if needed
-		// return cameras.stream().allMatch(VisionDevice::isConnected);
-		return true;
+		return cameras.stream().allMatch(VisionDevice::isConnected);
 	}
 
 	public Command bootUp() {
@@ -88,15 +72,12 @@ public class VisionDeviceManager extends SubsystemBase {
 		return frontLeftCamera;
 	}
 
-	public static double getTimestampOffset() {
+	public double getTimestampOffset() {
 		return timestampOffset.get();
 	}
 
-	public static boolean isVisionDisabled() {
-		return visionDisabled;
-	}
-
-	public static void setVisionDisabled(boolean disabled) {
-		visionDisabled = disabled;
+	@Override
+	public void log() {
+		cameras.forEach((c) -> c.log());
 	}
 }

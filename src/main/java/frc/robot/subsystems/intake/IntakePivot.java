@@ -62,7 +62,7 @@ public class IntakePivot extends HomingMotorSubsystem {
 						() -> {
 							publisher.accept(
 									new Pose3d(
-											new Translation3d(-0.349, -0.293225, 0),
+											new Translation3d(-0.293225, 0, 0.151656),
 											new Rotation3d(Rotations.of(0), io.getPosition(), Rotations.of(0))));
 						});
 

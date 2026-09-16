@@ -148,6 +148,23 @@ public class Drive extends SubsystemBase {
 		return driveRequest;
 	}
 
+	public ChassisSpeeds getChassisSpeedsFromController() {
+		double xDesiredRaw = -Robot.controller.getLeftY();
+		double yDesiredRaw = -Robot.controller.getLeftX();
+		double rotDesiredRaw = -Robot.controller.getRightX();
+
+		double[] xy =
+				Util.applyRadialDeadband(
+						xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+		double xFancy = Math.pow(xy[0], 3);
+		double yFancy = Math.pow(xy[1], 3);
+		double rotFancy =
+				Util.applyJoystickDeadband(
+						rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+
+		return new ChassisSpeeds(xFancy, yFancy, Math.pow(rotFancy, 3));
+	}
+
 	/** Open loop during teleop */
 	public Command openLoopControl() {
 		return runOnce(
@@ -157,23 +174,12 @@ public class Drive extends SubsystemBase {
 						})
 				.andThen(
 						run(() -> {
-									double xDesiredRaw = -Robot.controller.getLeftY();
-									double yDesiredRaw = -Robot.controller.getLeftX();
-									double rotDesiredRaw = -Robot.controller.getRightX();
-
-									double[] xy =
-											Util.applyRadialDeadband(
-													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-									double xFancy = xy[0];
-									double yFancy = xy[1];
-									double rotFancy =
-											Util.applyJoystickDeadband(
-													rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+									ChassisSpeeds fromController = getChassisSpeedsFromController();
 
 									teleopRequest
-											.withVelocityX(xFancy * MAX_SPEED)
-											.withVelocityY(yFancy * MAX_SPEED)
-											.withRotationalRate(rotFancy * MAX_ROTATION_SPEED);
+											.withVelocityX(fromController.vxMetersPerSecond * MAX_SPEED)
+											.withVelocityY(fromController.vyMetersPerSecond * MAX_SPEED)
+											.withRotationalRate(fromController.omegaRadiansPerSecond * MAX_ROTATION_SPEED);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
 				.withName("Teleop");
@@ -196,20 +202,12 @@ public class Drive extends SubsystemBase {
 							setSwerveRequest(request);
 
 							thetaController.setInitialSetpoint(
-									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+									getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond);
 						})
 				.andThen(
 						run(() -> {
-									double xDesiredRaw = -Robot.controller.getLeftY();
-									double yDesiredRaw = -Robot.controller.getLeftX();
+									ChassisSpeeds fromController = getChassisSpeedsFromController();
 
-									double[] xy =
-											Util.applyRadialDeadband(
-													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-									double xFancy = xy[0];
-									double yFancy = xy[1];
-
-									var state = getState();
 									var delta = pose.minus(getPose().getTranslation());
 									var targetDirection = delta.getAngle();
 
@@ -232,11 +230,11 @@ public class Drive extends SubsystemBase {
 									SmartDashboard.putNumber(
 											"error tracking",
 											MathUtil.inputModulus(
-													state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180));
+													getRotation().minus(targetDirection).getDegrees(), -180, 180));
 
 									request
-											.withVelocityX(xFancy * MAX_SPEED)
-											.withVelocityY(yFancy * MAX_SPEED)
+											.withVelocityX(fromController.vxMetersPerSecond * MAX_SPEED)
+											.withVelocityY(fromController.vyMetersPerSecond * MAX_SPEED)
 											.withRotationalRate(rotation);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
@@ -253,7 +251,6 @@ public class Drive extends SubsystemBase {
 								new PIDVConstants(10.0, 0.0, 1),
 								new TrapezoidProfile.Constraints(Math.PI * 16, Math.PI * 5)));
 		thetaController.enableContinuousInput(-Math.PI, Math.PI);
-		AtomicReference<Translation2d> pose = new AtomicReference<Translation2d>(Translation2d.kZero);
 
 		return runOnce(
 						() -> {
@@ -261,22 +258,13 @@ public class Drive extends SubsystemBase {
 							setSwerveRequest(request);
 
 							thetaController.setInitialSetpoint(
-									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
-							pose.set(poseSupplier.get());
+									getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond);
 						})
 				.andThen(
 						run(() -> {
-									double xDesiredRaw = -Robot.controller.getLeftY();
-									double yDesiredRaw = -Robot.controller.getLeftX();
+									ChassisSpeeds fromController = getChassisSpeedsFromController();
 
-									double[] xy =
-											Util.applyRadialDeadband(
-													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-									double xFancy = xy[0];
-									double yFancy = xy[1];
-
-									var state = getState();
-									var delta = pose.get().minus(getPose().getTranslation());
+									var delta = poseSupplier.get().minus(getPose().getTranslation());
 									var targetDirection = delta.getAngle();
 
 									var normSq = delta.getNorm() * delta.getNorm();
@@ -298,11 +286,11 @@ public class Drive extends SubsystemBase {
 									SmartDashboard.putNumber(
 											"error tracking",
 											MathUtil.inputModulus(
-													state.Pose.getRotation().minus(targetDirection).getDegrees(), -180, 180));
+													getRotation().minus(targetDirection).getDegrees(), -180, 180));
 
 									request
-											.withVelocityX(xFancy * MAX_SPEED)
-											.withVelocityY(yFancy * MAX_SPEED)
+											.withVelocityX(fromController.vxMetersPerSecond * MAX_SPEED)
+											.withVelocityY(fromController.vyMetersPerSecond * MAX_SPEED)
 											.withRotationalRate(rotation);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
@@ -345,19 +333,12 @@ public class Drive extends SubsystemBase {
 							setSwerveRequest(request);
 
 							thetaController.setInitialSetpoint(
-									getRotation().getRadians(), getState().Speeds.omegaRadiansPerSecond);
+									getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond);
 							pose.set(rotation.get());
 						})
 				.andThen(
 						run(() -> {
-									double xDesiredRaw = -Robot.controller.getLeftY();
-									double yDesiredRaw = -Robot.controller.getLeftX();
-
-									double[] xy =
-											Util.applyRadialDeadband(
-													xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
-									double xFancy = xy[0];
-									double yFancy = xy[1];
+									ChassisSpeeds fromController = getChassisSpeedsFromController();
 
 									var targetDirection = pose.get();
 
@@ -369,8 +350,8 @@ public class Drive extends SubsystemBase {
 													.getOutput();
 
 									request
-											.withVelocityX(xFancy * MAX_SPEED)
-											.withVelocityY(yFancy * MAX_SPEED)
+											.withVelocityX(fromController.vxMetersPerSecond * MAX_SPEED)
+											.withVelocityY(fromController.vyMetersPerSecond * MAX_SPEED)
 											.withRotationalRate(r);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
@@ -486,7 +467,7 @@ public class Drive extends SubsystemBase {
 
 	/** Whether the robot is stable */
 	public boolean isStable() {
-		ChassisSpeeds speeds = getState().Speeds;
+		ChassisSpeeds speeds = getRobotSpeeds();
 		return isPitchStable()
 				&& isRollStable()
 				&& Units.MetersPerSecond.of(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond))

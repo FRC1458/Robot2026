@@ -40,6 +40,7 @@ import frc.robot.subsystems.shooter.ShooterBL;
 import frc.robot.subsystems.shooter.ShooterBR;
 import frc.robot.subsystems.shooter.ShooterTL;
 import frc.robot.subsystems.shooter.ShooterTR;
+import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -74,6 +75,7 @@ public class Robot extends TimedRobot {
 	public final ShooterBR shooterBR;
 	public final ShooterTL shooterTL;
 	public final ShooterTR shooterTR;
+	public final VisionDeviceManager visionDeviceManager;
 
 	private final Notifier allianceThread;
 
@@ -129,6 +131,7 @@ public class Robot extends TimedRobot {
 		shooterTL = new ShooterTL();
 		shooterTR = new ShooterTR();
 		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR);
+		visionDeviceManager = new VisionDeviceManager(drive);
 
 		ControlsMapping.bind();
 

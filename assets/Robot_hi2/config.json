@@ -4,7 +4,7 @@
   "components": [
     {
       "zeroedRotations": [{"axis": "z", "degrees": -90}],
-      "zeroedPosition": [0.349, 0.293225, 0]
+      "zeroedPosition": [0.293225, 0, -0.151656]
     }
   ]
 }

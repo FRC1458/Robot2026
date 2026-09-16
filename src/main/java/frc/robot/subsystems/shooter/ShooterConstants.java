@@ -29,7 +29,7 @@ public final class ShooterConstants {
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
 	public static final MomentOfInertia MOI = InchSqPounds.of(4.619883);
 
-	public static final AngularVelocity EPS = RotationsPerSecond.of(10);
+	public static final AngularVelocity EPS = RotationsPerSecond.of(5);
 
 	public static final InterpolatingDoubleTreeMap TOF_MAP = new InterpolatingDoubleTreeMap();
 
