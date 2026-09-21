@@ -1,26 +1,45 @@
 package frc.robot;
 
-import frc.robot.auto.AutoSelector;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.subsystems.shooter.ShooterConstants.LEFT_OFFSET;
+import static frc.robot.subsystems.shooter.ShooterConstants.RIGHT_OFFSET;
+import static frc.robot.subsystems.shooter.ShooterConstants.rotation;
 
-import java.util.Optional;
-
-import com.pathplanner.lib.commands.FollowPathCommand;
-
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DataLogManager;
+import dev.doglog.DogLog;
+import dev.doglog.DogLogOptions;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Controllers;
-import frc.robot.subsystems.TelemetryManager;
-import frc.robot.subsystems.drive.*;
+import frc.robot.auto.AutoSelector;
+import frc.robot.lib.subsystem.LoggedSubsystem;
+import frc.robot.lib.util.FuelSim;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.LeftIndexer;
+import frc.robot.subsystems.indexer.RightIndexer;
+import frc.robot.subsystems.indexer.Roller;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakePivot;
+import frc.robot.subsystems.intake.IntakeRoller;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterBL;
+import frc.robot.subsystems.shooter.ShooterBR;
+import frc.robot.subsystems.shooter.ShooterTL;
+import frc.robot.subsystems.shooter.ShooterTR;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -30,36 +49,111 @@ import frc.robot.subsystems.vision.VisionDeviceManager;
  */
 @SuppressWarnings("unused")
 public class Robot extends TimedRobot {
-	private static final CommandScheduler commandScheduler = CommandScheduler.getInstance();
+	public static Robot robotInstance;
+
+	public static Robot getInstance() {
+		return robotInstance;
+	}
+
 	private AutoSelector autoChooser;
 	private Command autoCommand;
+	private final SendableChooser<String> mapChooser = new SendableChooser<>();
 
 	public static final CommandXboxController controller =
-		new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
-		
+			new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
+
+	public final Drive drive;
+	public final Intake intake;
+	public final IntakePivot intakePivot;
+	public final IntakeRoller intakeRoller;
+	public final Indexer indexer;
+	public final LeftIndexer leftIndexer;
+	public final RightIndexer rightIndexer;
+	public final Roller roller;
+	public final Shooter shooter;
+	public final ShooterBL shooterBL;
+	public final ShooterBR shooterBR;
+	public final ShooterTL shooterTL;
+	public final ShooterTR shooterTR;
+	public final VisionDeviceManager visionDeviceManager;
+
+	private final Notifier allianceThread;
+
+	public FuelSim fuelSim;
+	private int hopper = 0;
+	private Timer lastShotLeft = new Timer();
+	private Timer lastShotRight = new Timer();
+
 	/**
 	 * This function is run when the robot is first started up and should be used for any
 	 * initialization code.
 	 */
 	public Robot() {
-		VisionDeviceManager.getInstance();
-		
-		Drive.getInstance();
-		TelemetryManager.getInstance();
-		commandScheduler.schedule(FollowPathCommand.warmupCommand());
-		commandScheduler.schedule(VisionDeviceManager.getInstance().bootUp());
+		robotInstance = this;
 		autoChooser = new AutoSelector();
+		DogLog.setOptions(
+				new DogLogOptions().withCaptureDs(true).withLogExtras(true).withNtTunables(true));
+		allianceThread =
+				new Notifier(
+						() -> {
+							while (true) {
+								if (DriverStation.getAlliance().isPresent()) {
+									if (DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
+										Constants.isBlue = false;
+										Constants.FieldConstants.hubLocation =
+												Constants.FieldConstants.Hub.oppTopCenterPoint.toTranslation2d();
+									} else {
+										Constants.isBlue = true;
+										Constants.FieldConstants.hubLocation =
+												Constants.FieldConstants.Hub.topCenterPoint.toTranslation2d();
+									}
+								}
 
-		//robot data loggers 
-		boolean usbPresent = new java.io.File("/u").exists();
-		if (usbPresent) {
-		  DataLogManager.start("/u/logs");  // USB stick
-		  System.out.println("Log/USB mounts OK");
-		} else {
-		  DataLogManager.start();           // falls back to /home/lvuser/logs
-		  System.out.println("Log/USB mounts NOT OK");
+								try {
+									Thread.sleep(100);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+						});
+		allianceThread.startSingle(0);
+
+		drive = new Drive();
+		intakePivot = new IntakePivot();
+		intakeRoller = new IntakeRoller();
+		intake = new Intake(intakePivot, intakeRoller);
+		leftIndexer = new LeftIndexer();
+		rightIndexer = new RightIndexer();
+		roller = new Roller();
+		indexer = new Indexer(leftIndexer, rightIndexer, roller);
+		shooterBL = new ShooterBL();
+		shooterBR = new ShooterBR();
+		shooterTL = new ShooterTL();
+		shooterTR = new ShooterTR();
+		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR);
+		visionDeviceManager = new VisionDeviceManager(drive);
+
+		ControlsMapping.bind();
+
+		if (Robot.isSimulation()) {
+			fuelSim = new FuelSim();
+			fuelSim.spawnStartingFuel();
+			fuelSim.registerIntake(
+					Inches.of(-24.248542),
+					Inches.of(-16.625000),
+					Inches.of(-12.687500),
+					Inches.of(10.250000),
+					() ->
+							intakePivot.getIo().getPosition().lt(Degrees.of(5))
+									&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
+									&& hopper < 60,
+					() -> hopper++);
+			fuelSim.registerRobot(
+					Inches.of(33), Inches.of(33), Inches.of(10.36), drive::getPose, drive::getFieldSpeeds);
+			fuelSim.start();
+			fuelSim.setLoggingFrequency(50);
+			fuelSim.setSubticks(5);
 		}
-		DriverStation.startDataLog(DataLogManager.getLog());
 	}
 
 	/**
@@ -71,30 +165,27 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void robotPeriodic() {
-		// Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-		// commands, running already-scheduled commands, removing finished or interrupted commands,
-		// and running subsystem periodic() methods.  This must be called from the robot's periodic
-		// block in order for anything in the Command-based framework to work.
-		commandScheduler.run();
+		LoggedSubsystem.logAll();
+		CommandScheduler.getInstance().run();
 	}
 
 	/** This function is called once each time the robot enters Disabled mode. */
 	@Override
-	public void disabledInit() {
-	}
+	public void disabledInit() {}
 
 	/** This function is called periodically during disabled. */
 	@Override
-	public void disabledPeriodic() {
+	public void disabledPeriodic() {}
 
-	}
+	@Override
+	public void disabledExit() {}
 
 	/** This autonomous runs the autonomous command selected. */
 	@Override
 	public void autonomousInit() {
 		autoCommand = autoChooser.getAuto();
 		if (autoCommand != null) {
-			commandScheduler.schedule(autoCommand);
+			CommandScheduler.getInstance().schedule(autoCommand);
 		} else {
 			DriverStation.reportWarning("Tried to schedule a null auto", false);
 		}
@@ -102,51 +193,102 @@ public class Robot extends TimedRobot {
 
 	/** This function is called periodically during autonomous. */
 	@Override
-	public void autonomousPeriodic() {
-	}
+	public void autonomousPeriodic() {}
 
 	/** This function is called when autonomous mode ends. */
 	@Override
-	public void autonomousExit() {
-	}
+	public void autonomousExit() {}
 
 	@Override
 	public void teleopInit() {
-		// This makes sure that the autonomous stops running when teleop starts running. 
-		if (autoCommand != null) {
-			autoCommand.cancel();
-		}
-		Drive.getInstance().setDefaultCommand(Drive.getInstance().openLoopControl());
-		
-		ControlsMapping.mapTeleopCommand();
+		CommandScheduler.getInstance().cancelAll();
 	}
 
 	/** This function is called periodically during operator control. */
 	@Override
-	public void teleopPeriodic() {
-	}
+	public void teleopPeriodic() {}
 
 	@Override
-	public void testInit() {
-		// Cancels all running commands at the start of test mode.
-		CommandScheduler.getInstance().cancelAll();
-
-		//map test commands
-		ControlsMapping.mapSysId();
-	}
+	public void testInit() {}
 
 	/** This function is called periodically during test mode. */
 	@Override
-	public void testPeriodic() {
-	}
+	public void testPeriodic() {}
 
 	/** This function is called once when the robot is first started up. */
 	@Override
 	public void simulationInit() {
+		lastShotLeft.start();
+		lastShotRight.start();
 	}
 
-	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {
+		fuelSim.updateSim();
+
+		double randomness = 1.0 / 180.0 * Math.PI;
+		var random1 =
+				new Rotation3d(
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()));
+		var random2 =
+				new Rotation3d(
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()));
+		if (leftIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+			if (lastShotLeft.get() > 0.2 * Math.random() + 0.1 && hopper > 0) {
+				double shooterVelocity =
+						(shooterBL.getIo().getVelocity().plus(shooterTL.getIo().getVelocity()))
+								.div(2)
+								.in(RadiansPerSecond);
+
+				double wheelRadius = Inches.of(4).in(Meters) / 2.0;
+				double speed = shooterVelocity * wheelRadius * 0.65;
+
+				Translation3d shotPosition =
+						new Pose3d(drive.getPose())
+								.plus(new Transform3d(LEFT_OFFSET, Rotation3d.kZero))
+								.getTranslation();
+
+				fuelSim.spawnFuel(
+						shotPosition,
+						new Translation3d(
+								speed, rotation.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)));
+
+				lastShotLeft.reset();
+
+				hopper--;
+			}
+		}
+		if (rightIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+			if (lastShotRight.get() > 0.2 * Math.random() + 0.1 && hopper > 0) {
+				double shooterVelocity =
+						(shooterBR.getIo().getVelocity().plus(shooterTR.getIo().getVelocity()))
+								.div(2)
+								.in(RadiansPerSecond);
+
+				double wheelRadius = Inches.of(4).in(Meters) / 2.0;
+				double speed = shooterVelocity * wheelRadius * 0.65;
+
+				Translation3d shotPosition =
+						new Pose3d(drive.getPose())
+								.plus(new Transform3d(RIGHT_OFFSET, Rotation3d.kZero))
+								.getTranslation();
+
+				fuelSim.spawnFuel(
+						shotPosition,
+						new Translation3d(
+								speed, rotation.plus(new Rotation3d(drive.getPose().getRotation())).plus(random2)));
+
+				lastShotRight.reset();
+
+				hopper--;
+			}
+		}
+
+		DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+		DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
 	}
 }

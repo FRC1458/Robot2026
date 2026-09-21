@@ -24,7 +24,7 @@ public class Conversions {
 	}
 
 	/**
-	 * @param counts    Falcon Counts
+	 * @param counts Falcon Counts
 	 * @param gearRatio Gear Ratio between Falcon and Mechanism
 	 * @return Degrees of Rotation of Mechanism
 	 */
@@ -33,7 +33,7 @@ public class Conversions {
 	}
 
 	/**
-	 * @param degrees   Degrees of rotation of Mechanism
+	 * @param degrees Degrees of rotation of Mechanism
 	 * @param gearRatio Gear Ratio between Falcon and Mechanism
 	 * @return Falcon Counts
 	 */
@@ -122,47 +122,50 @@ public class Conversions {
 		return inches * (0.0254 / 1);
 	}
 
-    /**
-     * @param wheelRPS Wheel Velocity: (in Rotations per Second)
-     * @param circumference Wheel Circumference: (in Meters)
-     * @return Wheel Velocity: (in Meters per Second)
-     */
-    public static double RPSToMPS(double wheelRPS, double circumference) {
-        double wheelMPS = wheelRPS * circumference;
-        return wheelMPS;
-    }
+	/**
+	 * @param wheelRPS Wheel Velocity: (in Rotations per Second)
+	 * @param circumference Wheel Circumference: (in Meters)
+	 * @return Wheel Velocity: (in Meters per Second)
+	 */
+	public static double RPSToMPS(double wheelRPS, double circumference) {
+		double wheelMPS = wheelRPS * circumference;
+		return wheelMPS;
+	}
 
-    /**
-     * @param wheelMPS Wheel Velocity: (in Meters per Second)
-     * @param circumference Wheel Circumference: (in Meters)
-     * @return Wheel Velocity: (in Rotations per Second)
-     */
-    public static double MPSToRPS(double wheelMPS, double circumference) {
-        double wheelRPS = wheelMPS / circumference;
-        return wheelRPS;
-    }
+	/**
+	 * @param wheelMPS Wheel Velocity: (in Meters per Second)
+	 * @param circumference Wheel Circumference: (in Meters)
+	 * @return Wheel Velocity: (in Rotations per Second)
+	 */
+	public static double MPSToRPS(double wheelMPS, double circumference) {
+		double wheelRPS = wheelMPS / circumference;
+		return wheelRPS;
+	}
 
-    /**
-     * @param wheelRotations Wheel Position: (in Rotations)
-     * @param circumference Wheel Circumference: (in Meters)
-     * @return Wheel Distance: (in Meters)
-     */
-    public static double rotationsToMeters(double wheelRotations, double circumference) {
-        double wheelMeters = wheelRotations * circumference;
-        return wheelMeters;
-    }
+	/**
+	 * @param wheelRotations Wheel Position: (in Rotations)
+	 * @param circumference Wheel Circumference: (in Meters)
+	 * @return Wheel Distance: (in Meters)
+	 */
+	public static double rotationsToMeters(double wheelRotations, double circumference) {
+		double wheelMeters = wheelRotations * circumference;
+		return wheelMeters;
+	}
 
-    /**
-     * @param wheelMeters Wheel Distance: (in Meters)
-     * @param circumference Wheel Circumference: (in Meters)
-     * @return Wheel Position: (in Rotations)
-     */
-    public static double metersToRotations(double wheelMeters, double circumference) {
-        double wheelRotations = wheelMeters / circumference;
-        return wheelRotations;
-    }    
-	
+	/**
+	 * @param wheelMeters Wheel Distance: (in Meters)
+	 * @param circumference Wheel Circumference: (in Meters)
+	 * @return Wheel Position: (in Rotations)
+	 */
+	public static double metersToRotations(double wheelMeters, double circumference) {
+		double wheelRotations = wheelMeters / circumference;
+		return wheelRotations;
+	}
+
 	public static Twist2d toTwist2d(ChassisSpeeds chassisSpeeds) {
-		return new Twist2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond, chassisSpeeds.omegaRadiansPerSecond);
+		return new Twist2d(
+				chassisSpeeds.vxMetersPerSecond,
+				chassisSpeeds.vyMetersPerSecond,
+				chassisSpeeds.omegaRadiansPerSecond);
 	}
 }

@@ -1,74 +1,86 @@
 package frc.robot;
 
-import static frc.robot.Robot.controller;
-
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.ctre.CtreDrive.SysIdRoutineType;
-import frc.robot.subsystems.vision.VisionDeviceManager;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControlsMapping {
-	public static void mapTeleopCommand() {
-		Drive.getInstance().setDefaultCommand((Drive.getInstance().openLoopControl()));
-		// run sysID functions
-		Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER);
-		
-		controller.a().onTrue(Drive.getInstance().resetPoseCommand(new Pose2d()));
+	private static final AtomicBoolean switcher = new AtomicBoolean(false);
 
-		controller.b().whileTrue(Drive.getInstance().headingLockToPose(DriveConstants.FieldPoses.TAG.pose));
-		controller.x().onTrue(Drive.getInstance().pathFindToThisRandomPlaceIdk());
-		// controller.leftBumper().whileTrue(Drive.getInstance().autoAlign(true));
-		// controller.rightBumper().whileTrue(Drive.getInstance().autoAlign(false));
-		// controller.x().whileTrue(Drive.getInstance().autopilotAlign(true));
-		// controller.y().whileTrue(Drive.getInstance().autopilotAlign(false));
-		controller.y().onTrue(VisionDeviceManager.getInstance().bootUp());
-	}
+	public static void bind() {
+		final Robot robot = Robot.getInstance();
+		final Drive drive = robot.drive;
+		final Intake intake = robot.intake;
+		final Indexer indexer = robot.indexer;
+		final Shooter shooter = robot.shooter;
 
-	public static void mapSysId() {
-		// set up sysID routine type
-		controller.a().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.TRANSLATION)));
-		controller.b().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.ROTATION)));
-		controller.back().onTrue(Commands.runOnce(
-			() -> Drive.getInstance().getCtreDrive().setSysIdRoutine(SysIdRoutineType.STEER)));
-		// map the sysid routine movement directions
-		controller.leftBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kForward)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
-		controller.leftBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdDynamic(Direction.kReverse)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
-		controller.rightBumper().and(controller.x()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kForward)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
-		controller.rightBumper().and(controller.y()).whileTrue(
-			Drive.getInstance().getCtreDrive().sysIdQuasistatic(Direction.kReverse)
-				.finallyDo((
-					boolean interrupted) -> {
-						if (interrupted) {
-							Drive.getInstance().setSwerveRequest(new SwerveRequest.Idle());
-						}
-					}));
+		Robot.controller
+				.y()
+				.whileTrue(
+						Commands.parallel(
+										drive.headingLockToHub(),
+										drive
+												.waitUntilAligned()
+												.asProxy()
+												.andThen(
+														Commands.parallel(
+																shooter.shootAll(drive::getDistanceToHub),
+																Commands.sequence(
+																		shooter.waitForAll().asProxy(),
+																		Commands.parallel(intake.agitate(), indexer.indexAll())))))
+								.withName("shoot"));
+
+		Robot.controller
+				.y()
+				.whileTrue(
+						Commands.parallel(
+										drive.headingLockToHub(),
+										Commands.parallel(
+												drive.waitUntilAligned().asProxy(),
+												shooter.shootAll(drive::getDistanceToHub),
+												Commands.sequence(
+														shooter.waitForAll().asProxy(),
+														Commands.parallel(intake.agitate(), indexer.indexAll()))))
+								.withName("shoot"));
+
+		Robot.controller.rightBumper().whileTrue(intake.intake().withName("intake"));
+
+		Robot.controller.rightTrigger().whileTrue(intake.outtake().withName("outtake"));
+
+		Robot.controller
+				.a()
+				.whileTrue(
+						Commands.parallel(
+										drive.passAlign(),
+										drive
+												.waitUntilAlignedPass()
+												.asProxy()
+												.andThen(
+														Commands.parallel(
+																shooter.pass(),
+																Commands.sequence(
+																		shooter.waitForAll().asProxy(),
+																		Commands.parallel(intake.agitate(), indexer.indexAll())))))
+								.withName("pass"));
+		Robot.controller.povDown().whileTrue(intake.calibrate());
+
+		Robot.controller
+				.b()
+				.whileTrue(
+						Commands.runOnce(() -> switcher.set(!switcher.get()))
+								.andThen(
+										Commands.either(
+												intake
+														.lower()
+														.alongWith(
+																Commands.runOnce(() -> intake.setDefaultCommand(intake.lower()))),
+												intake
+														.raise()
+														.alongWith(
+																Commands.runOnce(() -> intake.setDefaultCommand(intake.raise()))),
+												switcher::get)));
 	}
 }
