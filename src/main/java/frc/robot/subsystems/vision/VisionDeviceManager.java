@@ -25,8 +25,10 @@ public class VisionDeviceManager extends LoggedSubsystem {
 	public VisionDeviceManager(Drive drive) {
 		super();
 		this.drive = drive;
-		frontRightCamera = new VisionDevice(VisionDeviceConstants.FR_CONSTANTS, drive, getName() + "/FrontRight");
-		frontLeftCamera = new VisionDevice(VisionDeviceConstants.FL_CONSTANTS, drive, getName() + "/FrontLeft");
+		frontRightCamera =
+				new VisionDevice(VisionDeviceConstants.FR_CONSTANTS, drive, getName() + "/FrontRight");
+		frontLeftCamera =
+				new VisionDevice(VisionDeviceConstants.FL_CONSTANTS, drive, getName() + "/FrontLeft");
 
 		cameras = List.of(frontRightCamera, frontLeftCamera);
 

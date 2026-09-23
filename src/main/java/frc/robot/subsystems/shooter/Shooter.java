@@ -10,20 +10,25 @@ public class Shooter extends LoggedSubsystem {
 	public ShooterBR br;
 	public ShooterTL tl;
 	public ShooterTR tr;
+	public Hood hood;
 
-	public Shooter(ShooterBL bl, ShooterBR br, ShooterTL tl, ShooterTR tr) {
+	public Shooter(ShooterBL bl, ShooterBR br, ShooterTL tl, ShooterTR tr, Hood hood) {
 		super();
 		this.bl = bl;
 		this.br = br;
 		this.tl = tl;
 		this.tr = tr;
-
+		this.hood = hood;
 		setDefaultCommand(stopAll());
 	}
 
 	public Command shootAll(DoubleSupplier distance) {
 		return Commands.parallel(
-						bl.shoot(distance), br.shoot(distance), tl.shoot(distance), tr.shoot(distance))
+						hood.a(distance),
+						bl.shoot(distance),
+						br.shoot(distance),
+						tl.shoot(distance),
+						tr.shoot(distance))
 				.andThen(idle());
 	}
 

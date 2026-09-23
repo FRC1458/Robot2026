@@ -35,6 +35,7 @@ import frc.robot.subsystems.indexer.Roller;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakePivot;
 import frc.robot.subsystems.intake.IntakeRoller;
+import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterBL;
 import frc.robot.subsystems.shooter.ShooterBR;
@@ -76,6 +77,7 @@ public class Robot extends TimedRobot {
 	public final ShooterTL shooterTL;
 	public final ShooterTR shooterTR;
 	public final VisionDeviceManager visionDeviceManager;
+	public final Hood hood;
 
 	private final Notifier allianceThread;
 
@@ -130,7 +132,8 @@ public class Robot extends TimedRobot {
 		shooterBR = new ShooterBR();
 		shooterTL = new ShooterTL();
 		shooterTR = new ShooterTR();
-		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR);
+		hood = new Hood();
+		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR, hood);
 		visionDeviceManager = new VisionDeviceManager(drive);
 
 		ControlsMapping.bind();

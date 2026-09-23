@@ -43,9 +43,7 @@ public class ShooterTL extends RollerMotorSubsystem {
 				.andThen(
 						run(
 								() -> {
-									double rps =
-											VEL_MAP.get(distance.getAsDouble()) - SPIN_MAP.get(distance.getAsDouble());
-
+									double rps = ShooterConstants.RPS;
 									io.setVelocity(RotationsPerSecond.of(rps));
 								}));
 	}

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -24,8 +25,6 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.targeting.PhotonTrackedTarget;
-
-import dev.doglog.DogLog;
 
 public class VisionDevice {
 	private final VisionDeviceConstants constants;

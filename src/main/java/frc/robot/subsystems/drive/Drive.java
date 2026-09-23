@@ -154,13 +154,11 @@ public class Drive extends SubsystemBase {
 		double rotDesiredRaw = -Robot.controller.getRightX();
 
 		double[] xy =
-				Util.applyRadialDeadband(
-						xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+				Util.applyRadialDeadband(xDesiredRaw, yDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 		double xFancy = Math.pow(xy[0], 3);
 		double yFancy = Math.pow(xy[1], 3);
 		double rotFancy =
-				Util.applyJoystickDeadband(
-						rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
+				Util.applyJoystickDeadband(rotDesiredRaw, Constants.Controllers.DRIVER_DEADBAND);
 
 		return new ChassisSpeeds(xFancy, yFancy, Math.pow(rotFancy, 3));
 	}
@@ -179,7 +177,8 @@ public class Drive extends SubsystemBase {
 									teleopRequest
 											.withVelocityX(fromController.vxMetersPerSecond * MAX_SPEED)
 											.withVelocityY(fromController.vyMetersPerSecond * MAX_SPEED)
-											.withRotationalRate(fromController.omegaRadiansPerSecond * MAX_ROTATION_SPEED);
+											.withRotationalRate(
+													fromController.omegaRadiansPerSecond * MAX_ROTATION_SPEED);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
 				.withName("Teleop");
