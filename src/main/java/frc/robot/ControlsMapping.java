@@ -21,30 +21,30 @@ public class ControlsMapping {
 				.y()
 				.whileTrue(
 						Commands.parallel(
-										drive.headingLockToHub(),
-										drive
-												.waitUntilAligned()
-												.asProxy()
-												.andThen(
+										drive.sotm(),
+										// drive
+										// 		.waitUntilAlignedToHub()
+										// 		.asProxy()
+												// .andThen(
 														Commands.parallel(
-																shooter.shootAll(drive::getDistanceToHub),
+																shooter.shootAll(drive::getVirtualDistance),
 																Commands.sequence(
 																		shooter.waitForAll().asProxy(),
-																		Commands.parallel(intake.agitate(), indexer.indexAll())))))
+																		Commands.parallel(intake.agitate(), indexer.indexAll()))))
 								.withName("shoot"));
 
-		Robot.controller
-				.y()
-				.whileTrue(
-						Commands.parallel(
-										drive.headingLockToHub(),
-										Commands.parallel(
-												drive.waitUntilAligned().asProxy(),
-												shooter.shootAll(drive::getDistanceToHub),
-												Commands.sequence(
-														shooter.waitForAll().asProxy(),
-														Commands.parallel(intake.agitate(), indexer.indexAll()))))
-								.withName("shoot"));
+		// Robot.controller
+		// 		.y()
+		// 		.whileTrue(
+		// 				Commands.parallel(
+		// 								drive.headingLockToHub(),
+		// 								Commands.parallel(
+		// 										drive.waitUntilAlignedToHub().asProxy(),
+		// 										shooter.shootAll(drive::getDistanceToHub),
+		// 										Commands.sequence(
+		// 												shooter.waitForAll().asProxy(),
+		// 												Commands.parallel(intake.agitate(), indexer.indexAll()))))
+		// 						.withName("shoot"));
 
 		Robot.controller.rightBumper().whileTrue(intake.intake().withName("intake"));
 

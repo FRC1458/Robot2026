@@ -99,7 +99,19 @@ public final class AutoRoutines {
 				Commands.parallel(intake.lower(), indexer.stopAll(), shooter.stopAll())
 						.raceWith(Commands.waitSeconds(0.3)),
 				drive.trajectory(backToNeutral),
-				drive.trajectory(crossTrench));
+				drive.trajectory(crossTrench),
+				Commands.race(drive.trajectory(swipe), intake.intake()),
+				drive.trajectory(back),
+				Commands.parallel(
+								drive.headingLockToHub(),
+								Commands.parallel(
+										shooter.shootAll(drive::getDistanceToHub),
+										Commands.sequence(
+												shooter.waitForAll().asProxy(),
+												Commands.parallel(intake.agitate(), indexer.indexAll()))))
+						.raceWith(Commands.waitSeconds(4)),
+				Commands.parallel(intake.lower(), indexer.stopAll(), shooter.stopAll())
+						.raceWith(Commands.waitSeconds(0.3)));
 
 		// .andThen(Robot.getInstance().intake.calibrate())
 		// 	.alongWith(

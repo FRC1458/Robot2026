@@ -117,7 +117,7 @@ public class FuelSim {
 
 		protected void update(boolean simulateAirResistance, int subticks) {
 			pos = pos.plus(vel.times(PERIOD / subticks));
-			if (pos.getZ() > FUEL_RADIUS) {
+			if (pos.getZ() > FUEL_RADIUS + 0.2) {
 				Translation3d Fg = GRAVITY.times(FUEL_MASS);
 				Translation3d Fd = new Translation3d();
 
@@ -130,6 +130,8 @@ public class FuelSim {
 
 				Translation3d accel = Fg.plus(Fd).div(FUEL_MASS);
 				vel = vel.plus(accel.times(PERIOD / subticks));
+			} else {
+				vel = vel.times(0.99);
 			}
 			if (Math.abs(vel.getZ()) < 0.05 && pos.getZ() <= FUEL_RADIUS + 0.03) {
 				vel = new Translation3d(vel.getX(), vel.getY(), 0);

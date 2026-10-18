@@ -17,12 +17,12 @@ import java.util.TreeMap;
  * @param <V> The type of values held in this map.
  */
 public class InterpolatingTreeMap<K, V> {
-	private final TreeMap<K, V> map;
+	protected final TreeMap<K, V> map;
 
 	private final InverseInterpolator<K> inverseInterpolator;
 	private final Interpolator<V> interpolator;
 
-	private final int max;
+	protected final int max;
 
 	/**
 	 * Constructs an InterpolatingTreeMap.
@@ -46,8 +46,8 @@ public class InterpolatingTreeMap<K, V> {
 	 * @param comparator Comparator to use on keys.
 	 */
 	public InterpolatingTreeMap(
-			InverseInterpolator<K> inverseInterpolator,
 			Interpolator<V> interpolator,
+			InverseInterpolator<K> inverseInterpolator,
 			Comparator<K> comparator,
 			int max) {
 		this.inverseInterpolator = inverseInterpolator;
@@ -102,6 +102,15 @@ public class InterpolatingTreeMap<K, V> {
 		} else {
 			return val;
 		}
+	}
+
+	public InterpolatingTreeMap<V, K> inverse(InverseInterpolator<V> inverse, Interpolator<K> interpolator) {
+		var r = new InterpolatingTreeMap<V, K>(inverse, interpolator, max);
+		for (Entry<K, V> entry : map.entrySet()) {
+			r.put(entry.getValue(), entry.getKey());
+		}
+
+		return r;
 	}
 
 	/** Clears the contents. */

@@ -19,7 +19,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "ReturnTrenchRight"
+            "pathName": "ReturnBumpRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BackToNeutralRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TrenchRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SwipeRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReturnBumpRight"
           }
         }
       ]
