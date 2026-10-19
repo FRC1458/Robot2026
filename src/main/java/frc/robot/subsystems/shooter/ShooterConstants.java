@@ -25,14 +25,14 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.robot.lib.util.interpolation.InterpolatingDoubleTreeMap;
 
 public final class ShooterConstants {
-	public static final int HOOD_ID = 57; // TODO: add
-	public static final int BR_ID = 22;
-	public static final int TR_ID = 23;
-	public static final int TL_ID = 24;
-	public static final int BL_ID = 25;
+	public static final int HOOD_ID = 25; // TODO: add
+	public static final int FLYWHEEL_ID_TL = 24;
+	public static final int FLYWHEEL_ID_TR = 23;
+	public static final int FLYWHEEL_ID_BR = 22;
+	
 
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
-	public static final MomentOfInertia MOI = InchSqPounds.of(4.619883);
+	public static final MomentOfInertia MOI = InchSqPounds.of(8.744676);
 
 	public static final AngularVelocity EPS = RotationsPerSecond.of(5);
 	public static final Angle HOOD_EPS = Degrees.of(2.0);
@@ -47,9 +47,9 @@ public final class ShooterConstants {
 	public static final Translation3d OFFSET =
 			new Translation3d(Inches.of(7.300000), Inches.of(0), Inches.of(15.829364));
 
-	public static final Mass HOOD_MASS = Pounds.of(7.0);
-	public static final Distance HOOD_LENGTH = Inches.of(7.0);
-	public static final MomentOfInertia HOOD_MOI = InchSqPounds.of(500.0);
+	public static final Mass HOOD_MASS = Pounds.of(5.82);
+	public static final Distance HOOD_LENGTH = Inches.of(7.53);
+	public static final MomentOfInertia HOOD_MOI = InchSqPounds.of(412.367519);
 	public static final Angle HOOD_POS_MIN = Degrees.of(15);
 	public static final Angle HOOD_POS_MAX = Degrees.of(45);
 	public static final double HOOD_GEAR_RATIO = 190.0 / 15.0 * 70.0 / 24.0;
@@ -113,11 +113,11 @@ public final class ShooterConstants {
 							.withSupplyCurrentLimit(30)
 							.withStatorCurrentLimitEnable(true)
 							.withSupplyCurrentLimitEnable(true))
-			// .withMotionMagic(
-			// 		new MotionMagicConfigs()
-			// 				.withMotionMagicAcceleration(HOOD_GEAR_RATIO * 5)
-			// 				.withMotionMagicCruiseVelocity(HOOD_GEAR_RATIO * 2)
-			// 				.withMotionMagicJerk(HOOD_GEAR_RATIO * 10))
+			.withMotionMagic(
+					new MotionMagicConfigs()
+							.withMotionMagicAcceleration(HOOD_GEAR_RATIO * 5)
+							.withMotionMagicCruiseVelocity(HOOD_GEAR_RATIO * 2)
+							.withMotionMagicJerk(HOOD_GEAR_RATIO * 10))
 			.withVoltage(
 					new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
 			.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO));

@@ -49,11 +49,8 @@ import frc.robot.subsystems.intake.IntakePivot;
 import frc.robot.subsystems.intake.IntakeRoller;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterBL;
-import frc.robot.subsystems.shooter.ShooterBR;
+import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.ShooterConstants;
-import frc.robot.subsystems.shooter.ShooterTL;
-import frc.robot.subsystems.shooter.ShooterTR;
 import frc.robot.subsystems.vision.VisionDeviceManager;
 
 /**
@@ -85,10 +82,7 @@ public class Robot extends TimedRobot {
 	public final RightIndexer rightIndexer;
 	public final Roller roller;
 	public final Shooter shooter;
-	public final ShooterBL shooterBL;
-	public final ShooterBR shooterBR;
-	public final ShooterTL shooterTL;
-	public final ShooterTR shooterTR;
+	public final Flywheel shooterBL;
 	public final VisionDeviceManager visionDeviceManager;
 	public final Hood hood;
 
@@ -142,12 +136,9 @@ public class Robot extends TimedRobot {
 		rightIndexer = new RightIndexer();
 		roller = new Roller();
 		indexer = new Indexer(leftIndexer, rightIndexer, roller);
-		shooterBL = new ShooterBL();
-		shooterBR = new ShooterBR();
-		shooterTL = new ShooterTL();
-		shooterTR = new ShooterTR();
+		shooterBL = new Flywheel();
 		hood = new Hood();
-		shooter = new Shooter(shooterBL, shooterBR, shooterTL, shooterTR, hood);
+		shooter = new Shooter(shooterBL, hood);
 		visionDeviceManager = new VisionDeviceManager(drive);
 
 		ControlsMapping.bind();
