@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib.io.IMotor.RunMode;
 import frc.robot.lib.io.ISimTalonFX;
@@ -46,7 +47,7 @@ public class Hood extends HomingMotorSubsystem {
 	}
 
 	public Command a(DoubleSupplier distance) {
-		Angle angle = Degrees.of(ANGLE_MAP.get(distance.getAsDouble()));
+		Angle angle = Degrees.of(SmartDashboard.getNumber("hoodAngle", 45.0));
 		return runPos(angle, ShooterConstants.HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
 	}
 }

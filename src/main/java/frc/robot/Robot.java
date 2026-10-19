@@ -62,7 +62,10 @@ public class Robot extends TimedRobot {
 
 	public static final CommandXboxController controller =
 			new CommandXboxController(Controllers.DRIVER_CONTROLLER_PORT);
-
+	
+	public static final CommandXboxController controller2 = 
+			new CommandXboxController(Controllers.DRIVER_CONTROLLER2_PORT);
+			
 	public final Drive drive;
 	public final Intake intake;
 	public final IntakePivot intakePivot;

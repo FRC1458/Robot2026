@@ -82,5 +82,19 @@ public class ControlsMapping {
 														.alongWith(
 																Commands.runOnce(() -> intake.setDefaultCommand(intake.raise()))),
 												switcher::get)));
+	
+											
+			Robot.controller2.a()
+			.onTrue(
+				shooter.increaseOffset()
+			);
+
+			Robot.controller2.b()
+			.onTrue(
+				shooter.decreaseOffset()
+			);
+			
 	}
+
+
 }

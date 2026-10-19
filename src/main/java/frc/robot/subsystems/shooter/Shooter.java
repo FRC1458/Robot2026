@@ -11,6 +11,8 @@ public class Shooter extends LoggedSubsystem {
 	public ShooterTL tl;
 	public ShooterTR tr;
 	public Hood hood;
+	public int offsetCounter;
+	public double offset;
 
 	public Shooter(ShooterBL bl, ShooterBR br, ShooterTL tl, ShooterTR tr, Hood hood) {
 		super();
@@ -20,12 +22,14 @@ public class Shooter extends LoggedSubsystem {
 		this.tr = tr;
 		this.hood = hood;
 		setDefaultCommand(stopAll());
+		this.offset = 0.0;
+		this.offsetCounter = 0;
 	}
 
 	public Command shootAll(DoubleSupplier distance) {
 		return Commands.parallel(
 						hood.a(distance),
-						bl.shoot(distance),
+						bl.shoot(ShooterConstants.RPS + offset, distance),
 						br.shoot(distance),
 						tl.shoot(distance),
 						tr.shoot(distance))
@@ -47,5 +51,14 @@ public class Shooter extends LoggedSubsystem {
 						tl.waitUntilAtSpeed().asProxy(),
 						tr.waitUntilAtSpeed().asProxy())
 				.withTimeout(2);
+	}
+
+	public Command increaseOffset() { 
+		return runOnce(() -> this.offset += Math.pow(0.5,offsetCounter));
+	}
+
+	public Command decreaseOffset() { 
+		return runOnce(() -> this.offset += Math.pow(0.5,offsetCounter));
+
 	}
 }

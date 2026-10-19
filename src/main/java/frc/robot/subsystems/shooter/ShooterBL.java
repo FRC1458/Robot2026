@@ -38,12 +38,11 @@ public class ShooterBL extends RollerMotorSubsystem {
 		setDefaultCommand(stop());
 	}
 
-	public Command shoot(DoubleSupplier distance) {
+	public Command shoot(double rps, DoubleSupplier distance) {
 		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
 				.andThen(
 						run(
 								() -> {
-									double rps = ShooterConstants.RPS;
 									io.setVelocity(RotationsPerSecond.of(rps));
 								}));
 	}

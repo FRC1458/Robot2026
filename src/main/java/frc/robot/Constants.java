@@ -18,6 +18,8 @@ public final class Constants {
 
 	public static final class Controllers {
 		public static final int DRIVER_CONTROLLER_PORT = 0;
+		public static final int DRIVER_CONTROLLER2_PORT = 1;
+
 		public static final double DRIVER_DEADBAND = 0.07;
 	}
 
