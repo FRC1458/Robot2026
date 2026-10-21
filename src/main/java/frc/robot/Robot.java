@@ -255,6 +255,7 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void simulationPeriodic() {
+		System.out.println(drive.impendingCollision());
 		DogLog.log("Hopper", hopper);
 		fuelSim.updateSim();
 

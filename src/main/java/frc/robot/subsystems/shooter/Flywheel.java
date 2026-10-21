@@ -55,6 +55,7 @@ public class Flywheel extends RollerMotorSubsystem {
 				.andThen(
 						run(
 								() -> {
+									//i thought rps was constant?
 									double rps = VEL_MAP.get(distance.getAsDouble());
 									io.setVelocity(RotationsPerSecond.of(rps));
 								}));

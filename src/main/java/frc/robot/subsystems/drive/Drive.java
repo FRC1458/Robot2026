@@ -43,6 +43,7 @@ import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.shooter.ShooterConstants;
 
+import java.io.ObjectInputStream.GetField;
 import java.util.function.Supplier;
 
 public class Drive extends SubsystemBase {
@@ -139,6 +140,9 @@ public class Drive extends SubsystemBase {
 		return ChassisAccels.estimate(prevSpeeds, getFieldSpeeds(), 0.02);
 	}
 
+	public boolean impendingCollision() {
+		return FieldLayout.willCollideWithTrench(getPose().getX(), getPose().getY(), getFieldSpeeds().vxMetersPerSecond);
+	}
 	/**
 	 * Switches the swerve request
 	 *

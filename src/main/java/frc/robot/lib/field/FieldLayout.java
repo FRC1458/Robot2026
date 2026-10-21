@@ -126,4 +126,28 @@ public class FieldLayout {
 		}
 		return x_coordinate;
 	}
+	public static boolean willCollideWithTrench(double x, double y, double dx) {
+	double lowerBlueTrenchLeft = 3.538;
+	double lowerBlueTrenchRight = 5.776;
+	double lowerBlueTrenchUp = 0.840;
+	double lowerBlueTrenchDown = 0.450;
+	double upperBlueTrenchDown = 7.101;
+	double upperBlueTrenchUp = 7.611;
+	double upperBlueTrenchLeft = lowerBlueTrenchLeft;
+	double upperBlueTrenchRight = lowerBlueTrenchRight;
+	double RedTrenchLeft = 10.802;
+	double RedTrenchRight = 13.077;
+	
+	if ((y >= 0.450 && y <= 0.840) || (y >= 7.101 && y <= 7.611)) {
+			if ((x >= 3.538 && x <= (3.538+5.766)/2) || ((x >= 10.802 && x <= (10.802+13.077)/2))) {
+				return dx >= 0;
+			}
+
+			else if (( x >= (3.538+5.766)/2 && x <= 5.766) || (x >= (10.802+13.077)/2 && x <= 13.077)) {
+				return dx <= 0;
+			}
+		}
+		return false;
+	}
+
 }
