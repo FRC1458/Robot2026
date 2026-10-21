@@ -16,7 +16,7 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ITalonFXWithFollowers extends ITalonFX {
-	protected record TalonFXFollower(TalonFX talonFx, MotorAlignmentValue alignment) {}
+	public record TalonFXFollower(TalonFX talonFx, MotorAlignmentValue alignment) {}
 
 	protected String[] positionKeys;
 	protected String[] velocityKeys;

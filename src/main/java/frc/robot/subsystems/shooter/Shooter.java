@@ -1,25 +1,23 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.subsystem.LoggedSubsystem;
+
+
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends LoggedSubsystem {
-	public ShooterBL bl;
-	public ShooterBR br;
-	public ShooterTL tl;
-	public ShooterTR tr;
+	public Flywheel flywheel;
 	public Hood hood;
 	public int offsetCounter;
 	public double offset;
 
-	public Shooter(ShooterBL bl, ShooterBR br, ShooterTL tl, ShooterTR tr, Hood hood) {
+	public Shooter(Flywheel bl, Hood hood) {
 		super();
-		this.bl = bl;
-		this.br = br;
-		this.tl = tl;
-		this.tr = tr;
+		this.flywheel = bl;
 		this.hood = hood;
 		setDefaultCommand(stopAll());
 		this.offset = 0.0;
@@ -29,36 +27,30 @@ public class Shooter extends LoggedSubsystem {
 	public Command shootAll(DoubleSupplier distance) {
 		return Commands.parallel(
 						hood.a(distance),
-						bl.shoot(ShooterConstants.RPS + offset, distance),
-						br.shoot(distance),
-						tl.shoot(distance),
-						tr.shoot(distance))
+						flywheel.shoot(distance))
 				.andThen(idle());
 	}
 
 	public Command pass() {
-		return Commands.parallel(bl.pass(), br.pass(), tl.pass(), tr.pass()).andThen(idle());
+		return Commands.parallel(flywheel.pass(), hood.pass()).andThen(idle());
 	}
 
 	public Command stopAll() {
-		return Commands.parallel(bl.stop(), br.stop(), tl.stop(), tr.stop()).andThen(idle());
+		return Commands.parallel(flywheel.stop(), hood.zero()).andThen(idle());
 	}
 
 	public Command waitForAll() {
 		return Commands.parallel(
-						bl.waitUntilAtSpeed().asProxy(),
-						br.waitUntilAtSpeed().asProxy(),
-						tl.waitUntilAtSpeed().asProxy(),
-						tr.waitUntilAtSpeed().asProxy())
+						flywheel.waitUntilAtSpeed().asProxy(),
+						hood.waitUntilAligned().asProxy())
 				.withTimeout(2);
 	}
 
-	public Command increaseOffset() { 
-		return runOnce(() -> this.offset += Math.pow(0.5,offsetCounter));
+	public AngularVelocity getVelocity() {
+		return flywheel.getIo().getVelocity();
 	}
 
-	public Command decreaseOffset() { 
-		return runOnce(() -> this.offset += Math.pow(0.5,offsetCounter));
-
+	public Angle getAngle() {
+		return hood.getIo().getPosition();
 	}
 }

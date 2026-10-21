@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.io.IMotor.RunMode;
 import frc.robot.lib.io.ISimTalonFX;
 import frc.robot.lib.io.ITalonFX;
@@ -47,7 +48,30 @@ public class Hood extends HomingMotorSubsystem {
 	}
 
 	public Command a(DoubleSupplier distance) {
-		Angle angle = Degrees.of(SmartDashboard.getNumber("hoodAngle", 45.0));
-		return runPos(angle, ShooterConstants.HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
+		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE_TRAPEZOIDAL))
+				.andThen(
+						run(
+								() -> {
+									double deg = ANGLE_MAP.get(distance.getAsDouble());
+									io.setPosition(Degrees.of(deg));
+								}));
+		// Angle angle = Degrees.of(ANGLE_MAP.get(distance.getAsDouble()));
+		// return runPos(angle, HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
+	}
+
+	public Command zero() {
+		return runPos(HOOD_POS_MIN, HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
+	}
+
+	public Command pass() {
+		return runPos(HOOD_POS_MAX, HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
+	}
+
+	public Command waitUntilAligned() {
+		return Commands.waitUntil(
+				() ->
+						Rotations.of(
+										((ITalonFX) io).getMotor().getClosedLoopError().getValueAsDouble())
+								.isNear(Rotations.of(0), HOOD_EPS));
 	}
 }
