@@ -50,15 +50,12 @@ public class Flywheel extends RollerMotorSubsystem {
 		setDefaultCommand(stop());
 	}
 
-	public Command shoot(double rps, DoubleSupplier distance) {
+	public Command shoot(DoubleSupplier distance) {
 		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
 				.andThen(
 						run(
 								() -> {
-<<<<<<< HEAD:src/main/java/frc/robot/subsystems/shooter/ShooterBL.java
-=======
 									double rps = VEL_MAP.get(distance.getAsDouble());
->>>>>>> robot2026/sotm_real:src/main/java/frc/robot/subsystems/shooter/Flywheel.java
 									io.setVelocity(RotationsPerSecond.of(rps));
 								}));
 	}
