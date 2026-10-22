@@ -5,9 +5,13 @@ import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import dev.doglog.DogLog;
+import dev.doglog.internal.tunable.Tunable;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.io.IMotor.RunMode;
@@ -44,6 +48,7 @@ public class Hood extends HomingMotorSubsystem {
 					}
 				});
 		((ITalonFX) io).configure(HOOD_CONFIG);
+		SmartDashboard.putNumber("hoodpos", 0);
 	}
 
 	public Command a(DoubleSupplier distance) {
@@ -72,5 +77,11 @@ public class Hood extends HomingMotorSubsystem {
 						Rotations.of(
 										((ITalonFX) io).getMotor().getClosedLoopError().getValueAsDouble())
 								.isNear(Rotations.of(0), HOOD_EPS));
+	}
+
+	public Command reset() {
+		return runOnce(() -> {
+			((ITalonFX) io).getMotor().setPosition(Degrees.of(SmartDashboard.getNumber("hoodpos", 0)));
+		});
 	}
 }

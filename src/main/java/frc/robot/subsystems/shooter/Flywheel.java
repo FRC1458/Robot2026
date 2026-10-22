@@ -27,12 +27,14 @@ public class Flywheel extends RollerMotorSubsystem {
 				() -> {
 					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL);
 					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR);
-					TalonFX br = new TalonFX(FLYWHEEL_ID_BR);
+					// TalonFX br = new TalonFX(FLYWHEEL_ID_BR);
 					if (RobotBase.isReal()) {
 						return new ITalonFXWithFollowers(
 							tl, "Shooter/Flywheel", 
-							new TalonFXFollower(tr, MotorAlignmentValue.Opposed), 
-							new TalonFXFollower(br, MotorAlignmentValue.Opposed));
+							new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
+							// , 
+							// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
+							);
 					} else {
 						return new ISimTalonFXWithFollowers(
 								tl,
@@ -40,8 +42,10 @@ public class Flywheel extends RollerMotorSubsystem {
 										Rotations.of(1), Rotations.of(1), MOI, 
 										DCMotor.getKrakenX60(3), 0.0),
 								"Shooter/Flywheel",
-								new TalonFXFollower(tr, MotorAlignmentValue.Opposed), 
-								new TalonFXFollower(br, MotorAlignmentValue.Opposed));
+								new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
+								// , 
+								// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
+								);
 					}
 				});
 

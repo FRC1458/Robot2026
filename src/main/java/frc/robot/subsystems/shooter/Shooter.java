@@ -49,4 +49,8 @@ public class Shooter extends LoggedSubsystem {
 	public Angle getAngle() {
 		return hood.getIo().getPosition();
 	}
+
+	public Command resetHood() {
+		return hood.reset();
+	}
 }
