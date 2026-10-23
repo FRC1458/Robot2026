@@ -29,7 +29,6 @@ public final class ShooterConstants {
 	public static final int FLYWHEEL_ID_TL = 24;
 	public static final int FLYWHEEL_ID_TR = 23;
 	public static final int FLYWHEEL_ID_BR = 22;
-	
 
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
 	public static final MomentOfInertia MOI = InchSqPounds.of(8.744676);
@@ -42,7 +41,6 @@ public final class ShooterConstants {
 			new Translation3d(Inches.of(7.300000), Inches.of(8.562500), Inches.of(15.829364));
 	public static final Translation3d RIGHT_OFFSET =
 			new Translation3d(Inches.of(7.300000), Inches.of(-8.562500), Inches.of(15.829364));
-
 
 	public static final Translation3d OFFSET =
 			new Translation3d(Inches.of(7.300000), Inches.of(0), Inches.of(15.829364));
@@ -98,31 +96,33 @@ public final class ShooterConstants {
 		TOF_MAP.put(3.569663, 1.267);
 	}
 
-	public static final TalonFXConfiguration HOOD_CONFIG = new TalonFXConfiguration()
-			.withSlot0(
-					new Slot0Configs()
-							.withKV(0.0)
-							.withKP(320.0)
-							.withKI(0.0)
-							.withKD(0.0)
-							.withKG(0.0)
-							.withGravityType(GravityTypeValue.Arm_Cosine))
-			.withCurrentLimits(
-					new CurrentLimitsConfigs()
-							.withStatorCurrentLimit(40)
-							.withSupplyCurrentLimit(30)
-							.withStatorCurrentLimitEnable(true)
-							.withSupplyCurrentLimitEnable(true))
-			.withMotionMagic(
-					new MotionMagicConfigs()
-							.withMotionMagicAcceleration(HOOD_GEAR_RATIO * 5)
-							.withMotionMagicCruiseVelocity(HOOD_GEAR_RATIO * 2)
-							.withMotionMagicJerk(HOOD_GEAR_RATIO * 10))
-			.withVoltage(
-					new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
-			.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO));
-			// .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
-					
+	public static final TalonFXConfiguration HOOD_CONFIG =
+			new TalonFXConfiguration()
+					.withSlot0(
+							new Slot0Configs()
+									.withKV(0.0)
+									.withKP(320.0)
+									.withKI(0.0)
+									.withKD(0.0)
+									.withKG(0.0)
+									.withGravityType(GravityTypeValue.Arm_Cosine))
+					.withCurrentLimits(
+							new CurrentLimitsConfigs()
+									.withStatorCurrentLimit(40)
+									.withSupplyCurrentLimit(30)
+									.withStatorCurrentLimitEnable(true)
+									.withSupplyCurrentLimitEnable(true))
+					.withMotionMagic(
+							new MotionMagicConfigs()
+									.withMotionMagicAcceleration(HOOD_GEAR_RATIO * 5)
+									.withMotionMagicCruiseVelocity(HOOD_GEAR_RATIO * 2)
+									.withMotionMagicJerk(HOOD_GEAR_RATIO * 10))
+					.withVoltage(
+							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
+					.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO));
+	// .withMotorOutput(new
+	// MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
+
 	public static final TalonFXConfiguration TR_CONFIG =
 			new TalonFXConfiguration()
 					.withSlot0(

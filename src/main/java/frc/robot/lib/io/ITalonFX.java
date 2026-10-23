@@ -38,6 +38,7 @@ public class ITalonFX implements IMotor {
 	protected String statorCurrentKey;
 	protected String supplyCurrentKey;
 	protected String temperatureKey;
+	protected String controlRequestKey;
 
 	protected TalonFX motor;
 
@@ -84,6 +85,7 @@ public class ITalonFX implements IMotor {
 		statorCurrentKey = key + "/StatorCurrent";
 		supplyCurrentKey = key + "/SupplyCurrent";
 		temperatureKey = key + "/Temperature";
+		controlRequestKey = key + "/ControlRequest";
 
 		this.motor = motor;
 		positionSignal = motor.getPosition();
@@ -234,6 +236,7 @@ public class ITalonFX implements IMotor {
 		DogLog.log(statorCurrentKey, statorCurrentSignal.getValue());
 		DogLog.log(supplyCurrentKey, supplyCurrentSignal.getValue());
 		DogLog.log(temperatureKey, temperatureSignal.getValue());
+		DogLog.log(controlRequestKey, motor.getAppliedControl().getName());
 	}
 
 	public void setSlot(int slot) {

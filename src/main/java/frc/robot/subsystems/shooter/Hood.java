@@ -5,11 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-
-import dev.doglog.DogLog;
-import dev.doglog.internal.tunable.Tunable;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,7 +23,7 @@ public class Hood extends HomingMotorSubsystem {
 	public Hood() {
 		super(
 				() -> {
-					TalonFX motor = new TalonFX(HOOD_ID);
+					TalonFX motor = new TalonFX(HOOD_ID, "CV");
 					if (RobotBase.isReal()) {
 						return new ITalonFX(motor, "Shooter/Hood");
 					} else {
@@ -74,14 +70,16 @@ public class Hood extends HomingMotorSubsystem {
 	public Command waitUntilAligned() {
 		return Commands.waitUntil(
 				() ->
-						Rotations.of(
-										((ITalonFX) io).getMotor().getClosedLoopError().getValueAsDouble())
+						Rotations.of(((ITalonFX) io).getMotor().getClosedLoopError().getValueAsDouble())
 								.isNear(Rotations.of(0), HOOD_EPS));
 	}
 
 	public Command reset() {
-		return runOnce(() -> {
-			((ITalonFX) io).getMotor().setPosition(Degrees.of(SmartDashboard.getNumber("hoodpos", 0)));
-		});
+		return runOnce(
+				() -> {
+					((ITalonFX) io)
+							.getMotor()
+							.setPosition(Degrees.of(SmartDashboard.getNumber("hoodpos", 0)));
+				});
 	}
 }

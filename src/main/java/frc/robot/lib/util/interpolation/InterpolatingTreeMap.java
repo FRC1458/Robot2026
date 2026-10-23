@@ -104,7 +104,8 @@ public class InterpolatingTreeMap<K, V> {
 		}
 	}
 
-	public InterpolatingTreeMap<V, K> inverse(InverseInterpolator<V> inverse, Interpolator<K> interpolator) {
+	public InterpolatingTreeMap<V, K> inverse(
+			InverseInterpolator<V> inverse, Interpolator<K> interpolator) {
 		var r = new InterpolatingTreeMap<V, K>(inverse, interpolator, max);
 		for (Entry<K, V> entry : map.entrySet()) {
 			r.put(entry.getValue(), entry.getKey());

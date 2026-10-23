@@ -30,7 +30,7 @@ public class IntakePivot extends HomingMotorSubsystem {
 	public IntakePivot() {
 		super(
 				() -> {
-					TalonFX motor = new TalonFX(PIVOT_ID);
+					TalonFX motor = new TalonFX(PIVOT_ID, "CV");
 					if (RobotBase.isReal()) {
 						return new ITalonFX(motor, "Intake/Pivot");
 					} else {
@@ -99,12 +99,11 @@ public class IntakePivot extends HomingMotorSubsystem {
 				})
 				.until(isHardStop)
 				.andThen(
-						runOnce(() -> io.setNeutral())
-								.withTimeout(1)
-								.finallyDo(
-										() -> {
-											((ITalonFX) io).getMotor().setPosition(Rotations.of(0));
-										}));
+						runOnce(
+							() -> {
+								io.setNeutral();
+								((ITalonFX) io).getMotor().setPosition(Rotations.of(0));
+							}));
 	}
 
 	public Command stop() {

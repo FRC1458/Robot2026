@@ -5,8 +5,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.subsystem.LoggedSubsystem;
-
-
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends LoggedSubsystem {
@@ -21,10 +19,7 @@ public class Shooter extends LoggedSubsystem {
 	}
 
 	public Command shootAll(DoubleSupplier distance) {
-		return Commands.parallel(
-						hood.a(distance),
-						flywheel.shoot(distance))
-				.andThen(idle());
+		return Commands.parallel(hood.a(distance), flywheel.shoot(distance)).andThen(idle());
 	}
 
 	public Command pass() {
@@ -37,8 +32,7 @@ public class Shooter extends LoggedSubsystem {
 
 	public Command waitForAll() {
 		return Commands.parallel(
-						flywheel.waitUntilAtSpeed().asProxy(),
-						hood.waitUntilAligned().asProxy())
+						flywheel.waitUntilAtSpeed().asProxy(), hood.waitUntilAligned().asProxy())
 				.withTimeout(2);
 	}
 

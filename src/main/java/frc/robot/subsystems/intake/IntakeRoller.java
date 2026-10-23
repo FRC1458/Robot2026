@@ -18,7 +18,7 @@ public class IntakeRoller extends RollerMotorSubsystem {
 	public IntakeRoller() {
 		super(
 				() -> {
-					TalonFX motor = new TalonFX(ROLLER_ID);
+					TalonFX motor = new TalonFX(ROLLER_ID, "CV");
 					if (RobotBase.isReal()) {
 						return new ITalonFX(motor, "Intake/Roller");
 					} else {

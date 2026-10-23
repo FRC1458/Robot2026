@@ -24,9 +24,11 @@ public class ITalonFXWithFollowers extends ITalonFX {
 	protected String[] statorCurrentKeys;
 	protected String[] supplyCurrentKeys;
 	protected String[] temperatureKeys;
+	protected String[] controlRequestKeys;
 
 	protected TalonFX talonFx;
 	protected TalonFXFollower[] followers;
+	protected TalonFX[] motors;
 
 	protected RunMode mode = RunMode.VOLTAGE;
 
@@ -46,7 +48,7 @@ public class ITalonFXWithFollowers extends ITalonFX {
 			follower.talonFx.setControl(new Follower(talonFx.getDeviceID(), follower.alignment));
 		}
 
-		TalonFX[] motors = new TalonFX[followers.length + 1];
+		motors = new TalonFX[followers.length + 1];
 		motors[0] = talonFx;
 
 		for (int i = 0; i < followers.length; i++) {
@@ -83,6 +85,7 @@ public class ITalonFXWithFollowers extends ITalonFX {
 		statorCurrentKeys = new String[motors.length];
 		supplyCurrentKeys = new String[motors.length];
 		temperatureKeys = new String[motors.length];
+		controlRequestKeys = new String[motors.length];
 
 		for (int i = 0; i < motors.length; i++) {
 			positionKeys[i] = key + "/Motor" + i + "/Position";
@@ -91,6 +94,7 @@ public class ITalonFXWithFollowers extends ITalonFX {
 			statorCurrentKeys[i] = key + "/Motor" + i + "/StatorCurrent";
 			supplyCurrentKeys[i] = key + "/Motor" + i + "/SupplyCurrent";
 			temperatureKeys[i] = key + "/Motor" + i + "/Temperature";
+			controlRequestKeys[i] = key + "/Motor" + i + "/ControlRequest";
 		}
 	}
 
@@ -142,6 +146,7 @@ public class ITalonFXWithFollowers extends ITalonFX {
 			DogLog.log(statorCurrentKeys[i], statorCurrentSignals[i].getValue());
 			DogLog.log(supplyCurrentKeys[i], supplyCurrentSignals[i].getValue());
 			DogLog.log(temperatureKeys[i], temperatureSignals[i].getValue());
+			DogLog.log(controlRequestKeys[i], motors[i].getAppliedControl().getName());
 		}
 
 		DogLog.log(positionKey, getPosition());

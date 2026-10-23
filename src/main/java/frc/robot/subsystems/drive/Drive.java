@@ -42,7 +42,6 @@ import frc.robot.subsystems.drive.commands.TrajectoryCommand;
 import frc.robot.subsystems.drive.ctre.CompCtreDriveConstants;
 import frc.robot.subsystems.drive.ctre.CtreDrive;
 import frc.robot.subsystems.shooter.ShooterConstants;
-
 import java.util.function.Supplier;
 
 public class Drive extends SubsystemBase {
@@ -191,7 +190,10 @@ public class Drive extends SubsystemBase {
 				.withName("Teleop");
 	}
 
-	public Command headingLock(Supplier<Rotation2d> rotation, Supplier<AngularVelocity> feedforward, LinearVelocity maxVelocity) {
+	public Command headingLock(
+			Supplier<Rotation2d> rotation,
+			Supplier<AngularVelocity> feedforward,
+			LinearVelocity maxVelocity) {
 		SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
 
 		ProfiledPIDVController thetaController =
@@ -217,18 +219,23 @@ public class Drive extends SubsystemBase {
 
 									var r =
 											thetaController
-													.setTarget(targetDirection.getRadians(), feedforward.get().in(RadiansPerSecond))
-													.setMeasurement(getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond)
+													.setTarget(
+															targetDirection.getRadians(), feedforward.get().in(RadiansPerSecond))
+													.setMeasurement(
+															getRotation().getRadians(), getRobotSpeeds().omegaRadiansPerSecond)
 													.getOutput();
 									// System.out.println(maxVelocity.in(MetersPerSecond));
 									request
-											.withVelocityX(fromController.vxMetersPerSecond * maxVelocity.in(MetersPerSecond))
-											.withVelocityY(fromController.vyMetersPerSecond * maxVelocity.in(MetersPerSecond))
+											.withVelocityX(
+													fromController.vxMetersPerSecond * maxVelocity.in(MetersPerSecond))
+											.withVelocityY(
+													fromController.vyMetersPerSecond * maxVelocity.in(MetersPerSecond))
 											.withRotationalRate(r);
 								})
 								.handleInterrupt(() -> setSwerveRequest(new SwerveRequest.FieldCentric())))
 				.withName("Heading Lock");
 	}
+
 	public Command headingLock(Supplier<Rotation2d> rotation, Supplier<AngularVelocity> feedforward) {
 		return headingLock(rotation, feedforward, MetersPerSecond.of(MAX_SPEED));
 	}
@@ -236,6 +243,7 @@ public class Drive extends SubsystemBase {
 	public Command headingLock(Supplier<Rotation2d> rotation) {
 		return headingLock(rotation, () -> RadiansPerSecond.of(0), MetersPerSecond.of(MAX_SPEED));
 	}
+
 	public Command headingLock(Supplier<Rotation2d> rotation, LinearVelocity maxVelocity) {
 		return headingLock(rotation, () -> RadiansPerSecond.of(0), maxVelocity);
 	}
@@ -256,18 +264,23 @@ public class Drive extends SubsystemBase {
 
 	public Command headingLockToPose(Supplier<Translation2d> poseSupplier) {
 		return headingLock(
-			() -> poseSupplier.get().minus(getPose().getTranslation()).getAngle().plus(Rotation2d.k180deg), 
-			() -> {
-				var delta = poseSupplier.get().minus(getPose().getTranslation());
-				var normSq = delta.getNorm() * delta.getNorm();
-				var fieldSpeeds = getFieldSpeeds();
-				return RadiansPerSecond.of(
-						normSq > 1e-4
-								? (-delta.getX() * fieldSpeeds.vyMetersPerSecond
-												+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
-										/ (normSq)
-								: 0.0);
-			});
+				() ->
+						poseSupplier
+								.get()
+								.minus(getPose().getTranslation())
+								.getAngle()
+								.plus(Rotation2d.k180deg),
+				() -> {
+					var delta = poseSupplier.get().minus(getPose().getTranslation());
+					var normSq = delta.getNorm() * delta.getNorm();
+					var fieldSpeeds = getFieldSpeeds();
+					return RadiansPerSecond.of(
+							normSq > 1e-4
+									? (-delta.getX() * fieldSpeeds.vyMetersPerSecond
+													+ delta.getY() * fieldSpeeds.vxMetersPerSecond)
+											/ (normSq)
+									: 0.0);
+				});
 	}
 
 	/**
@@ -316,14 +329,26 @@ public class Drive extends SubsystemBase {
 	}
 
 	public Command sotm() {
-		return headingLock(() -> {
-			Translation2d solution = sotm.solve(getPose().getTranslation(), Constants.FieldConstants.hubLocation, new Translation2d(getFieldSpeeds().vxMetersPerSecond, getFieldSpeeds().vyMetersPerSecond));
-			return solution.minus(getPose().getTranslation()).getAngle().plus(Rotation2d.k180deg);
-		}, MetersPerSecond.of(1));
+		return headingLock(
+				() -> {
+					Translation2d solution =
+							sotm.solve(
+									getPose().getTranslation(),
+									Constants.FieldConstants.hubLocation,
+									new Translation2d(
+											getFieldSpeeds().vxMetersPerSecond, getFieldSpeeds().vyMetersPerSecond));
+					return solution.minus(getPose().getTranslation()).getAngle().plus(Rotation2d.k180deg);
+				},
+				MetersPerSecond.of(1));
 	}
 
 	public double getVirtualDistance() {
-		Translation2d solution = sotm.solve(getPose().getTranslation(), Constants.FieldConstants.hubLocation, new Translation2d(getFieldSpeeds().vxMetersPerSecond, getFieldSpeeds().vyMetersPerSecond));
+		Translation2d solution =
+				sotm.solve(
+						getPose().getTranslation(),
+						Constants.FieldConstants.hubLocation,
+						new Translation2d(
+								getFieldSpeeds().vxMetersPerSecond, getFieldSpeeds().vyMetersPerSecond));
 		return solution.minus(getPose().getTranslation()).getNorm();
 	}
 
@@ -372,7 +397,6 @@ public class Drive extends SubsystemBase {
 
 	/** Whether the robot is stable */
 	public boolean isStable() {
-		return isPitchStable()
-				&& isRollStable();
+		return isPitchStable() && isRollStable();
 	}
 }

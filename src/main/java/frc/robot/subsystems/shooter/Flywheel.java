@@ -6,7 +6,6 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -25,25 +24,23 @@ public class Flywheel extends RollerMotorSubsystem {
 	public Flywheel() {
 		super(
 				() -> {
-					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL);
-					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR);
+					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL, "CV");
+					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR, "CV");
 					// TalonFX br = new TalonFX(FLYWHEEL_ID_BR);
 					if (RobotBase.isReal()) {
 						return new ITalonFXWithFollowers(
-							tl, "Shooter/Flywheel", 
-							new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
-							// , 
-							// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
-							);
+								tl, "Shooter/Flywheel", new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
+								// ,
+								// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
+								);
 					} else {
 						return new ISimTalonFXWithFollowers(
 								tl,
 								new FlywheelSimulation(
-										Rotations.of(1), Rotations.of(1), MOI, 
-										DCMotor.getKrakenX60(3), 0.0),
+										Rotations.of(1), Rotations.of(1), MOI, DCMotor.getKrakenX60(3), 0.0),
 								"Shooter/Flywheel",
 								new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
-								// , 
+								// ,
 								// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
 								);
 					}

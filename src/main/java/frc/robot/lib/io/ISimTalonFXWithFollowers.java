@@ -44,11 +44,14 @@ public class ISimTalonFXWithFollowers extends ITalonFXWithFollowers {
 
 		for (int i = 0; i < simStates.length; i++) {
 			double alignment =
-					i == 0 || followers[i - 1].alignment() == com.ctre.phoenix6.signals.MotorAlignmentValue.Aligned
+					i == 0
+									|| followers[i - 1].alignment()
+											== com.ctre.phoenix6.signals.MotorAlignmentValue.Aligned
 							? 1.0
 							: -1.0;
 
-			simStates[i].setRawRotorPosition(simulation.getPosition() * simulation.getRatio() * alignment);
+			simStates[i].setRawRotorPosition(
+					simulation.getPosition() * simulation.getRatio() * alignment);
 			simStates[i].setRotorVelocity(simulation.getVelocity() * simulation.getRatio() * alignment);
 			simStates[i].setRotorAcceleration(
 					simulation.getAcceleration() * simulation.getRatio() * alignment);

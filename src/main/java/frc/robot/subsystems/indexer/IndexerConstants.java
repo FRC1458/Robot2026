@@ -31,7 +31,7 @@ public class IndexerConstants {
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
 									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(30)
+									.withSupplyCurrentLimit(10)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
 					.withVoltage(
