@@ -18,18 +18,24 @@ import frc.robot.lib.io.ITalonFXWithFollowers;
 import frc.robot.lib.io.ITalonFXWithFollowers.TalonFXFollower;
 import frc.robot.lib.sim.FlywheelSimulation;
 import frc.robot.lib.subsystem.RollerMotorSubsystem;
+import frc.robot.lib.util.CtreUtil;
+
 import java.util.function.DoubleSupplier;
 
 public class Flywheel extends RollerMotorSubsystem {
 	public Flywheel() {
 		super(
 				() -> {
-					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL, "CV");
-					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR, "CV");
+					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL, "rio");
+					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR, "rio");
+					CtreUtil.applyConfiguration(tr, TR_CONFIG);
+					CtreUtil.applyConfiguration(tl, TL_CONFIG);
 					// TalonFX br = new TalonFX(FLYWHEEL_ID_BR);
 					if (RobotBase.isReal()) {
 						return new ITalonFXWithFollowers(
-								tl, "Shooter/Flywheel", new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
+								tl, "Shooter/Flywheel"
+								, 
+								new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
 								// ,
 								// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
 								);
@@ -38,7 +44,8 @@ public class Flywheel extends RollerMotorSubsystem {
 								tl,
 								new FlywheelSimulation(
 										Rotations.of(1), Rotations.of(1), MOI, DCMotor.getKrakenX60(3), 0.0),
-								"Shooter/Flywheel",
+								"Shooter/Flywheel"
+								,
 								new TalonFXFollower(tr, MotorAlignmentValue.Opposed)
 								// ,
 								// new TalonFXFollower(br, MotorAlignmentValue.Opposed)
@@ -46,7 +53,7 @@ public class Flywheel extends RollerMotorSubsystem {
 					}
 				});
 
-		((ITalonFXWithFollowers) io).configure(TR_CONFIG);
+		((ITalonFXWithFollowers) io).configure(TL_CONFIG);
 
 		setDefaultCommand(stop());
 	}

@@ -30,12 +30,14 @@ public class IndexerConstants {
 									.withKV(0.10261))
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(10)
+									.withStatorCurrentLimit(60)
+									.withSupplyCurrentLimit(60)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
 					.withVoltage(
-							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0));
+							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
+					.withMotorOutput(
+							new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
 
 	public static final TalonFXConfiguration R_CONFIG = L_CONFIG.clone();
 

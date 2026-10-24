@@ -23,7 +23,7 @@ public class Hood extends HomingMotorSubsystem {
 	public Hood() {
 		super(
 				() -> {
-					TalonFX motor = new TalonFX(HOOD_ID, "CV");
+					TalonFX motor = new TalonFX(HOOD_ID, "rio");
 					if (RobotBase.isReal()) {
 						return new ITalonFX(motor, "Shooter/Hood");
 					} else {
@@ -45,6 +45,11 @@ public class Hood extends HomingMotorSubsystem {
 				});
 		((ITalonFX) io).configure(HOOD_CONFIG);
 		SmartDashboard.putNumber("hoodpos", 0);
+				
+		((ITalonFX) io)
+				.getMotor()
+				.setPosition(Degrees.of(15));
+				
 	}
 
 	public Command a(DoubleSupplier distance) {

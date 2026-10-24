@@ -16,17 +16,23 @@ import frc.robot.lib.io.ITalonFXWithFollowers;
 import frc.robot.lib.io.ITalonFXWithFollowers.TalonFXFollower;
 import frc.robot.lib.sim.FlywheelSimulation;
 import frc.robot.lib.subsystem.RollerMotorSubsystem;
+import frc.robot.lib.util.CtreUtil;
 
 public class Indexer extends RollerMotorSubsystem {
 	public Indexer() {
 		super(
 				() -> {
-					TalonFX left = new TalonFX(L_MOTOR_ID, "CV");
-					TalonFX right = new TalonFX(R_MOTOR_ID, "CV");
+					TalonFX left = new TalonFX(L_MOTOR_ID, "rio");
+					TalonFX right = new TalonFX(R_MOTOR_ID, "rio");
+					CtreUtil.applyConfiguration(right, R_CONFIG);
+					CtreUtil.applyConfiguration(left, L_CONFIG);
 
 					if (RobotBase.isReal()) {
 						return new ITalonFXWithFollowers(
-								left, "Indexer", new TalonFXFollower(right, MotorAlignmentValue.Opposed));
+								left, "Indexer"
+								, 
+								new TalonFXFollower(right, MotorAlignmentValue.Opposed)
+								);
 					} else {
 						return new ISimTalonFXWithFollowers(
 								left,
@@ -36,8 +42,10 @@ public class Indexer extends RollerMotorSubsystem {
 										InchSqPounds.of(5),
 										DCMotor.getKrakenX44(1),
 										0.0),
-								"Indexer",
-								new TalonFXFollower(right, MotorAlignmentValue.Opposed));
+								"Indexer"
+								,
+								new TalonFXFollower(right, MotorAlignmentValue.Opposed)
+								);
 					}
 				});
 

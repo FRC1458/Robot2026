@@ -43,7 +43,7 @@ public class ISimTalonFXWithFollowers extends ITalonFXWithFollowers {
 		simulation.update(dt);
 
 		for (int i = 0; i < simStates.length; i++) {
-			double alignment =
+			double alignment = 
 					i == 0
 									|| followers[i - 1].alignment()
 											== com.ctre.phoenix6.signals.MotorAlignmentValue.Aligned

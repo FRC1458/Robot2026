@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -12,7 +13,10 @@ import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -29,13 +33,17 @@ import frc.robot.Constants.Controllers;
 import frc.robot.auto.AutoSelector;
 import frc.robot.lib.field.Sotm;
 import frc.robot.lib.subsystem.LoggedSubsystem;
+import frc.robot.lib.util.FuelSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-// import frc.robot.subsystems.indexer.RightIndexer;
+// import frc.robot.subsystems.indexer.indexer;
 // import frc.robot.subsystems.indexer.Roller;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakePivot;
 import frc.robot.subsystems.intake.IntakeRoller;
+import frc.robot.subsystems.shooter.Flywheel;
+import frc.robot.subsystems.shooter.Hood;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 
 /**
@@ -64,17 +72,17 @@ public class Robot extends TimedRobot {
 	public final IntakeRoller intakeRoller;
 	// // public final Indexer indexer;
 	public final Indexer indexer;
-	// // public final RightIndexer rightIndexer;
+	// // public final indexer indexer;
 	// // public final Roller roller;
-	// public final Shooter shooter;
-	// public final Flywheel shooterBL;
+	public final Shooter shooter;
+	public final Flywheel shooterBL;
+	public final Hood hood;
 	// public final VisionDeviceManager visionDeviceManager;
-	// public final Hood hood;
 
 	private final Notifier allianceThread;
 
-	// public Visualizer visualizer;
-	// public FuelSim fuelSim;
+	public Visualizer visualizer;
+	public FuelSim fuelSim;
 	private int hopper = 0;
 	private Timer lastShotLeft = new Timer();
 	private Timer lastShotRight = new Timer();
@@ -118,37 +126,37 @@ public class Robot extends TimedRobot {
 		intakeRoller = new IntakeRoller();
 		intake = new Intake(intakePivot, intakeRoller);
 		indexer = new Indexer();
-		// rightIndexer = new RightIndexer();
+		// indexer = new indexer();
 		// roller = new Roller();
-		// indexer = new Indexer(leftIndexer, rightIndexer, roller);
-		// shooterBL = new Flywheel();
-		// hood = new Hood();
-		// shooter = new Shooter(shooterBL, hood);
+		// indexer = new Indexer(leftIndexer, indexer, roller);
+		shooterBL = new Flywheel();
+		hood = new Hood();
+		shooter = new Shooter(shooterBL, hood);
 		// visionDeviceManager = new VisionDeviceManager(drive);
 
 		ControlsMapping.bind();
 
-		// if (Robot.isSimulation()) {
-		// 	fuelSim = new FuelSim();
-		// 	fuelSim.spawnStartingFuel();
-		// 	fuelSim.registerIntake(
-		// 			Inches.of(-24.248542),
-		// 			Inches.of(-16.625000),
-		// 			Inches.of(-12.687500),
-		// 			Inches.of(10.250000),
-		// 			() ->
-		// 					intakePivot.getIo().getPosition().lt(Degrees.of(5))
-		// 							&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
-		// 							&& hopper < 560,
-		// 			() -> hopper++);
-		// 	fuelSim.registerRobot(
-		// 			Inches.of(33), Inches.of(33), Inches.of(10.36), drive::getPose, drive::getFieldSpeeds);
-		// 	fuelSim.start();
-		// 	fuelSim.setLoggingFrequency(50);
-		// 	fuelSim.setSubticks(5);
-		// }
+		if (Robot.isSimulation()) {
+			fuelSim = new FuelSim();
+			fuelSim.spawnStartingFuel();
+			fuelSim.registerIntake(
+					Inches.of(-24.248542),
+					Inches.of(-16.625000),
+					Inches.of(-12.687500),
+					Inches.of(10.250000),
+					() ->
+							intakePivot.getIo().getPosition().lt(Degrees.of(5))
+									&& intakeRoller.getIo().getVelocity().gt(RotationsPerSecond.of(10))
+									&& hopper < 560,
+					() -> hopper++);
+			fuelSim.registerRobot(
+					Inches.of(33), Inches.of(33), Inches.of(10.36), drive::getPose, drive::getFieldSpeeds);
+			fuelSim.start();
+			fuelSim.setLoggingFrequency(50);
+			fuelSim.setSubticks(5);
+		}
 
-		// visualizer = new Visualizer(() -> new Pose3d(drive.getPose()), drive::getFieldSpeeds);
+		visualizer = new Visualizer(() -> new Pose3d(drive.getPose()), drive::getFieldSpeeds);
 		sotm = drive.sotm;
 	}
 
@@ -246,52 +254,52 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void simulationPeriodic() {
-		// DogLog.log("Hopper", hopper);
-		// fuelSim.updateSim();
+		DogLog.log("Hopper", hopper);
+		fuelSim.updateSim();
 
-		// double randomness = 0.0 / 180.0 * Math.PI;
-		// var random1 =
-		// 		new Rotation3d(
-		// 				randomness * 2 * (0.5 - Math.random()),
-		// 				randomness * 2 * (0.5 - Math.random()),
-		// 				randomness * 2 * (0.5 - Math.random()));
+		double randomness = 0.0 / 180.0 * Math.PI;
+		var random1 =
+				new Rotation3d(
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()),
+						randomness * 2 * (0.5 - Math.random()));
 
-		// if (rightIndexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
-		// 	if (hopper > 0) {
-		// 		int shots = (int) Math.round(0.02 * Math.random() * 2 * 20);
-		// 		for (int i = 0; i < shots; i++) {
-		// 			var random2 = new Translation3d(0, 2 * (0.5 - Math.random()) *
-		// Inches.of(18-5.91).in(Meters), 0);
-		// 			double shooterVelocity = shooter.getVelocity().in(RadiansPerSecond);
+		if (indexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+			if (hopper > 0) {
+				int shots = (int) Math.round(0.02 * Math.random() * 2 * 20);
+				for (int i = 0; i < shots; i++) {
+					var random2 = new Translation3d(0, 2 * (0.5 - Math.random()) *
+		Inches.of(18-5.91).in(Meters), 0);
+					double shooterVelocity = shooter.getVelocity().in(RadiansPerSecond);
 
-		// 			double wheelRadius = (Inches.of(4).in(Meters) / 2.0 + Inches.of(1.5).in(Meters) / 2.0) /
-		// 2.0;
-		// 			double speed = shooterVelocity * wheelRadius * 0.99;
+					double wheelRadius = (Inches.of(4).in(Meters) / 2.0 + Inches.of(1.5).in(Meters) / 2.0) /
+		2.0;
+					double speed = shooterVelocity * wheelRadius * 0.99;
 
-		// 			Translation3d shotPosition =
-		// 					new Pose3d(drive.getPose())
-		// 							.plus(new Transform3d(OFFSET, Rotation3d.kZero))
-		// 							.plus(new Transform3d(random2, Rotation3d.kZero))
-		// 							.getTranslation();
+					Translation3d shotPosition =
+							new Pose3d(drive.getPose())
+									.plus(new Transform3d(ShooterConstants.OFFSET, Rotation3d.kZero))
+									.plus(new Transform3d(random2, Rotation3d.kZero))
+									.getTranslation();
 
-		// 			fuelSim.spawnFuel(
-		// 					shotPosition,
-		// 					new Translation3d(
-		// 							speed,
-		// 							new Rotation3d(Radians.of(0), Degrees.of(-90).minus(shooter.getAngle()),
-		// Radians.of(0))
-		// 								.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)).plus(
-		// 									new Translation3d(drive.getFieldSpeeds().vxMetersPerSecond,
-		// drive.getFieldSpeeds().vyMetersPerSecond, 0)));
+					fuelSim.spawnFuel(
+							shotPosition,
+							new Translation3d(
+									speed,
+									new Rotation3d(Radians.of(0), Degrees.of(-90).minus(shooter.getAngle()),
+		Radians.of(0))
+										.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)).plus(
+											new Translation3d(drive.getFieldSpeeds().vxMetersPerSecond,
+		drive.getFieldSpeeds().vyMetersPerSecond, 0)));
 
-		// 			lastShotRight.reset();
+					lastShotRight.reset();
 
-		// 			hopper--;
-		// 		}
-		// 	}
-		// }
+					hopper--;
+				}
+			}
+		}
 
-		// DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
-		// DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
+		DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+		DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
 	}
 }

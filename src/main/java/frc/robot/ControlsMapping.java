@@ -1,20 +1,23 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
-import java.util.concurrent.atomic.AtomicBoolean;
+import frc.robot.subsystems.shooter.Shooter;
 
-import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControlsMapping {
 	private static final AtomicBoolean switcher = new AtomicBoolean(false);
 
 	public static void bind() {
 		final Robot robot = Robot.getInstance();
-		// final Drive drive = robot.drive;
+		final Drive drive = robot.drive;
 		final Intake intake = robot.intake;
 		final Indexer indexer = robot.indexer;
-		// final Shooter shooter = robot.shooter;
+		final Shooter shooter = robot.shooter;
 
 		// Robot.controller
 		// 		.y()
@@ -42,7 +45,7 @@ public class ControlsMapping {
 		// 										shooter.shootAll(drive::getDistanceToHub),
 		// 										Commands.sequence(
 		// 												shooter.waitForAll().asProxy(),
-		// 												Commands.parallel(intake.agitate(), indexer.indexAll()))))
+		// 												Commands.parallel(intake.agitate(), indexer.index()))))
 		// 						.withName("shoot"));
 
 		Robot.controller.rightBumper().whileTrue(intake.intake().withName("intake"));
@@ -84,6 +87,8 @@ public class ControlsMapping {
 
 		// Robot.controller.povUp().onTrue(shooter.resetHood().withName("reset hood"));
 
-		Robot.controller.a().whileTrue(indexer.index().withName("index"));
+		Robot.controller.a().whileTrue(indexer.index().andThen(indexer.idle()).withName("index"));
+		Robot.controller.povRight().onTrue(drive.resetPoseCommand(Pose2d.kZero));
+		Robot.controller.x().whileTrue(shooter.pass().andThen(shooter.idle()).withName("index"));
 	}
 }

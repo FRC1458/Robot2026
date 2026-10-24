@@ -25,10 +25,10 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.robot.lib.util.interpolation.InterpolatingDoubleTreeMap;
 
 public final class ShooterConstants {
-	public static final int HOOD_ID = 25; // TODO: add
+	public static final int HOOD_ID = 22; // TODO: add
 	public static final int FLYWHEEL_ID_TL = 24;
 	public static final int FLYWHEEL_ID_TR = 23;
-	public static final int FLYWHEEL_ID_BR = 22;
+	public static final int FLYWHEEL_ID_BR = 25;
 
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
 	public static final MomentOfInertia MOI = InchSqPounds.of(8.744676);
@@ -119,7 +119,8 @@ public final class ShooterConstants {
 									.withMotionMagicJerk(HOOD_GEAR_RATIO * 10))
 					.withVoltage(
 							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
-					.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO));
+					.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO))
+					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
 	// .withMotorOutput(new
 	// MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
 
@@ -135,8 +136,8 @@ public final class ShooterConstants {
 									.withKV(0.12378))
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(30)
+									.withStatorCurrentLimit(80)
+									.withSupplyCurrentLimit(80)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
 					.withVoltage(
@@ -160,8 +161,8 @@ public final class ShooterConstants {
 									.withKV(0.12378))
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(30)
+									.withStatorCurrentLimit(80)
+									.withSupplyCurrentLimit(80)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
 					.withVoltage(

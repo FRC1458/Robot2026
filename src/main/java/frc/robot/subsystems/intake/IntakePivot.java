@@ -100,10 +100,10 @@ public class IntakePivot extends HomingMotorSubsystem {
 				.until(isHardStop)
 				.andThen(
 						runOnce(
-							() -> {
-								io.setNeutral();
-								((ITalonFX) io).getMotor().setPosition(Rotations.of(0));
-							}));
+								() -> {
+									io.setNeutral();
+									((ITalonFX) io).getMotor().setPosition(Rotations.of(0));
+								}));
 	}
 
 	public Command stop() {
