@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.lib.subsystem.LoggedSubsystem;
@@ -16,6 +17,8 @@ public class Shooter extends LoggedSubsystem {
 		this.flywheel = bl;
 		this.hood = hood;
 		setDefaultCommand(stopAll());
+		SmartDashboard.putNumber("hood", 30);
+		SmartDashboard.putNumber("flywheel", 50);
 	}
 
 	public Command shootAll(DoubleSupplier distance) {
@@ -24,6 +27,13 @@ public class Shooter extends LoggedSubsystem {
 
 	public Command pass() {
 		return Commands.parallel(flywheel.pass(), hood.pass()).andThen(idle());
+	}
+
+	public Command cal() {
+		return Commands.parallel(
+				flywheel.cal(() -> SmartDashboard.getNumber("flywheel", 0)), 
+				hood.cal(() -> SmartDashboard.getNumber("hood", 0)))
+			.andThen(idle());
 	}
 
 	public Command stopAll() {

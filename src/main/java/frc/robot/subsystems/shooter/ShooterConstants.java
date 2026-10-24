@@ -121,8 +121,6 @@ public final class ShooterConstants {
 							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
 					.withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_GEAR_RATIO))
 					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
-	// .withMotorOutput(new
-	// MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
 
 	public static final TalonFXConfiguration TR_CONFIG =
 			new TalonFXConfiguration()
@@ -134,9 +132,9 @@ public final class ShooterConstants {
 									.withKA(0.00766)
 									.withKS(0.18188)
 									.withKV(0.12378))
-					.withCurrentLimits(
+			 		.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(80)
+									.withStatorCurrentLimit(90)
 									.withSupplyCurrentLimit(80)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
@@ -147,7 +145,7 @@ public final class ShooterConstants {
 									.withMotionMagicAcceleration(120)
 									.withMotionMagicCruiseVelocity(120)
 									.withMotionMagicJerk(120))
-					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
+					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
 
 	public static final TalonFXConfiguration TL_CONFIG =
 			new TalonFXConfiguration()
@@ -161,7 +159,7 @@ public final class ShooterConstants {
 									.withKV(0.12378))
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(80)
+									.withStatorCurrentLimit(90)
 									.withSupplyCurrentLimit(80)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
@@ -172,57 +170,5 @@ public final class ShooterConstants {
 									.withMotionMagicAcceleration(120)
 									.withMotionMagicCruiseVelocity(120)
 									.withMotionMagicJerk(120))
-					.withMotorOutput(
-							new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
-
-	public static final TalonFXConfiguration BR_CONFIG =
-			new TalonFXConfiguration()
-					.withSlot0(
-							new Slot0Configs()
-									.withKP(0.3)
-									.withKI(0.0)
-									.withKD(0.0)
-									.withKA(0.0077352)
-									.withKS(0.29729)
-									.withKV(0.12292))
-					.withCurrentLimits(
-							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(30)
-									.withStatorCurrentLimitEnable(true)
-									.withSupplyCurrentLimitEnable(true))
-					.withVoltage(
-							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
-					.withMotionMagic(
-							new MotionMagicConfigs()
-									.withMotionMagicAcceleration(120)
-									.withMotionMagicCruiseVelocity(120)
-									.withMotionMagicJerk(120))
 					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
-
-	public static final TalonFXConfiguration BL_CONFIG =
-			new TalonFXConfiguration()
-					.withSlot0(
-							new Slot0Configs()
-									.withKP(0.3)
-									.withKI(0.0)
-									.withKD(0.0)
-									.withKA(0.0077352)
-									.withKS(0.29729)
-									.withKV(0.12292))
-					.withCurrentLimits(
-							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(40)
-									.withSupplyCurrentLimit(30)
-									.withStatorCurrentLimitEnable(true)
-									.withSupplyCurrentLimitEnable(true))
-					.withVoltage(
-							new VoltageConfigs().withPeakForwardVoltage(12.0).withPeakReverseVoltage(-12.0))
-					.withMotionMagic(
-							new MotionMagicConfigs()
-									.withMotionMagicAcceleration(120)
-									.withMotionMagicCruiseVelocity(120)
-									.withMotionMagicJerk(120))
-					.withMotorOutput(
-							new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
 }

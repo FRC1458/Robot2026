@@ -254,52 +254,52 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void simulationPeriodic() {
-		DogLog.log("Hopper", hopper);
-		fuelSim.updateSim();
+	// 	DogLog.log("Hopper", hopper);
+	// 	fuelSim.updateSim();
 
-		double randomness = 0.0 / 180.0 * Math.PI;
-		var random1 =
-				new Rotation3d(
-						randomness * 2 * (0.5 - Math.random()),
-						randomness * 2 * (0.5 - Math.random()),
-						randomness * 2 * (0.5 - Math.random()));
+	// 	double randomness = 0.0 / 180.0 * Math.PI;
+	// 	var random1 =
+	// 			new Rotation3d(
+	// 					randomness * 2 * (0.5 - Math.random()),
+	// 					randomness * 2 * (0.5 - Math.random()),
+	// 					randomness * 2 * (0.5 - Math.random()));
 
-		if (indexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
-			if (hopper > 0) {
-				int shots = (int) Math.round(0.02 * Math.random() * 2 * 20);
-				for (int i = 0; i < shots; i++) {
-					var random2 = new Translation3d(0, 2 * (0.5 - Math.random()) *
-		Inches.of(18-5.91).in(Meters), 0);
-					double shooterVelocity = shooter.getVelocity().in(RadiansPerSecond);
+	// 	if (indexer.getIo().getVelocity().gt(RotationsPerSecond.of(10))) {
+	// 		if (hopper > 0) {
+	// 			int shots = (int) Math.round(0.02 * Math.random() * 2 * 20);
+	// 			for (int i = 0; i < shots; i++) {
+	// 				var random2 = new Translation3d(0, 2 * (0.5 - Math.random()) *
+	// 	Inches.of(18-5.91).in(Meters), 0);
+	// 				double shooterVelocity = shooter.getVelocity().in(RadiansPerSecond);
 
-					double wheelRadius = (Inches.of(4).in(Meters) / 2.0 + Inches.of(1.5).in(Meters) / 2.0) /
-		2.0;
-					double speed = shooterVelocity * wheelRadius * 0.99;
+	// 				double wheelRadius = (Inches.of(4).in(Meters) / 2.0 + Inches.of(1.5).in(Meters) / 2.0) /
+	// 	2.0;
+	// 				double speed = shooterVelocity * wheelRadius * 0.99;
 
-					Translation3d shotPosition =
-							new Pose3d(drive.getPose())
-									.plus(new Transform3d(ShooterConstants.OFFSET, Rotation3d.kZero))
-									.plus(new Transform3d(random2, Rotation3d.kZero))
-									.getTranslation();
+	// 				Translation3d shotPosition =
+	// 						new Pose3d(drive.getPose())
+	// 								.plus(new Transform3d(ShooterConstants.OFFSET, Rotation3d.kZero))
+	// 								.plus(new Transform3d(random2, Rotation3d.kZero))
+	// 								.getTranslation();
 
-					fuelSim.spawnFuel(
-							shotPosition,
-							new Translation3d(
-									speed,
-									new Rotation3d(Radians.of(0), Degrees.of(-90).minus(shooter.getAngle()),
-		Radians.of(0))
-										.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)).plus(
-											new Translation3d(drive.getFieldSpeeds().vxMetersPerSecond,
-		drive.getFieldSpeeds().vyMetersPerSecond, 0)));
+	// 				fuelSim.spawnFuel(
+	// 						shotPosition,
+	// 						new Translation3d(
+	// 								speed,
+	// 								new Rotation3d(Radians.of(0), Degrees.of(-90).minus(shooter.getAngle()),
+	// 	Radians.of(0))
+	// 									.plus(new Rotation3d(drive.getPose().getRotation())).plus(random1)).plus(
+	// 										new Translation3d(drive.getFieldSpeeds().vxMetersPerSecond,
+	// 	drive.getFieldSpeeds().vyMetersPerSecond, 0)));
 
-					lastShotRight.reset();
+	// 				lastShotRight.reset();
 
-					hopper--;
-				}
-			}
-		}
+	// 				hopper--;
+	// 			}
+	// 		}
+	// 	}
 
-		DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
-		DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
+	// 	DogLog.log("Blue Score", FuelSim.Hub.BLUE_HUB.getScore());
+	// 	DogLog.log("Red Score", FuelSim.Hub.RED_HUB.getScore());
 	}
 }

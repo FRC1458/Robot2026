@@ -48,7 +48,7 @@ public class Hood extends HomingMotorSubsystem {
 				
 		((ITalonFX) io)
 				.getMotor()
-				.setPosition(Degrees.of(15));
+				.setPosition(Degrees.of(10));
 				
 	}
 
@@ -63,6 +63,18 @@ public class Hood extends HomingMotorSubsystem {
 		// Angle angle = Degrees.of(ANGLE_MAP.get(distance.getAsDouble()));
 		// return runPos(angle, HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);
 	}
+
+	
+	public Command cal(DoubleSupplier deg) {
+		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
+				.andThen(
+						run(
+								() -> {
+									double d = deg.getAsDouble();
+									io.setPosition(Degrees.of(d));
+								}));
+	}
+
 
 	public Command zero() {
 		return runPos(HOOD_POS_MIN, HOOD_EPS, RunMode.VOLTAGE_TRAPEZOIDAL).withTimeout(1);

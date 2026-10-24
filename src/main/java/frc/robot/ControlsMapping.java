@@ -89,6 +89,7 @@ public class ControlsMapping {
 
 		Robot.controller.a().whileTrue(indexer.index().andThen(indexer.idle()).withName("index"));
 		Robot.controller.povRight().onTrue(drive.resetPoseCommand(Pose2d.kZero));
-		Robot.controller.x().whileTrue(shooter.pass().andThen(shooter.idle()).withName("index"));
+		Robot.controller.x().whileTrue(shooter.
+		cal().andThen(shooter.idle()).withName("shoot"));
 	}
 }

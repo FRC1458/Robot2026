@@ -6,6 +6,8 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+
+import dev.doglog.DogLog;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -28,6 +30,8 @@ public class Flywheel extends RollerMotorSubsystem {
 				() -> {
 					TalonFX tl = new TalonFX(FLYWHEEL_ID_TL, "rio");
 					TalonFX tr = new TalonFX(FLYWHEEL_ID_TR, "rio");
+					// DogLog.log("configured1", CtreUtil.applyConfiguration(tr, TR_CONFIG));
+					// DogLog.log("configured2", CtreUtil.applyConfiguration(tl, TL_CONFIG));
 					CtreUtil.applyConfiguration(tr, TR_CONFIG);
 					CtreUtil.applyConfiguration(tl, TL_CONFIG);
 					// TalonFX br = new TalonFX(FLYWHEEL_ID_BR);
@@ -53,13 +57,13 @@ public class Flywheel extends RollerMotorSubsystem {
 					}
 				});
 
-		((ITalonFXWithFollowers) io).configure(TL_CONFIG);
+		// ((ITalonFXWithFollowers) io).configure(TL_CONFIG);
 
 		setDefaultCommand(stop());
 	}
 
 	public Command shoot(DoubleSupplier distance) {
-		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
+		return runOnce(() -> io.setRunMode(RunMode.CURRENT))
 				.andThen(
 						run(
 								() -> {
@@ -68,8 +72,18 @@ public class Flywheel extends RollerMotorSubsystem {
 								}));
 	}
 
+	public Command cal(DoubleSupplier rps) {
+		return runOnce(() -> io.setRunMode(RunMode.CURRENT))
+				.andThen(
+						run(
+								() -> {
+									double r = rps.getAsDouble();
+									io.setVelocity(RotationsPerSecond.of(r));
+								}));
+	}
+
 	public Command pass() {
-		return runVel(PASSING_SPEED, EPS, RunMode.VOLTAGE).withTimeout(1);
+		return runVel(PASSING_SPEED, EPS, RunMode.CURRENT).withTimeout(1);
 	}
 
 	public Command waitUntilAtSpeed(AngularVelocity eps) {
