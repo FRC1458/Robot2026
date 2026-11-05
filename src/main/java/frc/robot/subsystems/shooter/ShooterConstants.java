@@ -27,8 +27,8 @@ import frc.robot.lib.util.interpolation.InterpolatingDoubleTreeMap;
 public final class ShooterConstants {
 	public static final int HOOD_ID = 22; // TODO: add
 	public static final int FLYWHEEL_ID_TL = 24;
-	public static final int FLYWHEEL_ID_TR = 23;
-	public static final int FLYWHEEL_ID_BR = 25;
+	public static final int FLYWHEEL_ID_TR = 25;
+	public static final int FLYWHEEL_ID_BR = 23;	 
 
 	public static final AngularVelocity PASSING_SPEED = RotationsPerSecond.of(75);
 	public static final MomentOfInertia MOI = InchSqPounds.of(8.744676);
@@ -147,7 +147,7 @@ public final class ShooterConstants {
 									.withMotionMagicJerk(120))
 					.withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
 
-	public static final TalonFXConfiguration TL_CONFIG =
+	public static final TalonFXConfiguration TL_CONFIG = 
 			new TalonFXConfiguration()
 					.withSlot0(
 							new Slot0Configs()
