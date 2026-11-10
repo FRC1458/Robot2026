@@ -63,7 +63,7 @@ public class Flywheel extends RollerMotorSubsystem {
 	}
 
 	public Command shoot(DoubleSupplier distance) {
-		return runOnce(() -> io.setRunMode(RunMode.CURRENT))
+		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
 				.andThen(
 						run(
 								() -> {
@@ -73,7 +73,7 @@ public class Flywheel extends RollerMotorSubsystem {
 	}
 
 	public Command cal(DoubleSupplier rps) {
-		return runOnce(() -> io.setRunMode(RunMode.CURRENT))
+		return runOnce(() -> io.setRunMode(RunMode.VOLTAGE))
 				.andThen(
 						run(
 								() -> {
@@ -83,7 +83,7 @@ public class Flywheel extends RollerMotorSubsystem {
 	}
 
 	public Command pass() {
-		return runVel(PASSING_SPEED, EPS, RunMode.CURRENT).withTimeout(1);
+		return runVel(PASSING_SPEED, EPS, RunMode.VOLTAGE).withTimeout(1);
 	}
 
 	public Command waitUntilAtSpeed(AngularVelocity eps) {

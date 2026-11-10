@@ -30,7 +30,7 @@ public class IndexerConstants {
 									.withKV(0.10261))
 					.withCurrentLimits(
 							new CurrentLimitsConfigs()
-									.withStatorCurrentLimit(60)
+									.withStatorCurrentLimit(90)
 									.withSupplyCurrentLimit(60)
 									.withStatorCurrentLimitEnable(true)
 									.withSupplyCurrentLimitEnable(true))
